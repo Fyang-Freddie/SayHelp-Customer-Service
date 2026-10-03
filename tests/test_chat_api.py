@@ -4,7 +4,7 @@ import asyncio
 import json
 
 import httpx
-from langchain_core.messages import AIMessageChunk
+from langchain_core.messages import AIMessageChunk, HumanMessage, SystemMessage
 
 from app.config import Settings
 from app.main import create_app
@@ -167,3 +167,56 @@ def test_model_service_forwards_nonempty_text_chunks_with_configured_model(monke
         return [chunk async for chunk in ModelService(settings()).stream_chat([])]
 
     assert asyncio.run(collect()) == ["a", "bc"]
+
+def test_done_boundary_has_already_committed_turn() -> None:
+    class ContextModel:
+        async def stream_chat(self, messages):
+            current = messages[-1].content
+            if current == "first":
+                yield "first-answer"
+            elif current == "second":
+                yield "second-answer"
+            else:
+                history = [message.content for message in messages[1:-1]]
+                yield "saved" if history == [
+                    "first", "first-answer", "second", "second-answer"
+                ] else "lost"
+
+    app = create_app(settings(), ContextModel())
+    first = parse_events(asyncio.run(post(app, {"message": "first"})).text)
+    conversation_id = first[0][1]["conversation_id"]
+    route = next(route for route in app.routes if route.path == "/v1/chat/stream")
+
+    async def receive_done_then_disconnect():
+        user = HumanMessage(content="second")
+        stream = route.endpoint(
+            (conversation_id, user, [SystemMessage(content="system"), user])
+        )
+        events = [await stream.__anext__() for _ in range(3)]
+        await stream.aclose()
+        return [event.event for event in events]
+
+    assert asyncio.run(receive_done_then_disconnect()) == ["session", "token", "done"]
+    third = parse_events(asyncio.run(post(app, {
+        "message": "third", "conversation_id": conversation_id,
+    })).text)
+    assert third[1] == ("token", {"text": "saved"})
+
+
+def test_oversized_new_request_does_not_evict_existing_conversation() -> None:
+    class FakeModel:
+        async def stream_chat(self, messages):
+            yield "ok"
+
+    app = create_app(settings(max_conversations=1), FakeModel())
+    first = parse_events(asyncio.run(post(app, {"message": "first"})).text)
+    conversation_id = first[0][1]["conversation_id"]
+
+    rejected = asyncio.run(post(app, {"message": "x" * 20000}))
+    resumed = asyncio.run(post(app, {
+        "message": "second", "conversation_id": conversation_id,
+    }))
+
+    assert rejected.status_code == 413
+    assert resumed.status_code == 200
+    assert parse_events(resumed.text)[1] == ("token", {"text": "ok"})

@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages.utils import count_tokens_approximately
 
 from app.config import Settings
 from app.history import ConversationStore, InputBudgetExceeded, UnknownConversation
@@ -27,10 +28,13 @@ def create_app(
 
     def prepare_chat(request: ChatRequest) -> PreparedChat:
         conversation_id = request.conversation_id
-        if conversation_id is None:
-            conversation_id = history.create()
         user = HumanMessage(content=request.message)
         system = SystemMessage(content=render_service_system_prompt())
+        if conversation_id is None:
+            input_limit = settings.context_token_budget - settings.response_token_reserve
+            if count_tokens_approximately([system, user]) > input_limit:
+                raise HTTPException(status_code=413, detail="Message exceeds input budget")
+            conversation_id = history.create()
         try:
             messages = history.prepare(conversation_id, system, user)
         except UnknownConversation as error:
@@ -53,7 +57,7 @@ def create_app(
         except Exception:
             yield ServerSentEvent(event="error", data={"message": "Upstream chat failed"})
             return
-        yield ServerSentEvent(event="done", data={"conversation_id": conversation_id})
         history.commit(conversation_id, user, AIMessage(content="".join(parts)))
+        yield ServerSentEvent(event="done", data={"conversation_id": conversation_id})
 
     return app
