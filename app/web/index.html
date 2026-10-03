@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f8fc">
   <link rel="icon" href="data:,">
-  <title>智能客服 · 在线咨询</title>
+  <title>SayHelp · 在线咨询</title>
   <style>
     :root {
       color-scheme: light;
@@ -209,7 +209,7 @@
     <aside class="sidebar" aria-label="对话导航">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">✦</div>
-        <div><div class="brand-name">智能客服</div><div class="brand-sub">Customer care</div></div>
+        <div><div class="brand-name">SayHelp</div><div class="brand-sub">Customer care</div></div>
       </div>
       <div>
         <div class="side-title">会话</div>
@@ -226,7 +226,7 @@
       <header class="topbar">
         <div class="agent-heading">
           <div class="agent-avatar" aria-hidden="true">✦</div>
-          <div><h1>在线客服</h1><div class="presence" id="presence">随时为你服务</div></div>
+          <div><h1>SayHelp 在线客服</h1><div class="presence" id="presence">随时为你服务</div></div>
         </div>
         <button class="top-action" id="newChatTop" type="button">新对话</button>
       </header>
@@ -325,7 +325,7 @@
         bubble.textContent = text;
         const meta = document.createElement("div");
         meta.className = "bubble-meta";
-        meta.textContent = role === "user" ? "你" : "客服助手";
+        meta.textContent = role === "user" ? "你" : "SayHelp";
         wrap.append(bubble, meta);
         row.append(avatar, wrap);
         messages.append(row);
