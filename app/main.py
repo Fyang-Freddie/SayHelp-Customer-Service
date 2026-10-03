@@ -1,6 +1,6 @@
 """Customer service streaming HTTP API."""
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterator
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -9,7 +9,13 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 from langchain_core.messages.utils import count_tokens_approximately
 
 from app.config import Settings
-from app.history import ConversationStore, InputBudgetExceeded, UnknownConversation
+from app.history import (
+    ConversationBusy,
+    ConversationCapacityExceeded,
+    ConversationStore,
+    InputBudgetExceeded,
+    UnknownConversation,
+)
 from app.model_service import ModelService
 from app.prompts import render_service_system_prompt
 from app.schemas import AfterSalesExtraction, ChatRequest, ExtractRequest
@@ -26,7 +32,7 @@ def create_app(
     history = ConversationStore(settings)
     app = FastAPI()
 
-    def prepare_chat(request: ChatRequest) -> PreparedChat:
+    def prepare_chat(request: ChatRequest) -> Iterator[PreparedChat]:
         conversation_id = request.conversation_id
         user = HumanMessage(content=request.message)
         system = SystemMessage(content=render_service_system_prompt())
@@ -34,14 +40,24 @@ def create_app(
             input_limit = settings.context_token_budget - settings.response_token_reserve
             if count_tokens_approximately([system, user]) > input_limit:
                 raise HTTPException(status_code=413, detail="Message exceeds input budget")
-            conversation_id = history.create()
+            try:
+                conversation_id = history.create()
+            except ConversationCapacityExceeded as error:
+                raise HTTPException(status_code=503, detail="Conversation capacity reached") from error
         try:
-            messages = history.prepare(conversation_id, system, user)
+            history.reserve(conversation_id)
         except UnknownConversation as error:
             raise HTTPException(status_code=404, detail="Conversation not found") from error
-        except InputBudgetExceeded as error:
-            raise HTTPException(status_code=413, detail="Message exceeds input budget") from error
-        return conversation_id, user, messages
+        except ConversationBusy as error:
+            raise HTTPException(status_code=409, detail="Conversation is active") from error
+        try:
+            try:
+                messages = history.prepare(conversation_id, system, user)
+            except InputBudgetExceeded as error:
+                raise HTTPException(status_code=413, detail="Message exceeds input budget") from error
+            yield conversation_id, user, messages
+        finally:
+            history.release(conversation_id)
 
     @app.post("/v1/chat/stream", response_class=EventSourceResponse)
     async def stream_chat(
@@ -54,10 +70,10 @@ def create_app(
             async for chunk in model_service.stream_chat(messages):
                 parts.append(chunk)
                 yield ServerSentEvent(event="token", data={"text": chunk})
+            history.commit(conversation_id, user, AIMessage(content="".join(parts)))
         except Exception:
             yield ServerSentEvent(event="error", data={"message": "Upstream chat failed"})
             return
-        history.commit(conversation_id, user, AIMessage(content="".join(parts)))
         yield ServerSentEvent(event="done", data={"conversation_id": conversation_id})
 
     @app.post("/v1/aftersales/extract")

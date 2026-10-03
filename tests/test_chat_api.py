@@ -220,3 +220,133 @@ def test_oversized_new_request_does_not_evict_existing_conversation() -> None:
     assert rejected.status_code == 413
     assert resumed.status_code == 200
     assert parse_events(resumed.text)[1] == ("token", {"text": "ok"})
+
+
+def test_active_stream_survives_capacity_pressure() -> None:
+    async def scenario():
+        entered = asyncio.Event()
+        release = asyncio.Event()
+
+        class SlowModel:
+            async def stream_chat(self, messages):
+                if messages[-1].content == "active":
+                    entered.set()
+                    await release.wait()
+                yield "ok"
+
+        app = create_app(settings(max_conversations=1), SlowModel())
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+        ) as client:
+            seed = await client.post("/v1/chat/stream", json={"message": "seed"})
+            conversation_id = parse_events(seed.text)[0][1]["conversation_id"]
+            active = asyncio.create_task(client.post("/v1/chat/stream", json={
+                "message": "active", "conversation_id": conversation_id,
+            }))
+            await asyncio.wait_for(entered.wait(), 2)
+            at_capacity = await client.post("/v1/chat/stream", json={"message": "new"})
+            release.set()
+            completed = await asyncio.wait_for(active, 2)
+            resumed = await client.post("/v1/chat/stream", json={
+                "message": "later", "conversation_id": conversation_id,
+            })
+        return at_capacity, completed, resumed
+
+    at_capacity, completed, resumed = asyncio.run(scenario())
+    assert at_capacity.status_code == 503
+    assert [name for name, _ in parse_events(completed.text)] == ["session", "token", "done"]
+    assert resumed.status_code == 200
+
+
+def test_overlapping_turn_on_same_id_is_rejected_until_first_completes() -> None:
+    async def scenario():
+        entered = asyncio.Event()
+        release = asyncio.Event()
+
+        class ContextModel:
+            async def stream_chat(self, messages):
+                if messages[-1].content == "active":
+                    entered.set()
+                    await release.wait()
+                    yield "active-answer"
+                else:
+                    history = [message.content for message in messages[1:-1]]
+                    yield "saved" if history[-2:] == ["active", "active-answer"] else "stale"
+
+        app = create_app(settings(), ContextModel())
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+        ) as client:
+            seed = await client.post("/v1/chat/stream", json={"message": "seed"})
+            conversation_id = parse_events(seed.text)[0][1]["conversation_id"]
+            active = asyncio.create_task(client.post("/v1/chat/stream", json={
+                "message": "active", "conversation_id": conversation_id,
+            }))
+            await asyncio.wait_for(entered.wait(), 2)
+            overlap = await client.post("/v1/chat/stream", json={
+                "message": "overlap", "conversation_id": conversation_id,
+            })
+            release.set()
+            await asyncio.wait_for(active, 2)
+            later = await client.post("/v1/chat/stream", json={
+                "message": "later", "conversation_id": conversation_id,
+            })
+        return overlap, later
+
+    overlap, later = asyncio.run(scenario())
+    assert overlap.status_code == 409
+    assert parse_events(later.text)[1] == ("token", {"text": "saved"})
+
+
+def test_commit_failure_after_stream_start_emits_error(monkeypatch) -> None:
+    from app.history import ConversationStore
+
+    def fail_commit(self, conversation_id, user, assistant):
+        raise RuntimeError("test-secret commit details")
+
+    monkeypatch.setattr(ConversationStore, "commit", fail_commit)
+
+    class FakeModel:
+        async def stream_chat(self, messages):
+            yield "reply"
+
+    response = asyncio.run(post(create_app(settings(), FakeModel()), {"message": "hello"}))
+    assert [name for name, _ in parse_events(response.text)] == ["session", "token", "error"]
+    assert "test-secret" not in response.text
+
+
+def test_cancelled_stream_releases_conversation_for_retry() -> None:
+    async def scenario():
+        entered = asyncio.Event()
+        blocker = asyncio.Event()
+
+        class SlowModel:
+            async def stream_chat(self, messages):
+                if messages[-1].content == "active":
+                    entered.set()
+                    await blocker.wait()
+                yield "clean"
+
+        app = create_app(settings(max_conversations=1), SlowModel())
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+        ) as client:
+            seed = await client.post("/v1/chat/stream", json={"message": "seed"})
+            conversation_id = parse_events(seed.text)[0][1]["conversation_id"]
+            active = asyncio.create_task(client.post("/v1/chat/stream", json={
+                "message": "active", "conversation_id": conversation_id,
+            }))
+            await asyncio.wait_for(entered.wait(), 2)
+            active.cancel()
+            try:
+                await active
+            except asyncio.CancelledError:
+                pass
+            retry = await client.post("/v1/chat/stream", json={
+                "message": "retry", "conversation_id": conversation_id,
+            })
+        return retry
+
+    retry = asyncio.run(scenario())
+    assert retry.status_code == 200
+    assert parse_events(retry.text)[1] == ("token", {"text": "clean"})

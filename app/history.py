@@ -1,6 +1,7 @@
 """Bounded, in-memory conversation history."""
 
 from collections import OrderedDict
+from threading import RLock
 from uuid import uuid4
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
@@ -17,25 +18,54 @@ class InputBudgetExceeded(Exception):
     """System and current user messages exceed the available input budget."""
 
 
+class ConversationCapacityExceeded(Exception):
+    """Every conversation slot is occupied by an active stream."""
+
+
+class ConversationBusy(Exception):
+    """A stream already owns the supplied conversation ID."""
+
+
 class ConversationStore:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
         self._conversations: OrderedDict[str, list[BaseMessage]] = OrderedDict()
+        self._active: set[str] = set()
+        self._lock = RLock()
 
     def create(self) -> str:
-        conversation_id = str(uuid4())
-        self._conversations[conversation_id] = []
-        if len(self._conversations) > self._settings.max_conversations:
-            self._conversations.popitem(last=False)
-        return conversation_id
+        with self._lock:
+            if len(self._conversations) >= self._settings.max_conversations:
+                victim = next(
+                    (key for key in self._conversations if key not in self._active), None
+                )
+                if victim is None:
+                    raise ConversationCapacityExceeded()
+                del self._conversations[victim]
+            conversation_id = str(uuid4())
+            self._conversations[conversation_id] = []
+            return conversation_id
+
+    def reserve(self, conversation_id: str) -> None:
+        with self._lock:
+            if conversation_id not in self._conversations:
+                raise UnknownConversation(conversation_id)
+            if conversation_id in self._active:
+                raise ConversationBusy(conversation_id)
+            self._active.add(conversation_id)
+
+    def release(self, conversation_id: str) -> None:
+        with self._lock:
+            self._active.discard(conversation_id)
 
     def get(self, conversation_id: str) -> list[BaseMessage]:
-        try:
-            messages = self._conversations[conversation_id]
-        except KeyError as error:
-            raise UnknownConversation(conversation_id) from error
-        self._conversations.move_to_end(conversation_id)
-        return messages.copy()
+        with self._lock:
+            try:
+                messages = self._conversations[conversation_id]
+            except KeyError as error:
+                raise UnknownConversation(conversation_id) from error
+            self._conversations.move_to_end(conversation_id)
+            return messages.copy()
 
     def prepare(
         self, conversation_id: str, system: SystemMessage, current: HumanMessage
@@ -56,9 +86,10 @@ class ConversationStore:
     def commit(
         self, conversation_id: str, user: HumanMessage, assistant: AIMessage
     ) -> None:
-        self.get(conversation_id)
-        messages = self._conversations[conversation_id]
-        messages.extend((user, assistant))
-        excess = len(messages) - 2 * self._settings.max_turns_per_conversation
-        if excess > 0:
-            del messages[:excess]
+        with self._lock:
+            self.get(conversation_id)
+            messages = self._conversations[conversation_id]
+            messages.extend((user, assistant))
+            excess = len(messages) - 2 * self._settings.max_turns_per_conversation
+            if excess > 0:
+                del messages[:excess]
