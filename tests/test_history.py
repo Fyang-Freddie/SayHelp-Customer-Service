@@ -118,3 +118,19 @@ def test_conversation_cap_evicts_least_recently_used_id() -> None:
         store.get(recently_used)
     assert store.get(oldest) == []
     assert store.get(newest) == []
+
+
+def test_new_conversation_is_reserved_before_another_creation_can_evict_it() -> None:
+    from app.history import ConversationCapacityExceeded
+
+    store = ConversationStore(settings(max_conversations=1))
+    first = store.create_reserved()
+    with pytest.raises(ConversationCapacityExceeded):
+        store.create_reserved()
+    assert store.get(first) == []
+
+    store.release(first)
+    second = store.create_reserved()
+    with pytest.raises(UnknownConversation):
+        store.get(first)
+    assert store.get(second) == []

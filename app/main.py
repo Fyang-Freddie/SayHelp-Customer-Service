@@ -41,15 +41,16 @@ def create_app(
             if count_tokens_approximately([system, user]) > input_limit:
                 raise HTTPException(status_code=413, detail="Message exceeds input budget")
             try:
-                conversation_id = history.create()
+                conversation_id = history.create_reserved()
             except ConversationCapacityExceeded as error:
                 raise HTTPException(status_code=503, detail="Conversation capacity reached") from error
-        try:
-            history.reserve(conversation_id)
-        except UnknownConversation as error:
-            raise HTTPException(status_code=404, detail="Conversation not found") from error
-        except ConversationBusy as error:
-            raise HTTPException(status_code=409, detail="Conversation is active") from error
+        else:
+            try:
+                history.reserve(conversation_id)
+            except UnknownConversation as error:
+                raise HTTPException(status_code=404, detail="Conversation not found") from error
+            except ConversationBusy as error:
+                raise HTTPException(status_code=409, detail="Conversation is active") from error
         try:
             try:
                 messages = history.prepare(conversation_id, system, user)

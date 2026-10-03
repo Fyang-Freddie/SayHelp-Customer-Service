@@ -46,6 +46,12 @@ class ConversationStore:
             self._conversations[conversation_id] = []
             return conversation_id
 
+    def create_reserved(self) -> str:
+        with self._lock:
+            conversation_id = self.create()
+            self._active.add(conversation_id)
+            return conversation_id
+
     def reserve(self, conversation_id: str) -> None:
         with self._lock:
             if conversation_id not in self._conversations:
