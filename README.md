@@ -50,7 +50,7 @@ $secondBody = Join-Path $env:TEMP 'customer-service-second.json'
 curl.exe -sS -N -H 'Content-Type: application/json' --data-binary "@$secondBody" http://127.0.0.1:8000/v1/chat/stream
 ```
 
-The `session` and `done` events should contain the same conversation ID, and the reply should refer to `maple-731`. An unknown or evicted ID returns HTTP 404. History is local to one process, so use the same running API for both turns.
+The `session` and `done` events should contain the same conversation ID, and the reply should refer to `maple-731`. An unknown or evicted ID returns HTTP 404. A concurrent request using a conversation ID with an active stream returns HTTP 409; retry after that stream ends. If all conversation slots are active, a new conversation returns HTTP 503; retry after an active stream ends. History is local to one process, so use the same running API for both turns.
 
 ### 3. Extract after-sales information
 
