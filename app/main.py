@@ -12,7 +12,7 @@ from app.config import Settings
 from app.history import ConversationStore, InputBudgetExceeded, UnknownConversation
 from app.model_service import ModelService
 from app.prompts import render_service_system_prompt
-from app.schemas import ChatRequest
+from app.schemas import AfterSalesExtraction, ChatRequest, ExtractRequest
 
 
 PreparedChat = tuple[str, HumanMessage, list[BaseMessage]]
@@ -59,5 +59,12 @@ def create_app(
             return
         history.commit(conversation_id, user, AIMessage(content="".join(parts)))
         yield ServerSentEvent(event="done", data={"conversation_id": conversation_id})
+
+    @app.post("/v1/aftersales/extract")
+    async def extract_after_sales(request: ExtractRequest) -> AfterSalesExtraction:
+        try:
+            return await model_service.extract_after_sales(request.description)
+        except Exception:
+            raise HTTPException(status_code=502, detail="Upstream extraction failed") from None
 
     return app

@@ -6,6 +6,8 @@ from langchain_core.messages import BaseMessage
 from langchain_openai import ChatOpenAI
 
 from app.config import Settings
+from app.prompts import render_extraction_prompt
+from app.schemas import AfterSalesExtraction
 
 
 class ModelService:
@@ -21,3 +23,12 @@ class ModelService:
             text = str(chunk.text)
             if text:
                 yield text
+
+    async def extract_after_sales(self, description: str) -> AfterSalesExtraction:
+        structured_model = self._model.with_structured_output(
+            AfterSalesExtraction, method="json_mode"
+        )
+        result = await structured_model.ainvoke(render_extraction_prompt(description))
+        if result is None:
+            raise ValueError("Upstream extraction returned no content")
+        return AfterSalesExtraction.model_validate(result)
