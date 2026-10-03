@@ -1,9 +1,11 @@
 """Customer service streaming HTTP API."""
 
 from collections.abc import AsyncIterator, Iterator
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.messages.utils import count_tokens_approximately
@@ -31,6 +33,13 @@ def create_app(
     model_service = model_service if model_service is not None else ModelService(settings)
     history = ConversationStore(settings)
     app = FastAPI()
+
+    @app.get("/", include_in_schema=False)
+    async def chat_page() -> FileResponse:
+        return FileResponse(
+            Path(__file__).parent / "web" / "index.html",
+            media_type="text/html",
+        )
 
     def prepare_chat(request: ChatRequest) -> Iterator[PreparedChat]:
         conversation_id = request.conversation_id

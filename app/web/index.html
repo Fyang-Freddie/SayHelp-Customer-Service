@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fc">
+  <link rel="icon" href="data:,">
+  <title>星屿 · 在线客服</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b2741;
+      --muted: #748098;
+      --line: #e7ebf2;
+      --blue: #5268d9;
+      --blue-deep: #4056c1;
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --sidebar: #eef1f9;
+      --shadow: 0 24px 70px rgba(43, 62, 107, .10);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: radial-gradient(circle at 2% 0%, #e8eeff 0, transparent 34%),
+                  radial-gradient(circle at 97% 95%, #f2eafa 0, transparent 30%),
+                  var(--bg);
+      color: var(--ink);
+    }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell {
+      width: min(1320px, calc(100% - 48px));
+      height: min(900px, calc(100vh - 48px));
+      min-height: 560px;
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 285px minmax(0, 1fr);
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid rgba(216, 224, 239, .9);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+      padding: 28px 23px 24px;
+      background: linear-gradient(160deg, #f0f3fc, #e9eef8 68%, #eef2fa);
+      border-right: 1px solid #e5eaf4;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark, .agent-avatar, .welcome-icon {
+      display: grid; place-items: center; flex: none;
+      background: linear-gradient(135deg, #7184eb, #4c63d2);
+      color: white;
+      box-shadow: 0 8px 20px rgba(82, 104, 217, .22);
+    }
+    .brand-mark { width: 38px; height: 38px; border-radius: 12px; font-size: 20px; font-weight: 700; }
+    .brand-name { font-size: 16px; font-weight: 750; letter-spacing: .03em; }
+    .brand-sub { margin-top: 3px; font-size: 11px; color: #8792a8; letter-spacing: .12em; text-transform: uppercase; }
+    .side-title { font-size: 11px; font-weight: 700; color: #9aa5b8; letter-spacing: .14em; margin: 0 8px 12px; }
+    .new-chat {
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      padding: 13px 15px; border: 0; border-radius: 12px;
+      background: #fff; color: #304061; text-align: left; font-weight: 650;
+      box-shadow: 0 4px 16px rgba(65, 84, 137, .07);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .new-chat:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(65, 84, 137, .12); }
+    .new-chat:disabled { opacity: .55; cursor: default; transform: none; }
+    .new-chat .plus { font-size: 22px; line-height: 16px; color: var(--blue); font-weight: 400; }
+    .side-card {
+      margin-top: auto; padding: 18px 17px;
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 16px;
+    }
+    .side-card .spark { font-size: 19px; }
+    .side-card strong { display: block; margin-top: 12px; font-size: 13px; }
+    .side-card p { margin: 8px 0 0; color: #8390a7; font-size: 12px; line-height: 1.7; }
+    .side-foot { color: #9da8b9; font-size: 11px; padding-left: 4px; line-height: 1.6; }
+    .main { display: flex; flex-direction: column; min-width: 0; background: #fff; }
+    .topbar {
+      height: 84px; flex: none; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 36px; border-bottom: 1px solid var(--line);
+    }
+    .agent-heading { display: flex; align-items: center; gap: 12px; }
+    .agent-avatar { width: 40px; height: 40px; border-radius: 13px; font-size: 21px; }
+    .agent-heading h1 { margin: 0 0 4px; font-size: 16px; font-weight: 750; }
+    .presence { display: flex; align-items: center; gap: 6px; color: #8a96a9; font-size: 12px; }
+    .presence::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #42be8d; box-shadow: 0 0 0 3px #e1f7ed; }
+    .top-action {
+      border: 1px solid var(--line); background: #fff; color: #69768d;
+      border-radius: 10px; padding: 9px 13px; font-size: 12px; font-weight: 650;
+    }
+    .top-action:hover { color: var(--blue); border-color: #ced6f8; }
+    .top-action:disabled { opacity: .5; cursor: default; }
+    .thread {
+      flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+      padding: 34px max(28px, calc((100% - 760px) / 2)) 22px;
+      scroll-behavior: smooth;
+    }
+    .welcome {
+      min-height: 100%; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding-bottom: 35px;
+    }
+    .welcome[hidden] { display: none; }
+    .welcome-icon { width: 62px; height: 62px; border-radius: 20px; font-size: 31px; margin-bottom: 22px; }
+    .eyebrow { color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .18em; }
+    .welcome h2 { margin: 9px 0 10px; font-size: clamp(25px, 3.1vw, 36px); letter-spacing: -.04em; }
+    .welcome p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+    .suggestions {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+      margin-top: 31px; max-width: 650px;
+    }
+    .suggestion {
+      border: 1px solid #e1e7f6; background: #fbfcff;
+      color: #53627c; border-radius: 100px; padding: 10px 14px;
+      font-size: 12px; transition: background .18s, border-color .18s, transform .18s;
+    }
+    .suggestion:hover { background: #f1f4ff; border-color: #bfcbfb; transform: translateY(-2px); }
+    .messages { display: flex; flex-direction: column; gap: 25px; }
+    .message { display: flex; align-items: flex-start; gap: 10px; max-width: 88%; animation: rise .22s ease-out; }
+    .message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .message.assistant { align-self: flex-start; }
+    .bubble-avatar {
+      width: 28px; height: 28px; border-radius: 9px; flex: none;
+      display: grid; place-items: center; font-size: 13px; font-weight: 700;
+      background: #edf0ff; color: var(--blue);
+    }
+    .user .bubble-avatar { background: #edf0f4; color: #65748c; }
+    .bubble-wrap { min-width: 0; }
+    .bubble {
+      width: fit-content; max-width: 100%;
+      padding: 13px 16px; border-radius: 5px 17px 17px;
+      background: #f3f5fa; color: #33415b;
+      line-height: 1.75; font-size: 14px; white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .user .bubble { margin-left: auto; border-radius: 17px 5px 17px 17px; color: #fff; background: linear-gradient(135deg, #6477e5, #4d62d1); }
+    .bubble-meta { margin-top: 6px; color: #a5afbf; font-size: 10px; }
+    .user .bubble-meta { text-align: right; }
+    .typing { display: inline-flex; gap: 4px; vertical-align: middle; padding: 4px 1px; }
+    .typing span { width: 5px; height: 5px; border-radius: 50%; background: #8e9ac1; animation: pulse 1s infinite alternate; }
+    .typing span:nth-child(2) { animation-delay: .17s; }
+    .typing span:nth-child(3) { animation-delay: .34s; }
+    .notice {
+      align-self: center; max-width: 90%; padding: 9px 13px; border-radius: 10px;
+      background: #fff3f1; color: #a6544a; font-size: 12px; text-align: center;
+    }
+    .composer-area { flex: none; padding: 17px max(28px, calc((100% - 760px) / 2)) 19px; border-top: 1px solid #f0f2f7; }
+    .composer {
+      display: flex; align-items: flex-end; gap: 12px;
+      border: 1px solid #dfe5f0; border-radius: 17px;
+      background: #fff; padding: 10px 10px 10px 17px;
+      box-shadow: 0 5px 18px rgba(53, 73, 120, .05);
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .composer:focus-within { border-color: #9daaf0; box-shadow: 0 5px 22px rgba(82,104,217,.13); }
+    textarea {
+      resize: none; border: 0; outline: 0; background: transparent;
+      flex: 1; min-width: 0; max-height: 132px; min-height: 27px;
+      padding: 5px 0; line-height: 1.6; color: var(--ink); font-size: 14px;
+    }
+    textarea::placeholder { color: #a4afc0; }
+    .send {
+      width: 38px; height: 38px; flex: none; display: grid; place-items: center;
+      border: 0; border-radius: 11px; background: var(--blue);
+      color: white; transition: background .18s, transform .18s;
+    }
+    .send:hover:not(:disabled) { background: var(--blue-deep); transform: translateY(-1px); }
+    .send:disabled { background: #b9c1e6; cursor: default; }
+    .composer-foot {
+      display: flex; justify-content: space-between; gap: 10px;
+      padding: 9px 3px 0; color: #a0aabd; font-size: 11px;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { from { opacity: .35; transform: translateY(1px); } to { opacity: 1; transform: translateY(-2px); } }
+    @media (max-width: 820px) {
+      .shell { width: 100%; height: 100dvh; min-height: 0; margin: 0; border: 0; border-radius: 0; grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .topbar { height: 72px; padding: 0 20px; }
+      .thread { padding: 25px 18px 16px; }
+      .composer-area { padding: 12px 17px 14px; }
+      .message { max-width: 94%; }
+      .welcome { padding: 0 7px 35px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="对话导航">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">✦</div>
+        <div><div class="brand-name">星屿客服</div><div class="brand-sub">Customer care</div></div>
+      </div>
+      <div>
+        <div class="side-title">会话</div>
+        <button class="new-chat" id="newChatSide" type="button"><span class="plus" aria-hidden="true">＋</span> 开始新对话</button>
+      </div>
+      <div class="side-card">
+        <div class="spark" aria-hidden="true">✦</div>
+        <strong>有问题，随时问我</strong>
+        <p>商品咨询、订单疑问、售后问题，都可以在这里开始对话。</p>
+      </div>
+      <div class="side-foot">对话保存在当前服务进程中<br>重启服务后会话将失效</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="agent-heading">
+          <div class="agent-avatar" aria-hidden="true">✦</div>
+          <div><h1>在线客服</h1><div class="presence" id="presence">随时为你服务</div></div>
+        </div>
+        <button class="top-action" id="newChatTop" type="button">新对话</button>
+      </header>
+      <section class="thread" id="thread" aria-label="聊天记录">
+        <div class="welcome" id="welcome">
+          <div class="welcome-icon" aria-hidden="true">✦</div>
+          <div class="eyebrow">HOW CAN WE HELP?</div>
+          <h2>你好，今天想了解什么？</h2>
+          <p>把问题告诉我，我们一起找到合适的解决办法。</p>
+          <div class="suggestions">
+            <button class="suggestion" type="button" data-prompt="我的订单什么时候发货？">我的订单什么时候发货？</button>
+            <button class="suggestion" type="button" data-prompt="收到的商品有问题，怎么申请售后？">怎么申请售后？</button>
+            <button class="suggestion" type="button" data-prompt="可以介绍一下退换货流程吗？">了解退换货流程</button>
+          </div>
+        </div>
+        <div class="messages" id="messages" aria-live="polite" aria-relevant="additions text"></div>
+      </section>
+      <div class="composer-area">
+        <form class="composer" id="composer">
+          <textarea id="messageInput" rows="1" maxlength="4000" aria-label="输入消息" placeholder="输入你的问题…" autocomplete="off"></textarea>
+          <button class="send" id="sendButton" type="submit" aria-label="发送消息" disabled>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 12 15-7-5 15-2.5-6.5L4 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m11.5 13.5 7.5-8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </form>
+        <div class="composer-foot"><span>Enter 发送 · Shift + Enter 换行</span><span id="footerStatus">在线</span></div>
+      </div>
+    </main>
+  </div>
+  <script>
+    (() => {
+      const thread = document.getElementById("thread");
+      const messages = document.getElementById("messages");
+      const welcome = document.getElementById("welcome");
+      const input = document.getElementById("messageInput");
+      const composer = document.getElementById("composer");
+      const sendButton = document.getElementById("sendButton");
+      const newChatButtons = [document.getElementById("newChatSide"), document.getElementById("newChatTop")];
+      const presence = document.getElementById("presence");
+      const footerStatus = document.getElementById("footerStatus");
+      let conversationId = null;
+      let busy = false;
+
+      function scrollToBottom() {
+        thread.scrollTop = thread.scrollHeight;
+      }
+
+      function setBusy(value) {
+        busy = value;
+        sendButton.disabled = value || !input.value.trim();
+        newChatButtons.forEach(button => button.disabled = value);
+        presence.textContent = value ? "正在回复…" : "随时为你服务";
+        footerStatus.textContent = value ? "客服输入中" : "在线";
+      }
+
+      function addMessage(role, text) {
+        const row = document.createElement("div");
+        row.className = "message " + role;
+        const avatar = document.createElement("div");
+        avatar.className = "bubble-avatar";
+        avatar.setAttribute("aria-hidden", "true");
+        avatar.textContent = role === "user" ? "我" : "✦";
+        const wrap = document.createElement("div");
+        wrap.className = "bubble-wrap";
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.textContent = text;
+        const meta = document.createElement("div");
+        meta.className = "bubble-meta";
+        meta.textContent = role === "user" ? "你" : "星屿客服";
+        wrap.append(bubble, meta);
+        row.append(avatar, wrap);
+        messages.append(row);
+        scrollToBottom();
+        return bubble;
+      }
+
+      function addNotice(text) {
+        const notice = document.createElement("div");
+        notice.className = "notice";
+        notice.textContent = text;
+        messages.append(notice);
+        scrollToBottom();
+      }
+
+      function makeRenderer(bubble) {
+        let pending = "";
+        let frame = 0;
+        let waiting = [];
+        function paint() {
+          frame = 0;
+          if (pending) {
+            const amount = Math.max(1, Math.ceil(pending.length / 24));
+            bubble.textContent += pending.slice(0, amount);
+            pending = pending.slice(amount);
+            scrollToBottom();
+          }
+          if (pending) {
+            frame = requestAnimationFrame(paint);
+          } else {
+            waiting.splice(0).forEach(resolve => resolve());
+          }
+        }
+        return {
+          append(text) {
+            pending += text;
+            if (!frame) frame = requestAnimationFrame(paint);
+          },
+          async drain() {
+            if (document.hidden && pending) {
+              cancelAnimationFrame(frame);
+              frame = 0;
+              bubble.textContent += pending;
+              pending = "";
+            }
+            if (pending) await new Promise(resolve => waiting.push(resolve));
+          }
+        };
+      }
+
+      function readEvent(frame) {
+        let name = "message";
+        const data = [];
+        for (const line of frame.split("\n")) {
+          if (!line || line.startsWith(":")) continue;
+          const split = line.indexOf(":");
+          const key = split < 0 ? line : line.slice(0, split);
+          let value = split < 0 ? "" : line.slice(split + 1);
+          if (value.startsWith(" ")) value = value.slice(1);
+          if (key === "event") name = value;
+          if (key === "data") data.push(value);
+        }
+        if (!data.length) return null;
+        return { name, payload: JSON.parse(data.join("\n")) };
+      }
+
+      async function sendMessage(rawText) {
+        const text = rawText.trim();
+        if (!text || busy) return;
+        welcome.hidden = true;
+        addMessage("user", text);
+        input.value = "";
+        input.style.height = "auto";
+        setBusy(true);
+
+        const bubble = addMessage("assistant", "");
+        const indicator = document.createElement("span");
+        indicator.className = "typing";
+        indicator.innerHTML = "<span></span><span></span><span></span>";
+        bubble.append(indicator);
+        const renderer = makeRenderer(bubble);
+        let receivedToken = false;
+        let done = false;
+        let errorText = "";
+
+        try {
+          const response = await fetch("/v1/chat/stream", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
+            body: JSON.stringify({ message: text, conversation_id: conversationId })
+          });
+          if (!response.ok) {
+            if (response.status === 404) throw new Error("会话已失效，请点“新对话”后重试。");
+            if (response.status === 409) throw new Error("上条消息还在处理中，请稍后重试。");
+            if (response.status === 413) throw new Error("消息过长，请缩短后重试。");
+            if (response.status === 503) throw new Error("当前会话已满，请稍后重试。");
+            throw new Error("请求失败（HTTP " + response.status + "），请稍后重试。");
+          }
+          if (!response.body) throw new Error("当前浏览器无法读取流式回复。");
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          function handleFrame(frame) {
+            const item = readEvent(frame);
+            if (!item) return;
+            if (item.name === "session") {
+              conversationId = item.payload.conversation_id;
+            } else if (item.name === "token") {
+              if (!receivedToken) {
+                receivedToken = true;
+                indicator.remove();
+              }
+              renderer.append(item.payload.text || "");
+            } else if (item.name === "error") {
+              throw new Error("回复中断，请重试。");
+            } else if (item.name === "done") {
+              done = true;
+            }
+          }
+          while (true) {
+            const { value, done: streamEnded } = await reader.read();
+            if (streamEnded) break;
+            buffer += decoder.decode(value, { stream: true });
+            buffer = buffer.replace(/\r\n/g, "\n");
+            let boundary;
+            while ((boundary = buffer.indexOf("\n\n")) !== -1) {
+              handleFrame(buffer.slice(0, boundary));
+              buffer = buffer.slice(boundary + 2);
+            }
+          }
+          buffer += decoder.decode();
+          if (buffer.trim()) handleFrame(buffer.replace(/\r\n/g, "\n").trim());
+          if (!done) throw new Error("连接提前中断，请重试。");
+          await renderer.drain();
+        } catch (error) {
+          errorText = error instanceof Error ? error.message : "发送失败，请重试。";
+          await renderer.drain();
+        } finally {
+          indicator.remove();
+          if (!receivedToken) {
+            bubble.textContent = errorText ? "暂时没能回复。" : "暂时没有收到文字回复。";
+          }
+          if (errorText) addNotice(errorText);
+          setBusy(false);
+          input.focus();
+          scrollToBottom();
+        }
+      }
+
+      composer.addEventListener("submit", event => {
+        event.preventDefault();
+        sendMessage(input.value);
+      });
+      input.addEventListener("input", () => {
+        input.style.height = "auto";
+        input.style.height = Math.min(input.scrollHeight, 132) + "px";
+        sendButton.disabled = busy || !input.value.trim();
+      });
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+          event.preventDefault();
+          sendMessage(input.value);
+        }
+      });
+      newChatButtons.forEach(button => button.addEventListener("click", () => {
+        if (busy) return;
+        conversationId = null;
+        messages.replaceChildren();
+        welcome.hidden = false;
+        input.value = "";
+        input.style.height = "auto";
+        sendButton.disabled = true;
+        input.focus();
+      }));
+      document.querySelectorAll("[data-prompt]").forEach(button => {
+        button.addEventListener("click", () => sendMessage(button.dataset.prompt));
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -27,6 +27,12 @@ Start the API in a PowerShell window, from the repository root:
 
 `CHAT_BASE_URL`, `CHAT_MODEL`, and `CHAT_API_KEY` are the only settings needed to change chat providers. Chat uses an OpenAI-compatible endpoint. The configured DeepSeek model is the live acceptance target for both routes. Other compatible providers may handle chat, but extraction requires their support for the selected JSON output mode and is not guaranteed for them.
 
+## Web chat
+
+Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) after starting the API. Send a question in the chat box; the assistant bubble grows as SSE text arrives. Send a follow-up in the same page to reuse its conversation ID. **New conversation** clears the page and starts a fresh session. The page keeps its conversation ID only while that tab remains open; server restart invalidates in-memory sessions.
+
+If the API was already running before this page was added, stop it with Ctrl+C and run the start command again. The page uses the existing `POST /v1/chat/stream` endpoint and needs no front-end build step.
+
 ## Acceptance checks
 
 Run these in a second PowerShell window from the repository root. The commands write only demonstration request bodies to temporary files and use `curl.exe` so they work in Windows PowerShell as well as PowerShell 7. `-N` disables curl's output buffering, making each server-sent event visible as it arrives. The examples do not require your API key in any command.
