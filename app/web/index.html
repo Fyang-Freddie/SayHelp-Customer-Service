@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f8fc">
   <link rel="icon" href="data:,">
-  <title>星屿 · 在线客服</title>
+  <title>智能客服 · 在线咨询</title>
   <style>
     :root {
       color-scheme: light;
@@ -82,7 +82,7 @@
     .side-card strong { display: block; margin-top: 12px; font-size: 13px; }
     .side-card p { margin: 8px 0 0; color: #8390a7; font-size: 12px; line-height: 1.7; }
     .side-foot { color: #9da8b9; font-size: 11px; padding-left: 4px; line-height: 1.6; }
-    .main { display: flex; flex-direction: column; min-width: 0; background: #fff; }
+    .main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: #fff; }
     .topbar {
       height: 84px; flex: none; display: flex; align-items: center; justify-content: space-between;
       padding: 0 36px; border-bottom: 1px solid var(--line);
@@ -101,8 +101,18 @@
     .thread {
       flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
       padding: 34px max(28px, calc((100% - 760px) / 2)) 22px;
-      scroll-behavior: smooth;
+      scrollbar-width: thin; scrollbar-color: #c9d3ea transparent;
     }
+    .thread::-webkit-scrollbar { width: 8px; }
+    .thread::-webkit-scrollbar-thumb { background: #c9d3ea; border-radius: 20px; border: 2px solid #fff; }
+    .jump-latest {
+      position: absolute; right: 36px; bottom: 112px; z-index: 2;
+      padding: 9px 13px; border: 1px solid #dce4f5; border-radius: 100px;
+      background: #fff; color: #5264b8; font-size: 12px; font-weight: 650;
+      box-shadow: 0 5px 18px rgba(47, 65, 113, .13);
+    }
+    .jump-latest[hidden] { display: none; }
+    .jump-latest:hover { background: #f5f7ff; }
     .welcome {
       min-height: 100%; display: flex; flex-direction: column; align-items: center;
       justify-content: center; text-align: center; padding-bottom: 35px;
@@ -187,6 +197,7 @@
       .composer-area { padding: 12px 17px 14px; }
       .message { max-width: 94%; }
       .welcome { padding: 0 7px 35px; }
+      .jump-latest { right: 18px; bottom: 108px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -198,7 +209,7 @@
     <aside class="sidebar" aria-label="对话导航">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">✦</div>
-        <div><div class="brand-name">星屿客服</div><div class="brand-sub">Customer care</div></div>
+        <div><div class="brand-name">智能客服</div><div class="brand-sub">Customer care</div></div>
       </div>
       <div>
         <div class="side-title">会话</div>
@@ -233,6 +244,7 @@
         </div>
         <div class="messages" id="messages" aria-live="polite" aria-relevant="additions text"></div>
       </section>
+      <button class="jump-latest" id="jumpLatest" type="button" hidden>↓ 跳到最新消息</button>
       <div class="composer-area">
         <form class="composer" id="composer">
           <textarea id="messageInput" rows="1" maxlength="4000" aria-label="输入消息" placeholder="输入你的问题…" autocomplete="off"></textarea>
@@ -257,10 +269,39 @@
       const footerStatus = document.getElementById("footerStatus");
       let conversationId = null;
       let busy = false;
+      let followLatest = true;
 
-      function scrollToBottom() {
-        thread.scrollTop = thread.scrollHeight;
+      function atBottom() {
+        return thread.scrollHeight - thread.clientHeight - thread.scrollTop <= 4;
       }
+
+      function updateJumpButton() {
+        jumpLatest.hidden = followLatest || thread.scrollHeight <= thread.clientHeight;
+      }
+
+      function scrollToBottom(force = false) {
+        if (force) followLatest = true;
+        if (followLatest) thread.scrollTop = thread.scrollHeight;
+        updateJumpButton();
+      }
+
+      thread.addEventListener("wheel", event => {
+        if (event.deltaY < 0 && thread.scrollHeight > thread.clientHeight) {
+          followLatest = false;
+          updateJumpButton();
+        }
+      }, { passive: true });
+      thread.addEventListener("touchmove", () => {
+        if (thread.scrollHeight > thread.clientHeight) {
+          followLatest = false;
+          updateJumpButton();
+        }
+      }, { passive: true });
+      thread.addEventListener("scroll", () => {
+        if (!followLatest && atBottom()) followLatest = true;
+        updateJumpButton();
+      });
+      jumpLatest.addEventListener("click", () => scrollToBottom(true));
 
       function setBusy(value) {
         busy = value;
@@ -284,7 +325,7 @@
         bubble.textContent = text;
         const meta = document.createElement("div");
         meta.className = "bubble-meta";
-        meta.textContent = role === "user" ? "你" : "星屿客服";
+        meta.textContent = role === "user" ? "你" : "客服助手";
         wrap.append(bubble, meta);
         row.append(avatar, wrap);
         messages.append(row);
@@ -355,6 +396,7 @@
         const text = rawText.trim();
         if (!text || busy) return;
         welcome.hidden = true;
+        followLatest = true;
         addMessage("user", text);
         input.value = "";
         input.style.height = "auto";
@@ -452,7 +494,9 @@
       newChatButtons.forEach(button => button.addEventListener("click", () => {
         if (busy) return;
         conversationId = null;
+        followLatest = true;
         messages.replaceChildren();
+        updateJumpButton();
         welcome.hidden = false;
         input.value = "";
         input.style.height = "auto";

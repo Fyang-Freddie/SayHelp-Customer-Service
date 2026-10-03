@@ -29,7 +29,7 @@ Start the API in a PowerShell window, from the repository root:
 
 ## Web chat
 
-Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) after starting the API. Send a question in the chat box; the assistant bubble grows as SSE text arrives. Send a follow-up in the same page to reuse its conversation ID. **New conversation** clears the page and starts a fresh session. The page keeps its conversation ID only while that tab remains open; server restart invalidates in-memory sessions.
+Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) after starting the API. Send a question in the chat box; the assistant bubble grows as SSE text arrives. Send a follow-up in the same page to reuse its conversation ID. You can use the mouse wheel to read earlier messages while a reply is streaming; **Jump to latest** returns to the live reply. **New conversation** clears the page and starts a fresh session. The page keeps its conversation ID only while that tab remains open; server restart invalidates in-memory sessions.
 
 If the API was already running before this page was added, stop it with Ctrl+C and run the start command again. The page uses the existing `POST /v1/chat/stream` endpoint and needs no front-end build step.
 
