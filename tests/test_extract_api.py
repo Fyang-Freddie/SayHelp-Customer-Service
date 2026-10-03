@@ -176,6 +176,9 @@ def test_extract_rejects_upstream_json_mode_error_without_leaking_secret(monkeyp
     ('{"order_id":"A-123","request_type":"\u9000\u6b3e","expected_solution":"\u539f\u8def\u9000\u6b3e"}', 200),
     ('{"request_type":"invalid"}', 502),
     ('{"request_type":"\u9000\u6b3e",}', 502),
+    ('{"request_type":"\u9000\u6b3e","noise":NaN}', 502),
+    ('{"request_type":"\u9000\u6b3e","noise":Infinity}', 502),
+    ('{"request_type":"\u9000\u6b3e","noise":-Infinity}', 502),
 ])
 def test_extract_validates_raw_json_from_real_chat_pipeline(
     monkeypatch, raw_content: str, expected_status: int

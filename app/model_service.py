@@ -33,5 +33,9 @@ class ModelService:
         if result["parsing_error"] is not None:
             raise ValueError("Upstream extraction could not be parsed")
         raw = result["raw"].content
-        payload = json.loads(raw)
+
+        def reject_non_json_constant(value: str) -> None:
+            raise ValueError(f"Invalid JSON constant: {value}")
+
+        payload = json.loads(raw, parse_constant=reject_non_json_constant)
         return AfterSalesExtraction.model_validate(payload)
