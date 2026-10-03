@@ -1,6 +1,7 @@
 """Configured chat model operations."""
 
 from collections.abc import AsyncIterator
+import json
 
 from langchain_core.messages import BaseMessage
 from langchain_openai import ChatOpenAI
@@ -26,9 +27,11 @@ class ModelService:
 
     async def extract_after_sales(self, description: str) -> AfterSalesExtraction:
         structured_model = self._model.with_structured_output(
-            AfterSalesExtraction, method="json_mode"
+            AfterSalesExtraction, method="json_mode", include_raw=True
         )
         result = await structured_model.ainvoke(render_extraction_prompt(description))
-        if result is None:
-            raise ValueError("Upstream extraction returned no content")
-        return AfterSalesExtraction.model_validate(result)
+        if result["parsing_error"] is not None:
+            raise ValueError("Upstream extraction could not be parsed")
+        raw = result["raw"].content
+        payload = json.loads(raw)
+        return AfterSalesExtraction.model_validate(payload)
