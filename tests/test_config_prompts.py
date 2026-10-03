@@ -115,3 +115,15 @@ def test_extraction_prompt_requests_json_with_exact_fields_and_source_descriptio
     assert "不要编造" in prompt or "不得编造" in prompt
     for request_type in ("退货", "换货", "退款", "维修", "补发", "其他"):
         assert request_type in prompt
+
+
+def test_settings_repr_does_not_expose_api_key():
+    settings = Settings(
+        chat_base_url="https://example.test/v1",
+        chat_model="test-model",
+        chat_api_key="top-secret-repr-marker",
+    )
+
+    rendered = repr(settings)
+    assert "top-secret-repr-marker" not in rendered
+    assert "chat_base_url" in rendered

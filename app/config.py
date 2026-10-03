@@ -1,6 +1,6 @@
 """Application configuration loaded from process variables and a local .env file."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 from pathlib import Path
 
@@ -11,7 +11,7 @@ from dotenv import dotenv_values
 class Settings:
     chat_base_url: str
     chat_model: str
-    chat_api_key: str
+    chat_api_key: str = field(repr=False)
     context_token_budget: int = 4096
     response_token_reserve: int = 512
     max_conversations: int = 100
