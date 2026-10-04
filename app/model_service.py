@@ -3,7 +3,8 @@
 from collections.abc import AsyncIterator
 import json
 
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 
 from app.config import Settings
@@ -18,6 +19,13 @@ class ModelService:
             model=settings.chat_model,
             api_key=settings.chat_api_key,
         )
+
+    async def choose_tool(self, messages: list[BaseMessage], tools: list[BaseTool]) -> AIMessage:
+        """Make one async selection request, leaving the final model unbound."""
+        selection = await self._model.bind_tools(tools).ainvoke(messages)
+        if not isinstance(selection, AIMessage):
+            raise TypeError("Tool selection must return an AIMessage")
+        return selection
 
     async def stream_chat(self, messages: list[BaseMessage]) -> AsyncIterator[str]:
         async for chunk in self._model.astream(messages):

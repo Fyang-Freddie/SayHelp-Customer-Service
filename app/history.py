@@ -1,4 +1,4 @@
-"""Bounded, in-memory conversation history."""
+"""Completed database context reconstruction and legacy conversation reservations."""
 
 from collections import OrderedDict
 from threading import RLock
@@ -99,3 +99,69 @@ class ConversationStore:
             excess = len(messages) - 2 * self._settings.max_turns_per_conversation
             if excess > 0:
                 del messages[:excess]
+
+
+def completed_turns(rows) -> list[list[BaseMessage]]:
+    """Rebuild only complete turns with exactly paired tool request/result IDs.
+
+    Failed audit rows stay in the database. A later user row starts a new turn,
+    allowing successful requests after a failure to reenter model context.
+    """
+    from langchain_core.messages import ToolMessage
+
+    groups = []
+    for row in rows:
+        if row.role == 'user':
+            groups.append([row])
+        elif groups:
+            groups[-1].append(row)
+
+    turns = []
+    for group in groups:
+        if len(group) < 2 or group[-1].role != 'assistant' or group[-1].tool_calls:
+            continue
+        user = HumanMessage(content=group[0].content or '')
+        final = AIMessage(content=group[-1].content or '')
+        if len(group) == 2:
+            turns.append([user, final])
+            continue
+        request = group[1]
+        if request.role != 'assistant' or not request.tool_calls:
+            continue
+        calls = request.tool_calls
+        if not isinstance(calls, list) or any(not isinstance(call, dict) for call in calls):
+            continue
+        ids = [call.get('id') for call in calls]
+        if any(not isinstance(id, str) or not id for id in ids) or len(set(ids)) != len(ids):
+            continue
+        results = group[2:-1]
+        if len(results) != len(calls) or any(row.role != 'tool' for row in results):
+            continue
+        if set(row.tool_call_id for row in results) != set(ids):
+            continue
+        try:
+            valid = [call for call in calls if call.get('type') != 'invalid_tool_call']
+            invalid = [call for call in calls if call.get('type') == 'invalid_tool_call']
+            assistant = AIMessage(content=request.content or '', tool_calls=valid,
+                                  invalid_tool_calls=invalid)
+        except (TypeError, ValueError):
+            continue
+        turns.append([user, assistant,
+                      *(ToolMessage(content=row.content or '', tool_call_id=row.tool_call_id)
+                        for row in results), final])
+    return turns
+
+
+def prepare_context(rows, system: SystemMessage, current: HumanMessage,
+                    settings: Settings, *, suffix: list[BaseMessage] | None = None) -> list[BaseMessage]:
+    """Bound prompt context by dropping oldest whole turns; never change rows."""
+    limit = settings.context_token_budget - settings.response_token_reserve
+    active = [current, *(suffix or [])]
+    if count_tokens_approximately([system, *active]) > limit:
+        raise InputBudgetExceeded('System and active turn exceed input budget')
+    turns = completed_turns(rows)[-settings.max_turns_per_conversation:]
+    candidate = [system, *(message for turn in turns for message in turn), *active]
+    while count_tokens_approximately(candidate) > limit:
+        turns.pop(0)
+        candidate = [system, *(message for turn in turns for message in turn), *active]
+    return candidate

@@ -134,3 +134,36 @@ def test_new_conversation_is_reserved_before_another_creation_can_evict_it() -> 
     with pytest.raises(UnknownConversation):
         store.get(first)
     assert store.get(second) == []
+
+
+@pytest.mark.parametrize('suffix', ['user_only', 'missing_result', 'wrong_id', 'missing_final', 'duplicate_id', 'orphan_result'])
+def test_database_context_ignores_incomplete_or_malformed_turns(suffix):
+    from types import SimpleNamespace
+    from app.history import completed_turns
+
+    def row(role, content='', calls=None, call_id=None):
+        return SimpleNamespace(role=role, content=content, tool_calls=calls, tool_call_id=call_id)
+
+    calls = [{'name': 'query_faq', 'args': {'keyword': '退货'}, 'id': 'c1'}]
+    good = [row('user', 'complete'), row('assistant', 'answer')]
+    bad = [row('user', 'unfinished')]
+    if suffix != 'user_only':
+        if suffix == 'duplicate_id':
+            calls = [*calls, *calls]
+        bad.append(row('assistant', calls=calls))
+        if suffix != 'missing_result':
+            bad.append(row('tool', 'result', call_id='wrong' if suffix == 'wrong_id' else 'c1'))
+        if suffix != 'missing_final':
+            bad.append(row('assistant', 'untrusted final'))
+        if suffix == 'orphan_result':
+            bad.insert(-1, row('tool', 'orphan', call_id='unknown'))
+    turns = completed_turns([*good, *bad])
+    assert [[m.content for m in turn] for turn in turns] == [['complete', 'answer']]
+
+
+def test_context_recovers_later_complete_turn_after_failed_audit_rows():
+    from types import SimpleNamespace
+    from app.history import completed_turns
+    rows = [SimpleNamespace(role=role, content=content, tool_calls=None, tool_call_id=None)
+            for role, content in [('user', 'failed'), ('user', 'recovered'), ('assistant', 'answer')]]
+    assert [[m.content for m in turn] for turn in completed_turns(rows)] == [['recovered', 'answer']]
