@@ -33,13 +33,18 @@ def _separator(line: str) -> bool:
     return '|' in line and all(re.fullmatch(r':?-{3,}:?', cell) for cell in _cells(line))
 
 
+def _heading(line: str):
+    return re.fullmatch(r'[ \t]{0,3}(#{1,6})(?:[ \t]+(.*))?', line)
+
+
 def _sentences(text: str, line: int) -> list[tuple[str, int]]:
     units = []
     start = 0
     for index, char in enumerate(text):
         if char not in '。！？.!?':
             continue
-        if char == '.' and index > 0 and index + 1 < len(text) and text[index - 1].isdigit() and text[index + 1].isdigit():
+        # A fractional point can follow a digit, whitespace, or a sign (.99).
+        if char == '.' and index + 1 < len(text) and text[index + 1].isdigit():
             continue
         # Keep consecutive punctuation with its sentence (e.g. "Really?!").
         if index + 1 < len(text) and text[index + 1] in '。！？.!?':
@@ -108,12 +113,14 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
     index = 0
     while index < len(lines):
         line = lines[index]
-        heading = re.fullmatch(r'\s{0,3}(#{1,6})\s+(.+?)\s*', line)
+        heading = _heading(line)
         if heading:
+            title = re.sub(r'(?:^|\s+)#+\s*$', '', heading[2] or '').strip()
+            if not title:
+                raise ValueError(f'line {index + 1}: empty heading')
             level = len(heading[1])
             while headings and headings[-1][0] >= level:
                 headings.pop()
-            title = re.sub(r'\s+#+\s*$', '', heading[2])
             headings.append((level, title))
             index += 1
             continue
@@ -156,7 +163,7 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
             start = index
         while index < len(lines) and lines[index].strip():
             candidate = lines[index]
-            if re.match(r'\s{0,3}#{1,6}\s+', candidate):
+            if _heading(candidate):
                 break
             if candidate.lstrip().startswith('>') != quoted:
                 break

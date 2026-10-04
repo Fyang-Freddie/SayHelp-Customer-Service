@@ -1,4 +1,6 @@
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -6,6 +8,40 @@ from app.knowledge_chunking import chunk_markdown
 
 
 FIXTURES = Path(__file__).parent / 'fixtures'
+
+
+@pytest.mark.parametrize('body, source_line', [('# \nBody.', 1), ('Before.\n# \nBody.', 2)])
+def test_empty_heading_rejected_without_hanging(body, source_line):
+    # A separate process bounds this regression even if parsing stops advancing.
+    script = (
+        'from app.knowledge_chunking import chunk_markdown\n'
+        'try:\n'
+        f'    chunk_markdown({body!r}, content_type="manual")\n'
+        'except ValueError as error:\n'
+        '    print(error)\n'
+        'else:\n'
+        '    raise AssertionError("empty heading was accepted")\n'
+    )
+    completed = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True, timeout=3)
+    assert completed.returncode == 0, completed.stderr
+    assert f'line {source_line}' in completed.stdout
+    assert 'empty heading' in completed.stdout
+
+
+@pytest.mark.parametrize('sentence, limit', [
+    ('Price .99 USD.', 14), ('Price -.99 USD.', 15),
+    ('Price +.99 USD.', 15), ('.99 USD.', 8),
+])
+def test_leading_and_signed_decimal_is_indivisible(sentence, limit):
+    with pytest.raises(ValueError, match='line 2.*indivisible sentence'):
+        chunk_markdown('# Rate\n' + sentence, content_type='manual', max_chars=limit - 1, overlap_chars=0)
+    chunks = chunk_markdown(sentence + ' Next.', content_type='manual', max_chars=limit, overlap_chars=0)
+    assert [c.answer for c in chunks] == [sentence, 'Next.']
+
+
+def test_full_stop_after_decimal_sentence_remains_boundary():
+    chunks = chunk_markdown('Done. Next.', content_type='manual', max_chars=6, overlap_chars=0)
+    assert [c.answer for c in chunks] == ['Done.', 'Next.']
 
 
 def test_heading_path_and_policy_fields():
