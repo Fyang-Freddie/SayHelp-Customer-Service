@@ -1,0 +1,244 @@
+import math
+from types import SimpleNamespace
+
+import pytest
+from sqlalchemy import event
+
+from tests.test_knowledge_db import database_url
+from tests.test_knowledge_ingest import sessions
+from app.knowledge_db import KnowledgeChunk
+
+
+def test_vector_text_has_only_three_labeled_fields():
+    from app.knowledge_index import knowledge_text
+    row = SimpleNamespace(category='配送', questions='运费？', answer='结算页显示。',
+                          section_path='secret-path', source_ref='private', content_type='faq')
+    assert knowledge_text(row) == 'category: 配送\nquestions: 运费？\nanswer: 结算页显示。'
+
+
+class FakeStore:
+    def __init__(self):
+        self.vectors = {}
+    def upsert(self, id, vector):
+        self.vectors[id] = vector
+        return id
+
+
+class FakeEmbedder:
+    def encode(self, texts):
+        return [[1.0] + [0.0] * 1023 for _ in texts]
+
+
+def add_pending(sessions):
+    with sessions() as session:
+        row = KnowledgeChunk(category='配送', questions='运费？', answer='结算页显示。', vectorize_status='pending')
+        session.add(row)
+        session.commit()
+        return row.id
+
+
+def test_failed_vector_write_stays_pending(sessions):
+    from app.knowledge_index import index_pending
+    id = add_pending(sessions)
+    class BrokenStore(FakeStore):
+        def upsert(self, id, vector):
+            with sessions() as s:
+                assert s.get(KnowledgeChunk, id).vectorize_status == 'pending'
+            raise RuntimeError('vector write failed')
+    with pytest.raises(RuntimeError, match='vector write failed'):
+        index_pending(sessions, FakeEmbedder(), BrokenStore(), 10)
+    with sessions() as s:
+        row = s.get(KnowledgeChunk, id)
+        assert (row.vectorize_status, row.vector_id) == ('pending', None)
+
+
+def test_rerun_repairs_crash_after_upsert(sessions):
+    from app.knowledge_index import index_pending
+    id = add_pending(sessions)
+    store = FakeStore()
+    engine = sessions.kw['bind']
+    def crash(connection, cursor, statement, parameters, context, executemany):
+        if statement.lstrip().upper().startswith('UPDATE KNOWLEDGE_CHUNKS'):
+            raise RuntimeError('crash after upsert')
+    event.listen(engine, 'before_cursor_execute', crash)
+    try:
+        with pytest.raises(RuntimeError, match='crash after upsert'):
+            index_pending(sessions, FakeEmbedder(), store, 10)
+    finally:
+        event.remove(engine, 'before_cursor_execute', crash)
+    assert list(store.vectors) == [id]
+    assert index_pending(sessions, FakeEmbedder(), store, 10) == 1
+    assert index_pending(sessions, FakeEmbedder(), store, 10) == 0
+    assert list(store.vectors) == [id]
+    with sessions() as s:
+        row = s.get(KnowledgeChunk, id)
+        assert (row.vectorize_status, row.vector_id) == ('done', str(id))
+
+
+@pytest.mark.parametrize('vector', [[0.0]*1023, [float('nan')]*1024, [float('inf')]*1024])
+def test_invalid_embedding_stays_pending(sessions, vector):
+    from app.knowledge_index import index_pending
+    id = add_pending(sessions)
+    embedder = SimpleNamespace(encode=lambda texts: [vector])
+    store = FakeStore()
+    with pytest.raises(ValueError):
+        index_pending(sessions, embedder, store, 10)
+    assert store.vectors == {}
+    with sessions() as s:
+        assert s.get(KnowledgeChunk, id).vectorize_status == 'pending'
+
+
+def test_model_is_lazy_fixed_and_dense(monkeypatch):
+    import sys
+    from app.embedding import BgeM3Embedder
+    calls = []
+    class Model:
+        def __init__(self, name, **kwargs):
+            calls.append((name, kwargs))
+        def encode(self, texts, **kwargs):
+            calls.append(kwargs)
+            return [[1.0]*1024 for _ in texts]
+    monkeypatch.setitem(sys.modules, 'sentence_transformers', SimpleNamespace(SentenceTransformer=Model))
+    embedder = BgeM3Embedder(cache_dir='cache')
+    assert calls == []
+    assert embedder.encode([]) == []
+    assert len(embedder.encode(['hello'])[0]) == 1024
+    assert calls[0] == ('BAAI/bge-m3', {'cache_folder': 'cache'})
+    assert calls[1]['normalize_embeddings'] is True
+
+
+def test_collection_is_1024d_cosine_with_mysql_primary_key():
+    from app.vector_store import MilvusKnowledgeStore
+    from pymilvus import DataType
+    class Client:
+        def has_collection(self, name): return False
+        def create_schema(self, **kwargs):
+            from pymilvus import MilvusClient
+            return MilvusClient.create_schema(**kwargs)
+        def prepare_index_params(self):
+            from pymilvus import MilvusClient
+            return MilvusClient.prepare_index_params()
+        def create_collection(self, **kwargs): self.created = kwargs
+        def upsert(self, **kwargs):
+            self.row = kwargs['data'][0]
+            return {'upsert_count': 1, 'ids': [self.row['id']]}
+        def search(self, **kwargs): return [[{'id': 17, 'distance': 0.9}]]
+    client = Client()
+    store = MilvusKnowledgeStore(client=client)
+    store.ensure_collection()
+    fields = client.created['schema'].fields
+    assert [(f.name, f.dtype) for f in fields] == [('id', DataType.INT64), ('vector', DataType.FLOAT_VECTOR)]
+    assert fields[0].is_primary and not fields[0].auto_id
+    assert fields[1].params['dim'] == 1024
+    assert client.created['collection_name'] == 'knowledge'
+    assert client.created['index_params'][0].to_dict()['metric_type'] == 'COSINE'
+    assert store.upsert(17, [1.0]*1024) == 17
+    assert set(client.row) == {'id', 'vector'}
+    assert store.search([1.0]*1024, 1)[0].id == 17
+
+
+def test_no_mysql_transaction_during_external_io(sessions):
+    from app.knowledge_index import index_pending
+    add_pending(sessions)
+    engine = sessions.kw['bind']
+    class CheckEmbedder(FakeEmbedder):
+        def encode(self, texts):
+            assert engine.pool.checkedout() == 0
+            return super().encode(texts)
+    class CheckStore(FakeStore):
+        def upsert(self, id, vector):
+            assert engine.pool.checkedout() == 0
+            return super().upsert(id, vector)
+    assert index_pending(sessions, CheckEmbedder(), CheckStore(), 10) == 1
+
+
+def test_wrong_upsert_primary_key_stays_pending(sessions):
+    from app.knowledge_index import index_pending
+    id = add_pending(sessions)
+    store = SimpleNamespace(upsert=lambda id, vector: id + 1)
+    with pytest.raises(ValueError, match='primary key'):
+        index_pending(sessions, FakeEmbedder(), store, 10)
+    with sessions() as s:
+        assert s.get(KnowledgeChunk, id).vectorize_status == 'pending'
+
+
+def test_real_milvus_mysql_recovery(sessions):
+    import os
+    uri = os.environ.get('TEST_MILVUS_URI')
+    if not uri:
+        pytest.skip('Set TEST_MILVUS_URI for a disposable Milvus instance')
+    from pymilvus import MilvusClient
+    from app.vector_store import MilvusKnowledgeStore
+    from app.knowledge_index import index_pending
+    client = MilvusClient(uri=uri)
+    if client.has_collection('knowledge'):
+        client.close()
+        pytest.fail('Real integration requires a disposable Milvus without knowledge collection')
+    try:
+        store = MilvusKnowledgeStore(client=client)
+        store.ensure_collection()
+        # Validate the existing schema path too.
+        store.ensure_collection()
+        id = add_pending(sessions)
+        engine = sessions.kw['bind']
+        def crash(connection, cursor, statement, parameters, context, executemany):
+            if statement.lstrip().upper().startswith('UPDATE KNOWLEDGE_CHUNKS'):
+                raise RuntimeError('real crash after upsert')
+        event.listen(engine, 'before_cursor_execute', crash)
+        try:
+            with pytest.raises(RuntimeError, match='real crash'):
+                index_pending(sessions, FakeEmbedder(), store, 10)
+        finally:
+            event.remove(engine, 'before_cursor_execute', crash)
+        assert index_pending(sessions, FakeEmbedder(), store, 10) == 1
+        assert index_pending(sessions, FakeEmbedder(), store, 10) == 0
+        assert client.query('knowledge', filter=f'id == {id}', output_fields=['id']) == [{'id': id}]
+        assert store.search([1.0] + [0.0]*1023, 5)[0].id == id
+        with sessions() as s:
+            row = s.get(KnowledgeChunk, id)
+            assert (row.vectorize_status, row.vector_id) == ('done', str(id))
+    finally:
+        client.drop_collection('knowledge')
+        client.close()
+
+
+def test_real_bge_m3_dense():
+    import os
+    if os.environ.get('TEST_BGE_M3') != '1':
+        pytest.skip('Set TEST_BGE_M3=1 to load the real public BGE-M3 model')
+    from app.embedding import BgeM3Embedder
+    vectors = BgeM3Embedder(cache_dir=os.environ.get('BGE_CACHE_DIR')).encode(['邮费是多少？'])
+    assert len(vectors) == 1 and len(vectors[0]) == 1024
+    assert all(math.isfinite(value) for value in vectors[0])
+
+
+def test_build_cli_ingests_then_drains_pending(monkeypatch, capsys):
+    from app import build_knowledge as build
+    events = []
+    monkeypatch.setenv('DATABASE_URL', 'private-test-placeholder')
+    monkeypatch.setattr(build, 'initialize_knowledge_database', lambda url: events.append('init'))
+    engine = SimpleNamespace(dispose=lambda: events.append('dispose'))
+    monkeypatch.setattr(build, 'create_engine', lambda *args, **kwargs: engine)
+    monkeypatch.setattr(build, 'sessionmaker', lambda engine: 'sessions')
+    monkeypatch.setattr(build, 'ingest_faq', lambda sessions: events.append('faq'))
+    monkeypatch.setattr(build, 'ingest_markdown', lambda sessions, path, kind: events.append((path, kind)))
+    monkeypatch.setattr(build, 'BgeM3Embedder', lambda **kwargs: 'embedder')
+    store = SimpleNamespace(ensure_collection=lambda: events.append('milvus'))
+    monkeypatch.setattr(build, 'MilvusKnowledgeStore', lambda **kwargs: store)
+    counts = iter([2, 1, 0])
+    monkeypatch.setattr(build, 'index_pending', lambda *args: next(counts))
+    build.main(['--policy', 'policy.md', '--manual', 'manual.md', '--batch-size', '2'])
+    assert events == ['init', 'faq', ('policy.md', 'policy'), ('manual.md', 'manual'), 'milvus', 'dispose']
+    assert '3 pending rows marked done' in capsys.readouterr().out
+
+
+def test_build_cli_failure_hides_connection_details(monkeypatch):
+    from app import build_knowledge as build
+    monkeypatch.setenv('DATABASE_URL', 'credential-sentinel')
+    def fail(url):
+        raise RuntimeError(url)
+    monkeypatch.setattr(build, 'initialize_knowledge_database', fail)
+    with pytest.raises(SystemExit) as error:
+        build.main([])
+    assert 'credential-sentinel' not in str(error.value)
+    assert 'pending rows can be retried' in str(error.value)

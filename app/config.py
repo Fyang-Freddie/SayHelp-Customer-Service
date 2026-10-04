@@ -17,6 +17,8 @@ class Settings:
     response_token_reserve: int = 512
     max_conversations: int = 100
     max_turns_per_conversation: int = 20
+    milvus_uri: str = 'http://127.0.0.1:19530'
+    bge_cache_dir: str | None = None
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -60,4 +62,6 @@ class Settings:
             max_conversations=positive_int("MAX_CONVERSATIONS", 100),
             max_turns_per_conversation=positive_int("MAX_TURNS_PER_CONVERSATION", 20),
             database_url=required("DATABASE_URL"),
+            milvus_uri=value("MILVUS_URI") or 'http://127.0.0.1:19530',
+            bge_cache_dir=value("BGE_CACHE_DIR"),
         )

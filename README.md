@@ -49,3 +49,56 @@ py -3.14 -m venv .venv
 五个 LangChain `@tool` 为 `query_order`、`query_product`、`query_logistics`、`query_faq`、`create_ticket`。前三个随机模拟，FAQ 使用字面 SQL LIKE，工单写入 MySQL。读工具有超时和有限重试；创建工单不会自动重试，以免重复创建。聊天页只显示工具名称与状态，不显示参数或错误细节。并发会话预约在单个 API 进程内协调；本章不含跨进程协调、向量检索或 RAG。
 
 可选上下文参数：`CONTEXT_TOKEN_BUDGET=4096`、`RESPONSE_TOKEN_RESERVE=512`、`MAX_CONVERSATIONS=100`、`MAX_TURNS_PER_CONVERSATION=20`。模型服务使用 `CHAT_BASE_URL` 指向的 OpenAI 兼容接口；实际验收使用已配置的 DeepSeek。
+
+## Chapter 3 offline dense knowledge build
+
+Install `requirements.txt` on Python 3.14. Embedding uses the fixed local
+`SentenceTransformer("BAAI/bge-m3").encode()` model (1024 dense dimensions).
+The first build downloads public model weights; allow sufficient disk and RAM.
+`BGE_CACHE_DIR` optionally selects a local cache outside the repository.
+
+Set `DATABASE_URL`, `MILVUS_MINIO_USER`, and `MILVUS_MINIO_PASSWORD` in your local
+`.env` (never commit it). `MILVUS_URI` defaults to `http://127.0.0.1:19530`.
+Start MySQL using the existing `compose.yaml`, then start Milvus:
+
+```powershell
+docker compose -f compose.milvus.yaml config --quiet
+docker compose -f compose.milvus.yaml up -d --wait
+python -m app.build_knowledge --policy tests/fixtures/ch03_policy.md --manual tests/fixtures/ch03_manual.md
+```
+
+Repeat that build command to resume interrupted writes. FAQ and unchanged Markdown
+keep their MySQL IDs. The indexer closes the MySQL read transaction before inference
+or network I/O, upserts the same INT64 ID in Milvus, and only then marks MySQL done.
+If Milvus succeeds before a crash, retry overwrites that same ID and completes the
+MySQL status. `--batch-size 100` bounds each pending snapshot; the command drains
+pending rows. Changed documents append new chains; replacing existing sources is
+outside this command. Milvus stores only IDs and vectors with COSINE indexing.
+
+`compose.milvus.yaml` follows the official pinned Milvus standalone layout with
+persistent named volumes and loopback endpoints. It requires private MinIO values
+instead of committing defaults. To run deterministic indexing tests with disposable
+MySQL, set `TEST_DATABASE_URL` in the process and run:
+
+```powershell
+python -m pytest tests/test_knowledge_index.py -q
+```
+
+Set `TEST_MILVUS_URI` only for a disposable Milvus instance with no `knowledge`
+collection to enable the real Milvus integration test; it creates and removes that
+collection. Real BGE model verification uses `TEST_BGE_M3=1` and may download weights.
+
+Current environment limitation (2026-10-04): the exact official MinIO community
+image above is no longer downloadable here (Docker Hub tag API 404; pulls denied,
+Quay source 401). MinIO's current official repository documents source-only
+community distribution. A compatible image built from official MinIO source or an
+existing trusted local copy is required before the startup command can succeed.
+No real Milvus acceptance result is claimed until that image is available.
+Sources: https://github.com/minio/minio#source-only-distribution and
+https://github.com/milvus-io/milvus/blob/v2.6.24/deployments/docker/standalone/docker-compose.yml.
+
+The current deterministic suite verifies MySQL with fake external adapters.
+Real Milvus and real BGE tests are opt-in and were not passed in this environment:
+Milvus startup is blocked by the MinIO image supply issue, and BGE weights are not
+cached (public model configuration is reachable, but real encode has not run).
+Skipped opt-in tests do not count as real retrieval/indexing acceptance.

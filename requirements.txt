@@ -8,3 +8,5 @@ pytest
 httpx
 SQLAlchemy>=2.0,<2.1
 PyMySQL[rsa]>=1.1,<2
+sentence-transformers>=6.1,<7
+pymilvus>=2.6.17,<2.7
