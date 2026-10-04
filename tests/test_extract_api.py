@@ -2,6 +2,9 @@
 
 import asyncio
 import json
+from functools import partial
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 import httpx
 import pytest
@@ -12,6 +15,18 @@ from app.config import Settings
 from app.main import create_app
 from app.model_service import ModelService
 from app.schemas import AfterSalesExtraction
+
+
+@pytest.fixture(autouse=True)
+def inject_test_storage(monkeypatch):
+    """Extraction never touches storage, but app composition requires it."""
+    engine = create_engine('sqlite:///:memory:')
+    monkeypatch.setattr(__import__(__name__), 'create_app',
+                        partial(create_app, session_factory=sessionmaker(engine)))
+    try:
+        yield
+    finally:
+        engine.dispose()
 
 
 def settings() -> Settings:
