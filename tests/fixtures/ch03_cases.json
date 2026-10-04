@@ -1,8 +1,66 @@
 [
-  {"id":"ch02-postage-paraphrase","keyword":"邮费","user_message":"邮费是多少","expected_match":true,"expected_question":"订单运费如何计算？","fake_score":0.92},
-  {"id":"shipping-full-question","keyword":"寄到家要多少钱","expected_match":true,"expected_question":"订单运费如何计算？","fake_score":0.88},
-  {"id":"shipping-direct","keyword":"运费如何计算","expected_match":true,"expected_question":"订单运费如何计算？","fake_score":0.97},
-  {"id":"unrelated-weather","keyword":"明天会下雨吗","expected_match":false,"fake_score":0.21},
-  {"id":"unrelated-math","keyword":"一加一等于几","expected_match":false,"fake_score":0.18},
-  {"id":"unrelated-sports","keyword":"世界杯冠军是谁","expected_match":false,"fake_score":0.41}
+  {
+    "id": "ch02-postage-paraphrase",
+    "keyword": "邮费",
+    "user_message": "邮费是多少",
+    "expected_match": true,
+    "expected_question": "订单运费如何计算？",
+    "fake_score": 0.92,
+    "observed_real_top_score": 0.6498415470123291,
+    "observed_real_passed": true,
+    "observed_real_model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "observed_real_threshold": 0.55
+  },
+  {
+    "id": "shipping-full-question",
+    "keyword": "寄到家要多少钱",
+    "expected_match": true,
+    "expected_question": "订单运费如何计算？",
+    "fake_score": 0.88,
+    "observed_real_top_score": 0.6649534702301025,
+    "observed_real_passed": true,
+    "observed_real_model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "observed_real_threshold": 0.55
+  },
+  {
+    "id": "shipping-direct",
+    "keyword": "运费如何计算",
+    "expected_match": true,
+    "expected_question": "订单运费如何计算？",
+    "fake_score": 0.97,
+    "observed_real_top_score": 0.7477686405181885,
+    "observed_real_passed": true,
+    "observed_real_model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "observed_real_threshold": 0.55
+  },
+  {
+    "id": "unrelated-weather",
+    "keyword": "明天会下雨吗",
+    "expected_match": false,
+    "fake_score": 0.21,
+    "observed_real_top_score": 0.4687441289424896,
+    "observed_real_passed": true,
+    "observed_real_model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "observed_real_threshold": 0.55
+  },
+  {
+    "id": "unrelated-math",
+    "keyword": "一加一等于几",
+    "expected_match": false,
+    "fake_score": 0.18,
+    "observed_real_top_score": 0.3982018232345581,
+    "observed_real_passed": true,
+    "observed_real_model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "observed_real_threshold": 0.55
+  },
+  {
+    "id": "unrelated-sports",
+    "keyword": "世界杯冠军是谁",
+    "expected_match": false,
+    "fake_score": 0.41,
+    "observed_real_top_score": 0.26635313034057617,
+    "observed_real_passed": true,
+    "observed_real_model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "observed_real_threshold": 0.55
+  }
 ]

@@ -1,4 +1,4 @@
-# SayHelp 客服系统 · 第 2 章 Function Calling
+# SayHelp 客服系统 · 第 3 章 BGE-M3 dense RAG
 
 FastAPI 流式客服现在会先让模型选择一次业务工具，执行并把结果回灌给模型，然后逐块输出最终回答。会话、消息、工具调用和结果保存在 MySQL；聊天气泡显示本轮调用的工具。
 
@@ -30,8 +30,8 @@ py -3.14 -m venv .venv
 | 提问 | 预期工具 | 预期结果 |
 | --- | --- | --- |
 | 订单 1001 的物流到哪了 | `query_logistics` | 随机模拟物流状态和位置；回答明确说明是演示数据 |
-| 退货政策是什么 | `query_faq` | SQL LIKE 命中退货 FAQ，回答包含七天内可申请等内容 |
-| 邮费是多少 | `query_faq` | 按原词“邮费”查询无命中，回答承认未查到；这是第 3 章检索升级要解决的漏召回 |
+| 退货政策是什么 | `query_faq` | dense 检索命中退货 FAQ，回答包含七天内可申请等内容 |
+| 邮费是多少 | `query_faq` | 语义命中运费 FAQ；回答依据命中原文并保留结算页限定 |
 
 `POST /v1/chat/stream` 接收 `{"message":"...","conversation_id":null}`；后续请求可带第一次 `session` 事件给出的 ID。SSE 依次提供 `session`、可选的 `tool_status`、`token` 和 `done`。工具选择、工具结果、最终回答都写入 `messages`。`POST /v1/aftersales/extract` 保留第 1 章售后字段提取接口。
 
@@ -46,19 +46,21 @@ py -3.14 -m venv .venv
 
 ## 范围和限制
 
-五个 LangChain `@tool` 为 `query_order`、`query_product`、`query_logistics`、`query_faq`、`create_ticket`。前三个随机模拟，FAQ 使用字面 SQL LIKE，工单写入 MySQL。读工具有超时和有限重试；创建工单不会自动重试，以免重复创建。聊天页只显示工具名称与状态，不显示参数或错误细节。并发会话预约在单个 API 进程内协调；本章不含跨进程协调、向量检索或 RAG。
+五个 LangChain `@tool` 为 `query_order`、`query_product`、`query_logistics`、`query_faq`、`create_ticket`。前三个随机模拟，FAQ 使用本地 BGE-M3 与 Milvus dense 召回、MySQL 原文回填；工单写入 MySQL。读工具有超时和有限重试；创建工单不会自动重试，以免重复创建。聊天页只显示工具名称与状态，不显示参数或错误细节。并发会话预约在单个 API 进程内协调；API 使用单 worker；知识摄入和索引通过 MySQL advisory lock 协调跨进程写入。
 
 可选上下文参数：`CONTEXT_TOKEN_BUDGET=4096`、`RESPONSE_TOKEN_RESERVE=512`、`MAX_CONVERSATIONS=100`、`MAX_TURNS_PER_CONVERSATION=20`。模型服务使用 `CHAT_BASE_URL` 指向的 OpenAI 兼容接口；实际验收使用已配置的 DeepSeek。
 
 ## Chapter 3 offline dense knowledge build
 
-Install `requirements.txt` on Python 3.14. Embedding uses the fixed local
+Activate the installed environment (`.\.venv\Scripts\Activate.ps1`) before the
+`python` commands below. Install `requirements.txt` on Python 3.14. Embedding uses the fixed local
 `SentenceTransformer("BAAI/bge-m3").encode()` model (1024 dense dimensions).
 The first build downloads public model weights; allow sufficient disk and RAM.
 `BGE_CACHE_DIR` optionally selects a local cache outside the repository.
 
 Set `DATABASE_URL`, `MILVUS_MINIO_USER`, and `MILVUS_MINIO_PASSWORD` in your local
 `.env` (never commit it). `MILVUS_URI` defaults to `http://127.0.0.1:19530`.
+First build the MinIO image and download the model using the commands below.
 Start MySQL using the existing `compose.yaml`, then start Milvus:
 
 ```powershell
@@ -88,20 +90,39 @@ Set `TEST_MILVUS_URI` only for a disposable Milvus instance with no `knowledge`
 collection to enable the real Milvus integration test; it creates and removes that
 collection. Real BGE model verification uses `TEST_BGE_M3=1` and may download weights.
 
-Current environment limitation (2026-10-04): the exact official MinIO community
-image above is no longer downloadable here (Docker Hub tag API 404; pulls denied,
-Quay source 401). MinIO's current official repository documents source-only
-community distribution. A compatible image built from official MinIO source or an
-existing trusted local copy is required before the startup command can succeed.
-No real Milvus acceptance result is claimed until that image is available.
-Sources: https://github.com/minio/minio#source-only-distribution and
-https://github.com/milvus-io/milvus/blob/v2.6.24/deployments/docker/standalone/docker-compose.yml.
+The former official prebuilt MinIO image cannot be pulled here. The 2026-10-05
+acceptance compiled the exact official release source and packaged a local image
+for the committed Compose. This is a locally built development image; Milvus stays
+pinned to 2.6.24. Build it in PowerShell with access to GitHub and Go modules:
 
-The current deterministic suite verifies MySQL with fake external adapters.
-Real Milvus and real BGE tests are opt-in and were not passed in this environment:
-Milvus startup is blocked by the MinIO image supply issue, and BGE weights are not
-cached (public model configuration is reachable, but real encode has not run).
-Skipped opt-in tests do not count as real retrieval/indexing acceptance.
+```powershell
+$taskBuild = Join-Path $env:TEMP 'sayhelp-minio-image'
+New-Item -ItemType Directory -Force $taskBuild | Out-Null
+docker run --rm --mount "type=bind,source=$taskBuild,target=/out" golang:1.24 sh -c 'git clone --depth 1 --branch RELEASE.2024-05-28T17-19-04Z https://github.com/minio/minio.git /src && cd /src && CGO_ENABLED=0 go build -o /out/minio .'
+Set-Content (Join-Path $taskBuild 'Dockerfile') -Value @('FROM golang:1.24', 'COPY minio /usr/bin/minio', 'CMD ["minio"]')
+docker build -t minio/minio:RELEASE.2024-05-28T17-19-04Z $taskBuild
+```
+
+Verified MinIO source commit: `f79a4ef4d0dc3e6562cad0d1d1db674bc8c75531`.
+Direct Go compilation reports `DEVELOPMENT.GOGET`; provenance is the exact source
+commit. The build/runtime base is official `golang:1.24`, digest
+`sha256:d2d2bc1c84f7e60d7d2438a3836ae7d0c847f4888464e7ec9ba3a1339a1ee804`.
+It includes curl for the Compose healthcheck and the build toolchain; this image
+is for development. Official guidance: [MinIO README](https://github.com/minio/minio#source-only-distribution),
+[Milvus pinned Compose](https://github.com/milvus-io/milvus/blob/v2.6.24/deployments/docker/standalone/docker-compose.yml).
+
+Download the public dense model files without a Hugging Face token. After this
+finishes, offline mode avoids extra Hub metadata requests during model loading:
+
+```powershell
+$env:BGE_CACHE_DIR = Join-Path $env:USERPROFILE '.cache/huggingface/hub'
+python -c "import os; from huggingface_hub import snapshot_download; snapshot_download('BAAI/bge-m3', cache_dir=os.environ['BGE_CACHE_DIR'], token=False, allow_patterns=['*.json','sentencepiece.bpe.model','pytorch_model.bin','1_Pooling/*'])"
+$env:HF_HUB_OFFLINE = '1'
+$env:TRANSFORMERS_OFFLINE = '1'
+```
+
+Verified public model revision: `5617a9f61b028005a4858fdac845db406aefb181`;
+actual local encode produced 1024-dimensional vectors. Cache files stay outside Git.
 
 Indexing writers share a database-scoped MySQL advisory lock across processes.
 Its dedicated connection stays pinned through each batch, with no active SQL
@@ -162,8 +183,72 @@ Labeled cases are in `tests/fixtures/ch03_qa_cases.json`. Configured model
 extraction evaluation: 8/8 correct (4 supported QA, 4 abstentions; precision 4/4).
 Dedup judgment: 7/8 labels correct, zero false merges across 6 negative cases;
 one expected equivalent involving unspecified support versus human support was
-conservatively retained. Local BGE-M3 weights are currently absent, so real
-candidate-score evaluation and threshold calibration remain blocked. Candidate
-gates 0.85 question / 0.90 answer are provisional, never sufficient for deletion,
-and are not claimed as production acceptance. Real Milvus remains subject to the
-service supply limitation documented above.
+conservatively retained.
+Real local BGE-M3 candidate evaluation on the eight dedup pairs admitted both
+positive labels (2/2) and four negative pairs (4/6). Keep candidate gates 0.85
+question / 0.90 answer; numeric-conflict checks and model equivalence confirmation
+remain required. The 7/8 judgment discrepancy above is still conservatively
+retained. This small set does not establish general production precision.
+
+## Chapter 3 online demo and observed acceptance
+
+After service startup and one-shot build, run one API worker:
+
+```powershell
+python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
+```
+
+Open [chat](http://127.0.0.1:8000/) or submit the unchanged SSE endpoint:
+
+```powershell
+$body = '{"message":"邮费是多少","conversation_id":null}'
+Invoke-WebRequest -Uri http://127.0.0.1:8000/v1/chat/stream -Method Post -ContentType 'application/json' -Body ([Text.Encoding]::UTF8.GetBytes($body))
+```
+
+`query_faq(keyword: str)` retains `keyword`, `matches`, `message`; each match has
+`question`, `answer`, `category`. The API emits `session`, `tool_status`
+(running/success), streamed `token`, then `done`. The other four tools and
+售后 extraction retain their contracts. Backend failure or exhausted FAQ timeout
+returns empty matches and a temporary-unavailable message. Models are lazy:
+initial loading can exceed the tool deadline; allow it to finish and retry a cold
+first request. `KNOWLEDGE_MIN_SCORE` defaults to 0.55; no keyword fallback exists.
+
+Observed 2026-10-05 acceptance used disposable MySQL, real Milvus 2.6.24, real
+local BGE-M3, and the configured DeepSeek chat model:
+
+- Two CLI builds indexed 10 then 0 rows: pending=0/done=10, stable MySQL and Milvus
+  IDs exactly 1–10.
+- Separate runs injected `SystemExit` after pending commit before embedding, and
+  immediately after a real upsert. Each had pending=3/done=0 before retry; vector
+  IDs were empty and `[1]` respectively. Both recovered pending=0/done=3 and exact
+  unique IDs `[1,2,3]`; another retry indexed 0. This is an injected interruption
+  check, not an OS process-kill check.
+- Real retrieval labels: 6/6 passed. Positive top COSINE scores were 0.649842,
+  0.664953, 0.747769; unrelated weather/math/sports scores were 0.468744,
+  0.398202, 0.266353. Keep 0.55 for this evaluated set; six cases do not establish
+  accuracy on all customer questions.
+- Real orphan Milvus IDs and MySQL pending rows were omitted during hydration.
+- Real SSE POST via FastAPI TestClient chose `query_faq`, included shipping FAQ
+  ID 2 (`订单运费如何计算？`) plus fixture policy ID 7, and grounded the final
+  answer in both, including region/order amount/checkout qualification. Fixture
+  policy intentionally says 3.14 yuan and full-order free shipping; this is demo
+  data. Persisted roles were user/assistant/tool/assistant with matching call ID,
+  unchanged JSON keys and SSE sequence.
+
+Enable real-service tests only on a disposable Milvus with no `knowledge`
+collection; the test creates and removes it:
+
+```powershell
+$env:TEST_MILVUS_URI = 'http://127.0.0.1:19530'
+$env:TEST_BGE_M3 = '1'
+python -c "import torch; torch.set_num_threads(4); from dotenv import load_dotenv; import pytest; load_dotenv(); raise SystemExit(pytest.main(['-q']))"
+docker compose config --quiet
+docker compose -f compose.milvus.yaml config --quiet
+git diff --check
+```
+
+Full verified result: **234 passed, 0 skipped in 119.19s**. MySQL fixtures create
+and clean independent databases. Both Compose checks and diff-check passed.
+Private connections were loaded into process variables; `.env`, credentials,
+model weights, virtual environments and ignored evidence scripts stay out of
+commits. Detailed evidence is in [dev-notes/ch03.md](dev-notes/ch03.md).
