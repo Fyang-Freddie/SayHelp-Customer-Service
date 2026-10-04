@@ -108,3 +108,61 @@ Its dedicated connection stays pinned through each batch, with no active SQL
 transaction during model or Milvus I/O; competing indexers fail explicitly and
 can be retried. Before declaring completion, the command freshly checks pending
 rows. A batch that completes zero rows while pending rows remain fails explicitly.
+
+## Chapter 3 conversation QA mining
+
+Run mining once, then resume all pending knowledge indexing through the same path:
+
+```powershell
+python -m app.qa_scheduler --once --batch-size 20
+```
+
+Run exactly one dedicated scheduler process for daily 02:00 Asia/Shanghai mining:
+
+```powershell
+python -m app.qa_scheduler --batch-size 20
+```
+
+The scheduler uses APScheduler 3.11 with one job, `max_instances=1` and coalescing.
+Use the existing `CHAT_BASE_URL`, `CHAT_MODEL`, `CHAT_API_KEY`, `DATABASE_URL`,
+`MILVUS_URI` and optional `BGE_CACHE_DIR` settings. Keep secrets in your ignored
+local `.env`. The scheduler runs separately from API workers.
+
+Mining reads complete turns in conversation/message ID order, sends only user and
+final assistant evidence, and omits tool payloads, unfinished turns, recognized
+credentials and oversized turns. Each request contains at most the configured
+number of distinct conversations and 12,000 evidence JSON characters; complete
+turns above 4,000 characters are skipped instead of truncated. Model output must
+be strict JSON with a valid source reference and verbatim supported excerpts.
+The extraction prompt excludes personal/account-specific or uncertain answers.
+
+Each extraction batch commits to `qa_extraction_staging` as `extracted` before
+global deduplication. Exact normalized question AND answer matches are discarded
+first. Local BGE-M3 question/answer similarities identify semantic candidates,
+and the configured model must confirm both meanings and all conditions before
+discarding a candidate. Conflicting numeric answers always survive. Kept QA is
+inserted as pending FAQ with category `历史客服对话`; knowledge insertion and all
+final staging statuses commit together. Both mining and knowledge ingestion use
+MySQL advisory ownership; dedup holds ingestion ownership through snapshot,
+judgment and commit, with no SQL transaction during external inference.
+
+Rerun `--once` after a failure to resume committed extracted rows and pending
+vectors. Staging retains source-turn IDs and audit history. Terminal rows are
+skipped, and later complete turns remain eligible. The supplied staging schema
+has no empty-result marker, so turns yielding no QA may be evaluated again on a
+later run without creating duplicate knowledge. BGE/model failures retain
+staging; indexing failures retain pending knowledge.
+
+```powershell
+python -m pytest tests/test_qa_mining.py -q
+```
+
+Labeled cases are in `tests/fixtures/ch03_qa_cases.json`. Configured model
+extraction evaluation: 8/8 correct (4 supported QA, 4 abstentions; precision 4/4).
+Dedup judgment: 7/8 labels correct, zero false merges across 6 negative cases;
+one expected equivalent involving unspecified support versus human support was
+conservatively retained. Local BGE-M3 weights are currently absent, so real
+candidate-score evaluation and threshold calibration remain blocked. Candidate
+gates 0.85 question / 0.90 answer are provisional, never sufficient for deletion,
+and are not claimed as production acceptance. Real Milvus remains subject to the
+service supply limitation documented above.
