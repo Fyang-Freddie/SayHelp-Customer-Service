@@ -133,6 +133,10 @@ def _batches(conversations, batch_size):
         # Split only between complete turns; never truncate evidence.
         for turn in conversation['turns']:
             item = {'id':conversation['id'], 'turns':[turn]}
+            # Escaped control characters can expand a raw eligible turn beyond
+            # the serialized request budget even when this batch is empty.
+            if len(json.dumps({'conversations':[item]}, ensure_ascii=False)) > MAX_REQUEST_CHARS:
+                continue
             candidate = [*batch, item]
             size = len(json.dumps({'conversations':candidate}, ensure_ascii=False))
             if batch and (len({c['id'] for c in candidate}) > batch_size or size > MAX_REQUEST_CHARS):

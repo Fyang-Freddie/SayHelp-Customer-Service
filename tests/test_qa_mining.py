@@ -334,3 +334,13 @@ def test_cli_once_uses_mining_and_indexing_without_starting_scheduler(sessions, 
     qa_scheduler.main(['--once','--batch-size','1'])
     assert 'staged=1, kept=1, discarded=0' in capsys.readouterr().out
     assert rows(sessions, KnowledgeChunk)[0].vectorize_status == 'done'
+
+
+def test_escaped_control_chars_turn_exceeding_json_budget_is_excluded(sessions):
+    # Raw evidence fits the 4000-character turn bound, but JSON escapes each
+    # control character as six characters and exceeds the request budget.
+    seed(sessions, turn(q='\u0001' * 1997, a='\u0001' * 1997))
+    model = Model(lambda data: {'pairs': []})
+    assert mine(sessions, model).kept == 0
+    assert model.inputs == []
+    assert rows(sessions, QaExtractionStaging) == []

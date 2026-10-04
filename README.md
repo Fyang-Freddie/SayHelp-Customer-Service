@@ -132,7 +132,8 @@ Mining reads complete turns in conversation/message ID order, sends only user an
 final assistant evidence, and omits tool payloads, unfinished turns, recognized
 credentials and oversized turns. Each request contains at most the configured
 number of distinct conversations and 12,000 evidence JSON characters; complete
-turns above 4,000 characters are skipped instead of truncated. Model output must
+turns above 4,000 characters or above the serialized JSON budget (including
+escaped control characters) are skipped instead of truncated. Model output must
 be strict JSON with a valid source reference and verbatim supported excerpts.
 The extraction prompt excludes personal/account-specific or uncertain answers.
 
