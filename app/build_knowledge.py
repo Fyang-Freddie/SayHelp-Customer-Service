@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from app.embedding import BgeM3Embedder
 from app.init_knowledge_db import initialize_knowledge_database
 from app.knowledge_ingest import ingest_faq, ingest_markdown
-from app.knowledge_index import index_pending
+from app.knowledge_index import count_pending, index_pending
 from app.vector_store import MilvusKnowledgeStore
 
 
@@ -39,7 +39,12 @@ def main(argv=None):
         store = MilvusKnowledgeStore(uri=value('MILVUS_URI', 'http://127.0.0.1:19530'))
         store.ensure_collection()
         total = 0
-        while count := index_pending(sessions, embedder, store, args.batch_size):
+        while True:
+            count = index_pending(sessions, embedder, store, args.batch_size)
+            if count == 0:
+                if count_pending(sessions):
+                    raise RuntimeError('Knowledge indexing made no progress; pending rows remain')
+                break
             total += count
         print(f'Knowledge indexing completed: {total} pending rows marked done.')
     except Exception:

@@ -141,15 +141,28 @@ def test_no_mysql_transaction_during_external_io(sessions):
     from app.knowledge_index import index_pending
     add_pending(sessions)
     engine = sessions.kw['bind']
+    active = set()
+    def begin(connection): active.add(id(connection))
+    def end(connection): active.discard(id(connection))
+    event.listen(engine, 'begin', begin)
+    event.listen(engine, 'commit', end)
+    event.listen(engine, 'rollback', end)
     class CheckEmbedder(FakeEmbedder):
         def encode(self, texts):
-            assert engine.pool.checkedout() == 0
+            assert engine.pool.checkedout() == 1  # Dedicated advisory-lock connection.
+            assert not active
             return super().encode(texts)
     class CheckStore(FakeStore):
         def upsert(self, id, vector):
-            assert engine.pool.checkedout() == 0
+            assert engine.pool.checkedout() == 1  # Dedicated advisory-lock connection.
+            assert not active
             return super().upsert(id, vector)
-    assert index_pending(sessions, CheckEmbedder(), CheckStore(), 10) == 1
+    try:
+        assert index_pending(sessions, CheckEmbedder(), CheckStore(), 10) == 1
+    finally:
+        event.remove(engine, 'begin', begin)
+        event.remove(engine, 'commit', end)
+        event.remove(engine, 'rollback', end)
 
 
 def test_wrong_upsert_primary_key_stays_pending(sessions):
@@ -227,6 +240,7 @@ def test_build_cli_ingests_then_drains_pending(monkeypatch, capsys):
     monkeypatch.setattr(build, 'MilvusKnowledgeStore', lambda **kwargs: store)
     counts = iter([2, 1, 0])
     monkeypatch.setattr(build, 'index_pending', lambda *args: next(counts))
+    monkeypatch.setattr(build, 'count_pending', lambda sessions: 0)
     build.main(['--policy', 'policy.md', '--manual', 'manual.md', '--batch-size', '2'])
     assert events == ['init', 'faq', ('policy.md', 'policy'), ('manual.md', 'manual'), 'milvus', 'dispose']
     assert '3 pending rows marked done' in capsys.readouterr().out
@@ -242,3 +256,47 @@ def test_build_cli_failure_hides_connection_details(monkeypatch):
         build.main([])
     assert 'credential-sentinel' not in str(error.value)
     assert 'pending rows can be retried' in str(error.value)
+
+
+def test_concurrent_new_content_cannot_leave_done_with_old_vector(sessions):
+    from app.knowledge_index import index_pending
+    id = add_pending(sessions)
+    store = FakeStore()
+    class ContentEmbedder:
+        def encode(self, texts):
+            return [[2.0 if '新答案' in text else 1.0] + [0.0]*1023 for text in texts]
+    new_embedder = ContentEmbedder()
+    class InterleavingEmbedder(ContentEmbedder):
+        def encode(self, texts):
+            with sessions() as s, s.begin():
+                row = s.get(KnowledgeChunk, id)
+                row.answer = '新答案'
+                row.vectorize_status = 'pending'
+            try:
+                index_pending(sessions, new_embedder, store, 10)
+            except RuntimeError as error:
+                assert 'indexing' in str(error)
+            return super().encode(texts)
+    index_pending(sessions, InterleavingEmbedder(), store, 10)
+    # Retry any pending content after worker A releases ownership.
+    index_pending(sessions, new_embedder, store, 10)
+    with sessions() as s:
+        row = s.get(KnowledgeChunk, id)
+        assert row.answer == '新答案' and row.vectorize_status == 'done'
+    assert store.vectors[id][0] == 2.0
+
+
+def test_build_cli_zero_progress_with_pending_is_failure(sessions, monkeypatch, capsys):
+    from app import build_knowledge as build
+    add_pending(sessions)
+    monkeypatch.setenv('DATABASE_URL', 'private-test-placeholder')
+    monkeypatch.setattr(build, 'initialize_knowledge_database', lambda url: None)
+    monkeypatch.setattr(build, 'create_engine', lambda *args, **kwargs: SimpleNamespace(dispose=lambda: None))
+    monkeypatch.setattr(build, 'sessionmaker', lambda engine: sessions)
+    monkeypatch.setattr(build, 'ingest_faq', lambda sessions: None)
+    monkeypatch.setattr(build, 'BgeM3Embedder', lambda **kwargs: FakeEmbedder())
+    monkeypatch.setattr(build, 'MilvusKnowledgeStore', lambda **kwargs: SimpleNamespace(ensure_collection=lambda: None))
+    monkeypatch.setattr(build, 'index_pending', lambda *args: 0)
+    with pytest.raises(SystemExit, match='pending rows can be retried'):
+        build.main([])
+    assert 'completed' not in capsys.readouterr().out

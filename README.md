@@ -102,3 +102,9 @@ Real Milvus and real BGE tests are opt-in and were not passed in this environmen
 Milvus startup is blocked by the MinIO image supply issue, and BGE weights are not
 cached (public model configuration is reachable, but real encode has not run).
 Skipped opt-in tests do not count as real retrieval/indexing acceptance.
+
+Indexing writers share a database-scoped MySQL advisory lock across processes.
+Its dedicated connection stays pinned through each batch, with no active SQL
+transaction during model or Milvus I/O; competing indexers fail explicitly and
+can be retried. Before declaring completion, the command freshly checks pending
+rows. A batch that completes zero rows while pending rows remain fails explicitly.
