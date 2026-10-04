@@ -9,14 +9,19 @@ FastAPI 流式客服现在会先让模型选择一次业务工具，执行并把
 ```powershell
 py -3.14 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1
 ```
 
-创建不会提交的 `.env`，设置 `CHAT_BASE_URL`、`CHAT_MODEL`、`CHAT_API_KEY`、`MYSQL_DATABASE`、`MYSQL_USER`、`MYSQL_PASSWORD`、`MYSQL_ROOT_PASSWORD`、`DATABASE_URL`。例如 `DATABASE_URL` 的格式为 `mysql+pymysql://用户:密码@127.0.0.1:3307/数据库名?charset=utf8mb4`。默认宿主机端口是 3307，可用 `MYSQL_PORT` 改动。用于数据库集成测试时，另设 `TEST_DATABASE_URL` 为有权创建和删除**临时测试库**的本机 MySQL 管理连接；测试会自动创建并清理独立库。不要把真实生产库或密钥写进仓库。
+创建不会提交的 `.env`，设置 `CHAT_BASE_URL`、`CHAT_MODEL`、`CHAT_API_KEY`、`MYSQL_DATABASE`、`MYSQL_USER`、`MYSQL_PASSWORD`、`MYSQL_ROOT_PASSWORD`、`DATABASE_URL`、`MILVUS_MINIO_USER`、`MILVUS_MINIO_PASSWORD`。例如 `DATABASE_URL` 的格式为 `mysql+pymysql://用户:密码@127.0.0.1:3307/数据库名?charset=utf8mb4`。默认宿主机端口是 3307，可用 `MYSQL_PORT` 改动。用于数据库集成测试时，另设 `TEST_DATABASE_URL` 为有权创建和删除**临时测试库**的本机 MySQL 管理连接；测试会自动创建并清理独立库。不要把真实生产库或密钥写进仓库。
+
+启动 API 前，先完成下方 [Chapter 3 建库准备](#chapter-3-offline-dense-knowledge-build) 中的固定 MinIO 官方源码镜像构建与公开 BGE-M3 权重下载。下载完成后保持该 PowerShell 中的 `BGE_CACHE_DIR`、`HF_HUB_OFFLINE`、`TRANSFORMERS_OFFLINE` 设置；然后按顺序启动 MySQL、初始化种子、启动 Milvus、完成知识建库，最后启动单 worker API：
 
 ```powershell
-& 'E:\docker\resources\bin\docker.exe' compose up -d --wait
-.\.venv\Scripts\python.exe -m app.init_db
-.\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000
+docker compose up -d --wait
+python -m app.init_db
+docker compose -f compose.milvus.yaml up -d --wait
+python -m app.build_knowledge --policy tests/fixtures/ch03_policy.md --manual tests/fixtures/ch03_manual.md
+python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
 ```
 
 `app.init_db` 按 [建表 DDL](db/schema.sql) 创建 `conversations`、`messages`、`faq`、`tickets` 并灌入示例 FAQ，可重复执行。商品、订单、物流由工具内部随机生成演示数据，不连接公司真实系统，也不建对应表。
@@ -25,7 +30,7 @@ py -3.14 -m venv .venv
 
 ## 三条验收样例
 
-样例和预期保存在 [ch02_cases.json](tests/fixtures/ch02_cases.json)。在聊天页分别使用“新对话”提交：
+本章 dense 检索标注和“邮费”命中预期保存在 [ch03_cases.json](tests/fixtures/ch03_cases.json)。[ch02_cases.json](tests/fixtures/ch02_cases.json) 是第 2 章历史记录，其中“邮费”无命中属于旧 SQL 行为。在聊天页分别使用“新对话”提交：
 
 | 提问 | 预期工具 | 预期结果 |
 | --- | --- | --- |
