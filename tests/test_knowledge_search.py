@@ -148,3 +148,70 @@ def test_invalid_threshold_configuration_rejected(monkeypatch, tmp_path, raw):
         monkeypatch.setenv(name, value)
     with pytest.raises(ValueError, match='KNOWLEDGE_MIN_SCORE'):
         Settings.from_env()
+
+
+def test_lazy_milvus_client_initialized_once_under_concurrency(monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event, Lock
+    from types import SimpleNamespace
+    import sys
+    from app.vector_store import MilvusKnowledgeStore
+    first_entered, release, second_entered, attempted = Event(), Event(), Event(), Event()
+    created = []
+    guard = Lock()
+    class Client:
+        def __init__(self, **kwargs):
+            with guard:
+                created.append(self)
+                if len(created) == 2:
+                    second_entered.set()
+            first_entered.set()
+            if not release.wait(2):
+                raise RuntimeError('Test failed to release constructor')
+    monkeypatch.setitem(sys.modules, 'pymilvus', SimpleNamespace(MilvusClient=Client))
+    store = MilvusKnowledgeStore()
+    def second_access():
+        attempted.set()
+        return store.client
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(lambda: store.client)
+        assert first_entered.wait(1)
+        second = pool.submit(second_access)
+        assert attempted.wait(1)
+        try:
+            second_entered.wait(.1)
+        finally:
+            release.set()
+        clients = [first.result(timeout=2), second.result(timeout=2)]
+    assert len(created) == 1
+    assert clients[0] is clients[1]
+
+
+@pytest.mark.parametrize('initialize', [False, True])
+def test_milvus_owned_client_closes_lazily_once(monkeypatch, initialize):
+    from types import SimpleNamespace
+    import sys
+    from app.vector_store import MilvusKnowledgeStore
+    constructed, closed = [], []
+    class Client:
+        def __init__(self, **kwargs): constructed.append(self)
+        def close(self): closed.append(self)
+    monkeypatch.setitem(sys.modules, 'pymilvus', SimpleNamespace(MilvusClient=Client))
+    store = MilvusKnowledgeStore()
+    if initialize:
+        store.client
+    store.close()
+    store.close()
+    assert len(constructed) == int(initialize)
+    assert closed == constructed
+    with pytest.raises(RuntimeError, match='closed'):
+        store.client
+
+
+def test_milvus_injected_client_remains_caller_owned():
+    from types import SimpleNamespace
+    from app.vector_store import MilvusKnowledgeStore
+    closed = []
+    client = SimpleNamespace(close=lambda: closed.append(True))
+    MilvusKnowledgeStore(client=client).close()
+    assert closed == []

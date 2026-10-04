@@ -338,3 +338,22 @@ def test_cancelled_persistence_settles_before_reservation_release_and_next_turn(
         return [event async for event in service.stream_turn(42, 'new-question')]
 
     asyncio.run(scenario())
+
+
+def test_faq_timeout_chat_handoff_is_grounded_safe_json(monkeypatch):
+    import time
+    from app.tool_executor import ToolExecutor
+    class SlowSearch:
+        def search(self, keyword, *, limit=5):
+            time.sleep(.08)
+            return []
+    monkeypatch.setattr('app.chat_service.ToolExecutor', lambda tools: ToolExecutor(tools, timeout_seconds=.01))
+    repo = MemoryRepository()
+    model = FakeModel(AIMessage(content='', tool_calls=[call(args={'keyword': '邮费'})]))
+    events = run(ChatService(repo, model, settings(), SlowSearch()), '邮费是多少')
+    assert events[1].data == {'name': 'query_faq', 'state': 'error'}
+    payload = json.loads(model.final_prompts[0][-1].content)
+    assert set(payload) == {'keyword', 'matches', 'message'}
+    assert payload['keyword'] == '邮费' and payload['matches'] == []
+    assert '暂时不可用' in payload['message']
+    assert json.loads(repo.rows[2].content) == payload

@@ -51,4 +51,11 @@ class ToolExecutor:
                 # Sync tools run in workers that may finish after timeout. Never retry a write.
                 if name == 'create_ticket':
                     return error('工单创建结果暂时无法确认，请人工核实是否已创建，避免重复提交。')
+        if name == 'query_faq':
+            # The outer execution deadline can fire before query_faq handles its
+            # dependency exception. Preserve its public result shape here too.
+            return error(json.dumps(
+                {'keyword': validated['keyword'], 'matches': [],
+                 'message': '知识库查询暂时不可用，请稍后重试或人工核实'},
+                ensure_ascii=False))
         return error('工具查询暂时失败，请稍后重试或联系人工客服。')

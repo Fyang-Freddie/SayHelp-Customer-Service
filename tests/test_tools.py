@@ -177,3 +177,17 @@ def test_ticket_timeout_inserts_once_even_when_worker_finishes_later(sessions):
 def test_executor_rejects_unbounded_configuration(kwargs):
     with pytest.raises(ValueError):
         ToolExecutor({}, **kwargs)
+
+
+def test_faq_timeout_keeps_result_contract_through_executor():
+    class SlowSearch:
+        def search(self, keyword, *, limit=5):
+            time.sleep(.08)
+            return []
+    executor = ToolExecutor(build_tools(FakeRepository(), 42, SlowSearch()), timeout_seconds=.01)
+    result = execute(executor, 'query_faq', {'keyword': '邮费'})
+    payload = json.loads(result.content)
+    assert result.status == 'error' and result.tool_call_id == 'call-42'
+    assert set(payload) == {'keyword', 'matches', 'message'}
+    assert payload['keyword'] == '邮费' and payload['matches'] == []
+    assert '暂时不可用' in payload['message']

@@ -384,3 +384,43 @@ def test_other_tools_and_sse_unchanged(sessions):
     payload = json.loads(rows[2].content)
     assert set(payload) == {'keyword', 'matches', 'message'}
     assert payload['matches'][0]['question'] == '订单运费如何计算？'
+
+
+@pytest.mark.parametrize('initialize', [False, True])
+def test_app_lifespan_closes_owned_milvus_client(monkeypatch, sessions, initialize):
+    from types import SimpleNamespace
+    import sys
+    from app.vector_store import MilvusKnowledgeStore
+    closed, constructed, stores = [], [], []
+    class Client:
+        def __init__(self, **kwargs): constructed.append(self)
+        def close(self): closed.append(self)
+    monkeypatch.setitem(sys.modules, 'pymilvus', SimpleNamespace(MilvusClient=Client))
+    def factory(**kwargs):
+        store = MilvusKnowledgeStore(**kwargs)
+        stores.append(store)
+        return store
+    monkeypatch.setattr('app.main.MilvusKnowledgeStore', factory)
+    app = create_app(settings(), FakeModel(), sessions)
+    assert len(stores) == 1 and constructed == []
+    async def lifecycle():
+        async with app.router.lifespan_context(app):
+            if initialize:
+                stores[0].client
+    asyncio.run(lifecycle())
+    assert len(constructed) == int(initialize)
+    assert closed == constructed
+    with pytest.raises(RuntimeError, match='closed'):
+        stores[0].client
+
+
+def test_app_lifespan_does_not_close_injected_search(monkeypatch, sessions):
+    class CallerSearch(FakeKnowledgeSearch):
+        def close(self):
+            raise AssertionError('Injected search remains caller owned')
+    monkeypatch.setattr('app.main.MilvusKnowledgeStore', lambda **kwargs: pytest.fail('Injected search must bypass client creation'))
+    app = create_app(settings(), FakeModel(), sessions, CallerSearch())
+    async def lifecycle():
+        async with app.router.lifespan_context(app):
+            pass
+    asyncio.run(lifecycle())

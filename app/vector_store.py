@@ -1,5 +1,6 @@
 """Milvus contains only MySQL-aligned IDs and dense vectors."""
 from dataclasses import dataclass
+from threading import Lock
 from app.embedding import DIMENSION, validate_vector
 
 
@@ -15,13 +16,28 @@ class MilvusKnowledgeStore:
     def __init__(self, uri='http://127.0.0.1:19530', *, client=None):
         self.uri = uri
         self._client = client
+        self._owns_client = client is None
+        self._client_lock = Lock()
+        self._closed = False
 
     @property
     def client(self):
-        if self._client is None:
-            from pymilvus import MilvusClient
-            self._client = MilvusClient(uri=self.uri)
-        return self._client
+        with self._client_lock:
+            if self._closed:
+                raise RuntimeError('Milvus knowledge store is closed')
+            if self._client is None:
+                from pymilvus import MilvusClient
+                self._client = MilvusClient(uri=self.uri)
+            return self._client
+
+    def close(self):
+        """Release only an owned client, without initializing an unused store."""
+        with self._client_lock:
+            if self._closed:
+                return
+            self._closed = True
+            if self._owns_client and self._client is not None:
+                self._client.close()
 
     def ensure_collection(self):
         from pymilvus import DataType

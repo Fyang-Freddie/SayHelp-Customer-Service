@@ -42,11 +42,13 @@ def create_app(
         session_factory = make_session_factory(settings.database_url)
     model_service = model_service if model_service is not None else ModelService(settings)
     repository = Repository(session_factory)
+    owned_store = None
     if knowledge_search is None:
+        owned_store = MilvusKnowledgeStore(uri=settings.milvus_uri)
         # Shared across turns; BGE weights and the Milvus client remain lazy.
         knowledge_search = KnowledgeSearch(
             session_factory, BgeM3Embedder(cache_dir=settings.bge_cache_dir),
-            MilvusKnowledgeStore(uri=settings.milvus_uri),
+            owned_store,
             min_score=settings.knowledge_min_score)
     service = ChatService(repository, model_service, settings, knowledge_search)
     active: set[int] = set()
@@ -57,8 +59,12 @@ def create_app(
         try:
             yield
         finally:
-            if owns_engine:
-                session_factory.kw['bind'].dispose()
+            try:
+                if owned_store is not None:
+                    owned_store.close()
+            finally:
+                if owns_engine:
+                    session_factory.kw['bind'].dispose()
 
     app = FastAPI(lifespan=lifespan)
 
