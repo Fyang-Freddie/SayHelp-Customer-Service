@@ -274,3 +274,69 @@ def test_selection_content_blocks_are_persisted_as_text_in_mysql(sessions):
     model = FakeModel(AIMessage(content=[{'type': 'text', 'text': '查询中'}], tool_calls=[call()]))
     run(ChatService(repo, model, settings()), id=cid)
     assert repo.load_messages(cid)[1].content == '查询中'
+
+
+@pytest.mark.parametrize('phase', ['user', 'request', 'tool', 'final'])
+@pytest.mark.parametrize('cancel_count', [1, 2])
+def test_cancelled_persistence_settles_before_reservation_release_and_next_turn(phase, cancel_count):
+    from threading import Event
+    from app.history import completed_turns
+
+    async def scenario():
+        entered = asyncio.Event()
+        release_worker = Event()
+        settled = Event()
+        loop = asyncio.get_running_loop()
+        reservation = {'held': True}
+
+        class DelayedRepository(MemoryRepository):
+            def append_message(self, id, role, content, tool_calls=None, tool_call_id=None):
+                actual_phase = ('user' if role == 'user' else 'tool' if role == 'tool'
+                                else 'request' if tool_calls else 'final')
+                if actual_phase == phase and not entered.is_set():
+                    loop.call_soon_threadsafe(entered.set)
+                    if not release_worker.wait(timeout=5):
+                        raise RuntimeError('Test did not release its worker')
+                    super().append_message(id, role, content, tool_calls, tool_call_id)
+                    settled.set()
+                else:
+                    super().append_message(id, role, content, tool_calls, tool_call_id)
+
+        repo = DelayedRepository()
+        selection = AIMessage(content='', tool_calls=[call()]) if phase in ('request', 'tool') else None
+        model = FakeModel(selection, chunks=('old-answer',))
+
+        async def reserved_turn():
+            try:
+                return [event async for event in ChatService(repo, model, settings()).stream_turn(42, 'old-question')]
+            finally:
+                reservation['held'] = False
+
+        task = asyncio.create_task(reserved_turn())
+        try:
+            await asyncio.wait_for(entered.wait(), timeout=2)
+            for _ in range(cancel_count):
+                task.cancel()
+                done, _ = await asyncio.wait({task}, timeout=0.02)
+                assert task not in done, 'The turn exited while its database worker was still writing'
+                assert reservation['held'] is True
+                assert settled.is_set() is False
+        finally:
+            release_worker.set()
+            with pytest.raises(asyncio.CancelledError):
+                await task
+
+        assert settled.is_set() and reservation['held'] is False
+        saved = copy.deepcopy(repo.rows)
+        next_model = FakeModel(chunks=('new-answer',))
+        await collect_next(ChatService(repo, next_model, settings()))
+        assert repo.rows[:len(saved)] == saved
+        expected = [('old-question', 'old-answer'), ('new-question', 'new-answer')] if phase == 'final' else [('new-question', 'new-answer')]
+        assert [(turn[0].content, turn[-1].content) for turn in completed_turns(repo.rows)] == expected
+        assert [m.content for m in next_model.selection_prompts[0][1:]] == (
+            ['old-question', 'old-answer', 'new-question'] if phase == 'final' else ['new-question'])
+
+    async def collect_next(service):
+        return [event async for event in service.stream_turn(42, 'new-question')]
+
+    asyncio.run(scenario())

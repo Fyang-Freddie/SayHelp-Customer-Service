@@ -29,6 +29,29 @@ class ChatService:
         self.model_service = model_service
         self.settings = settings
 
+    async def _append_message(self, conversation_id: int, role: str, content: str | None,
+                              tool_calls: list[dict] | None = None,
+                              tool_call_id: str | None = None) -> None:
+        """Settle an in-flight write before cancellation releases its reservation."""
+        worker = asyncio.create_task(asyncio.to_thread(
+            self.repository.append_message, conversation_id, role, content,
+            tool_calls=tool_calls, tool_call_id=tool_call_id))
+        try:
+            await asyncio.shield(worker)
+        except asyncio.CancelledError:
+            # Cancellation cannot stop the sync transaction. Repeated cancellation
+            # must also wait so this write cannot land inside the following turn.
+            while not worker.done():
+                try:
+                    await asyncio.shield(worker)
+                except asyncio.CancelledError:
+                    continue
+                except Exception:
+                    break
+            if not worker.cancelled():
+                worker.exception()  # Retrieve any write error; preserve cancellation.
+            raise
+
     async def stream_turn(self, conversation_id: int, message: str) -> AsyncIterator[ChatEvent]:
         # The HTTP composition root reserves the conversation before entering SSE.
         conversation = await asyncio.to_thread(self.repository.get_conversation, conversation_id)
@@ -38,7 +61,7 @@ class ChatService:
         system = SystemMessage(content=render_service_system_prompt())
         current = HumanMessage(content=message)
         messages = prepare_context(rows, system, current, self.settings)
-        await asyncio.to_thread(self.repository.append_message, conversation_id, 'user', message)
+        await self._append_message(conversation_id, 'user', message)
 
         tools = build_tools(self.repository, conversation_id)
         selection = await self.model_service.choose_tool(messages, list(tools.values()))
@@ -51,7 +74,7 @@ class ChatService:
             calls.sort(key=lambda call: order.get(call.get('id'), len(order)))
         suffix = []
         if calls:
-            await asyncio.to_thread(self.repository.append_message, conversation_id,
+            await self._append_message(conversation_id,
                                     'assistant', selection.text or None, calls)
             ids = [call.get('id') for call in calls]
             if any(not isinstance(id, str) or not id for id in ids) or len(set(ids)) != len(ids):
@@ -67,7 +90,7 @@ class ChatService:
                 else:
                     result = ToolMessage(content='本轮最多执行一个工具，此调用已跳过。',
                                          tool_call_id=call['id'], status='error')
-                await asyncio.to_thread(self.repository.append_message, conversation_id,
+                await self._append_message(conversation_id,
                                         'tool', result.content, tool_call_id=result.tool_call_id)
                 suffix.append(result)
                 if index == 0:
@@ -79,5 +102,5 @@ class ChatService:
         async for text in self.model_service.stream_chat(messages):
             parts.append(text)
             yield ChatEvent('token', {'text': text})
-        await asyncio.to_thread(self.repository.append_message, conversation_id,
+        await self._append_message(conversation_id,
                                 'assistant', ''.join(parts))
