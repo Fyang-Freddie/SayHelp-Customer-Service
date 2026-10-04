@@ -38,15 +38,16 @@ def _ingestion_session(session_factory):
         engine = probe.get_bind()
     with engine.connect() as connection:
         locked = connection.execute(text(f'SELECT GET_LOCK({_LOCK_NAME}, 30)')).scalar()
-        connection.commit()
         if locked != 1:
+            connection.rollback()
             raise RuntimeError('Knowledge ingestion is already running or its lock is unavailable')
         try:
+            connection.commit()
             with session_factory(bind=connection) as session, session.begin():
                 yield session
         finally:
-            connection.rollback()
             try:
+                connection.rollback()
                 connection.execute(text(f'SELECT RELEASE_LOCK({_LOCK_NAME})'))
                 connection.commit()
             except Exception:
@@ -103,7 +104,7 @@ def _find_chain(rows, keys):
 
 def ingest_markdown(session_factory, path, content_type) -> list[int]:
     """Append or reuse a whole ordered document chain in one locked transaction."""
-    drafts = chunk_markdown(_normalize(Path(path).read_text(encoding='utf-8')),
+    drafts = chunk_markdown(Path(path).read_text(encoding='utf-8'),
                             content_type=_normalize(content_type))
     keys = [_key(draft) for draft in drafts]
     if not keys:

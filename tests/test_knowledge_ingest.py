@@ -1,5 +1,6 @@
 import pytest
-from sqlalchemy import event, func, select
+from sqlalchemy import create_engine, event, func, select, text
+from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import sessionmaker
 
 from app.db import Faq
@@ -113,3 +114,44 @@ def test_repeated_identical_chunks_keep_source_order(sessions, tmp_path):
     ids = ingest_markdown(sessions, path, 'policy')
     assert len(set(ids)) == 2
     assert ingest_markdown(sessions, path, 'policy') == ids
+
+
+def test_markdown_preserves_indentation_and_error_line(sessions, tmp_path):
+    from app.knowledge_ingest import ingest_markdown
+    path = markdown(tmp_path, '    # literal\nBody.')
+    ids = ingest_markdown(sessions, path, 'manual')
+    with sessions() as session:
+        row = session.get(KnowledgeChunk, ids[0])
+        assert row.questions == ''
+        assert '# literal' in row.answer
+    path.write_text('\n\n# Manual\n' + 'A' * 900 + '.', encoding='utf-8')
+    with pytest.raises(ValueError, match=r'line 4: oversized indivisible sentence'):
+        ingest_markdown(sessions, path, 'manual')
+
+
+def test_lock_released_if_commit_after_acquisition_fails(sessions, database_url):
+    from app.knowledge_ingest import _ingestion_session
+    engine = sessions.kw['bind']
+    state = {'raised': False}
+
+    def fail_first_commit(connection):
+        if not state['raised']:
+            state['raised'] = True
+            raise RuntimeError('injected lock acquisition commit failure')
+
+    event.listen(engine, 'commit', fail_first_commit)
+    try:
+        with pytest.raises(RuntimeError, match='injected lock acquisition commit failure'):
+            with _ingestion_session(sessions):
+                pass
+    finally:
+        event.remove(engine, 'commit', fail_first_commit)
+
+    independent = create_engine(database_url, poolclass=NullPool)
+    try:
+        with independent.connect() as connection:
+            lock_name = "CONCAT('sayhelp_ingest_', MD5(DATABASE()))"
+            assert connection.execute(text(f'SELECT GET_LOCK({lock_name}, 0)')).scalar() == 1
+            assert connection.execute(text(f'SELECT RELEASE_LOCK({lock_name})')).scalar() == 1
+    finally:
+        independent.dispose()
