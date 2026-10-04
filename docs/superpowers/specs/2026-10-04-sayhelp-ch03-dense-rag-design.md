@@ -24,13 +24,13 @@ For each chunk, `category`, `questions`, and `answer` are joined in a stable lab
 
 Parse Markdown heading levels into a hierarchy before splitting body text. Preserve heading context even when a section becomes several chunks. Keep sentences whole: recursively split oversized paragraphs at paragraph, then sentence boundaries (`。！？.!?`), choosing the nearest valid sentence end within the size target. Use 800 characters per chunk and 120 characters of complete-sentence overlap as initial defaults. If one sentence cannot fit within the BGE-M3 input limit, reject it with a source-location error; never emit half a sentence. Avoid empty or duplicate-only chunks. For a large Markdown table, repeat its header and separator in each row-group chunk; never split one table row across chunks. Record source order through `prev_chunk_id`/`next_chunk_id` after MySQL IDs are assigned. Reject malformed or oversized rows with a source-location error rather than silently truncating.
 
-Chunk limits and overlap are configurable and verified on labeled policy, FAQ, manual, and table examples. Ingestion is repeatable for unchanged input: normalize source content and compare the complete authoritative fields within a serialized ingestion run before inserting. Existing rows retain their primary keys so the Milvus key remains stable. Replacing or deleting previously indexed source documents is outside this chapter's ingestion command; it must not silently overwrite a done vector or claim stale content was removed. Set `is_key_clause` only for explicitly marked critical clauses in the source; otherwise use the DDL default `0`.
+Chunk limits and overlap are configurable and verified on labeled policy, FAQ, manual, and table examples. Ingestion is repeatable for unchanged input: normalize source content and compare the complete authoritative fields within a serialized ingestion run before inserting. Existing rows retain their primary keys so the Milvus key remains stable. Replacing or deleting previously indexed source documents is outside this chapter's ingestion command; it must not silently overwrite a done vector or claim stale content was removed. Set `is_key_clause` only for Markdown `> [!IMPORTANT]` callouts; otherwise use the DDL default `0`.
 
 ## Conversation mining
 
 Read existing MySQL `messages` grouped by conversation and preserve message order. Include user and final assistant content as evidence; exclude tool-call JSON, tool result payloads, incomplete turns, and credentials. Process a bounded number of conversations per LLM request to prevent cross-conversation leakage. Use the configured chat model to extract only supported question-answer pairs; require a valid structured result, reject invented or unsupported answers, and retain `batch_no` and `source_ref` in `qa_extraction_staging`.
 
-After all selected batches are staged, run a global deduplication pass across the staged rows and existing knowledge, not a per-batch insert. Normalize question and answer text for exact duplicates, then use BGE-M3 similarity to identify candidate near-duplicates; keep distinct or conflicting answers unless evidence confirms they are equivalent. Mark every staged row `kept` or `discarded`. Insert kept QA into `knowledge_chunks` with `content_type='faq'`, actual `questions`, and a suitable conversation-derived `category`. Commit final knowledge insertion and staging status changes in one MySQL transaction. Reruns skip terminal staging rows and recover unfinished extraction and vectorization work. Keep the staging table for audit until explicitly cleared.
+After all selected batches are staged, run a global deduplication pass across the staged rows and existing knowledge, not a per-batch insert. Normalize question and answer text for exact duplicates, then use BGE-M3 similarity to identify candidate near-duplicates; keep distinct or conflicting answers unless evidence confirms they are equivalent. Mark every staged row `kept` or `discarded`. Insert kept QA into `knowledge_chunks` with `content_type='faq'`, actual `questions`, and `category='历史客服对话'` because the supplied staging schema has no topic category. Commit final knowledge insertion and staging status changes in one MySQL transaction. Reruns skip terminal staging rows and recover unfinished extraction and vectorization work. Keep the staging table for audit until explicitly cleared.
 
 ## Idempotent dual write and recovery
 
@@ -53,3 +53,45 @@ Append `dev-notes/ch03.md` immediately after brainstorm approval, plan approval,
 - MilvusClient collection, upsert, and search API (Context7): https://github.com/milvus-io/pymilvus/blob/master/_autodocs/api-reference/milvus-client.md
 - SQLAlchemy 2.0 transaction and locking API (Context7): https://docs.sqlalchemy.org/en/20/orm/session_api.html
 - Hugging Face sentence similarity result contract (Context7): https://huggingface.co/docs/huggingface_hub/package_reference/inference_client
+
+## Authoritative Chapter 3 MySQL DDL supplied by the user
+
+Copy this SQL into the executable schema file without changing definitions. The surrounding implementation may add setup logic but must not alter these two tables.
+
+```sql
+SET NAMES utf8mb4;
+
+CREATE TABLE knowledge_chunks (
+  id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'chunk 主键,与 Milvus 集合主键对齐',
+  category         VARCHAR(255)    NOT NULL                COMMENT '分类 / 上级标题路径,进向量化文本',
+  questions        TEXT            NOT NULL                COMMENT '问法或本节标题,多个问法换行分隔,进向量化文本',
+  answer           TEXT            NOT NULL                COMMENT '正文答案,进向量化文本',
+  section_path     VARCHAR(512)    NULL                    COMMENT '章节路径,元数据,溯源用,不进向量',
+  content_type     VARCHAR(32)     NULL                    COMMENT '内容类型:faq / policy / manual 等,元数据',
+  is_key_clause    TINYINT(1)      NOT NULL DEFAULT 0      COMMENT '是否关键条款,0 否 1 是,元数据',
+  prev_chunk_id    BIGINT UNSIGNED NULL                    COMMENT '前一块指针,元数据',
+  next_chunk_id    BIGINT UNSIGNED NULL                    COMMENT '后一块指针,元数据',
+  vector_id        VARCHAR(64)     NULL                    COMMENT 'Milvus 集合 knowledge 里的主键,写入后回填',
+  vectorize_status ENUM('pending','done') NOT NULL DEFAULT 'pending' COMMENT '待向量化 / 已向量化,双写幂等靠它',
+  created_at       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  updated_at       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (id),
+  KEY idx_category (category),
+  KEY idx_vectorize_status (vectorize_status),
+  CONSTRAINT fk_chunks_prev FOREIGN KEY (prev_chunk_id) REFERENCES knowledge_chunks (id) ON DELETE SET NULL,
+  CONSTRAINT fk_chunks_next FOREIGN KEY (next_chunk_id) REFERENCES knowledge_chunks (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库 chunk 原文权威源';
+
+CREATE TABLE qa_extraction_staging (
+  id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '暂存行主键',
+  batch_no         VARCHAR(64)     NOT NULL                COMMENT '抽取批次号,一批几十个会话跑一次,分批防串味、按批追溯',
+  source_ref       VARCHAR(255)    NULL                    COMMENT '来源会话 / 导出文件标识,溯源用,不入最终知识库',
+  question         TEXT            NOT NULL                COMMENT 'LLM 从会话抽出的用户问法',
+  answer           TEXT            NOT NULL                COMMENT 'LLM 从会话抽出的客服答案',
+  status           ENUM('extracted','kept','discarded') NOT NULL DEFAULT 'extracted' COMMENT '已抽出待去重 / 去重保留 / 去重丢弃',
+  created_at       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '抽取写入时间',
+  PRIMARY KEY (id),
+  KEY idx_batch_no (batch_no),
+  KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='历史对话抽 QA 的离线中转暂存表:分批抽取、整体去重,保留项入 knowledge_chunks,建库完成可清空';
+```
