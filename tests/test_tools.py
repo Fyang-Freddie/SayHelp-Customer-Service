@@ -20,15 +20,26 @@ class FakeRepository:
         self.keywords = []
         self.tickets = []
 
-    def find_faq(self, keyword, limit=5):
-        self.keywords.append(keyword)
-        if keyword == '退货':
-            return [SimpleNamespace(question='退货政策是什么', answer='七天内申请', category='售后')]
-        return []
+    def find_faq(self, *args, **kwargs):
+        raise AssertionError('Online tools must never use SQL keyword lookup')
 
     def create_ticket(self, conversation_id, description, ticket_type):
         self.tickets.append((conversation_id, description, ticket_type))
         return 'T-demo'
+
+
+class FakeKnowledgeSearch:
+    """Deterministic external-search double, never SQL keyword fallback."""
+    def __init__(self, repository=None):
+        self.keywords = getattr(repository, 'keywords', [])
+
+    def search(self, keyword, *, limit=5):
+        self.keywords.append(keyword)
+        if keyword == '退货':
+            return [SimpleNamespace(question='退货政策是什么', answer='七天内申请', category='售后')]
+        if keyword in ('邮费', '邮费是多少'):
+            return [SimpleNamespace(question='订单运费如何计算？', answer='运费根据收货地区与订单金额计算，请以结算页显示为准。', category='配送')]
+        return []
 
 
 def call(name, args):
@@ -40,7 +51,7 @@ def execute(executor, name, args):
 
 
 def test_registry_and_pydantic_schemas():
-    tools = build_tools(FakeRepository(), 123)
+    tools = build_tools(FakeRepository(), 123, knowledge_search=FakeKnowledgeSearch())
     expected = {'query_order': {'order_id'}, 'query_product': {'product_query'},
                 'query_logistics': {'order_id'}, 'query_faq': {'keyword'},
                 'create_ticket': {'description', 'ticket_type'}}
@@ -63,7 +74,7 @@ def test_random_demo_results_are_labeled(name, args, monkeypatch):
         choices.append(values)
         return values[0]
     monkeypatch.setattr('app.tools.random.choice', choose)
-    result = execute(ToolExecutor(build_tools(FakeRepository(), 123)), name, args)
+    result = execute(ToolExecutor(build_tools(FakeRepository(), 123, knowledge_search=FakeKnowledgeSearch())), name, args)
     payload = json.loads(result.content)
     assert payload['mock'] is True
     assert '模拟' in payload['label']
@@ -71,20 +82,25 @@ def test_random_demo_results_are_labeled(name, args, monkeypatch):
     assert result.tool_call_id == 'call-42'
 
 
-def test_faq_preserves_literal_wording_and_explicit_miss():
+def test_query_faq_contract_and_semantic_postage_hit():
     repo = FakeRepository()
-    executor = ToolExecutor(build_tools(repo, 123))
+    executor = ToolExecutor(build_tools(repo, 123, knowledge_search=FakeKnowledgeSearch(repo)))
     hit = json.loads(execute(executor, 'query_faq', {'keyword': '退货'}).content)
-    miss = json.loads(execute(executor, 'query_faq', {'keyword': '邮费'}).content)
+    postage = json.loads(execute(executor, 'query_faq', {'keyword': '邮费'}).content)
+    miss = json.loads(execute(executor, 'query_faq', {'keyword': '火星天气'}).content)
     assert hit['matches'][0]['answer'] == '七天内申请'
     assert miss['matches'] == [] and '未找到' in miss['message']
-    assert repo.keywords == ['退货', '邮费']
+    assert repo.keywords == ['退货', '邮费', '火星天气']
+    assert set(postage) == {'keyword', 'matches', 'message'}
+    assert postage['keyword'] == '邮费'
+    assert set(postage['matches'][0]) == {'question', 'answer', 'category'}
+    assert postage['matches'][0]['question'] == '订单运费如何计算？'
 
 
 def test_ticket_uses_captured_conversation_and_persists(sessions):
     repo = Repository(sessions)
     cid = repo.create_conversation('guest-tool')
-    result = execute(ToolExecutor(build_tools(repo, cid)), 'create_ticket',
+    result = execute(ToolExecutor(build_tools(repo, cid, knowledge_search=FakeKnowledgeSearch(repo))), 'create_ticket',
                      {'description': '商品破损', 'ticket_type': '售后'})
     number = json.loads(result.content)['ticket_no']
     with sessions() as session:
@@ -101,7 +117,7 @@ def test_ticket_uses_captured_conversation_and_persists(sessions):
     ('create_ticket', ['wrong-shape'])])
 def test_invalid_calls_are_safe_and_have_no_side_effect(name, args):
     repo = FakeRepository()
-    result = execute(ToolExecutor(build_tools(repo, 123)), name, args)
+    result = execute(ToolExecutor(build_tools(repo, 123, knowledge_search=FakeKnowledgeSearch(repo))), name, args)
     assert result.status == 'error'
     assert result.tool_call_id == 'call-42'
     assert repo.keywords == [] and repo.tickets == []
@@ -144,7 +160,7 @@ def test_ticket_timeout_inserts_once_even_when_worker_finishes_later(sessions):
             time.sleep(0.08)
             return repo.create_ticket(conversation_id, description, ticket_type)
     async def scenario():
-        executor = ToolExecutor(build_tools(SlowRepository(), cid), timeout_seconds=0.01)
+        executor = ToolExecutor(build_tools(SlowRepository(), cid, knowledge_search=FakeKnowledgeSearch()), timeout_seconds=0.01)
         result = await executor.execute(call('create_ticket', {'description': '需人工核实', 'ticket_type': '咨询'}))
         assert result.status == 'error' and '确认' in result.content
         assert result.tool_call_id == 'call-42'

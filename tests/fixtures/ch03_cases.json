@@ -1,0 +1,8 @@
+[
+  {"id":"ch02-postage-paraphrase","keyword":"邮费","user_message":"邮费是多少","expected_match":true,"expected_question":"订单运费如何计算？","fake_score":0.92},
+  {"id":"shipping-full-question","keyword":"寄到家要多少钱","expected_match":true,"expected_question":"订单运费如何计算？","fake_score":0.88},
+  {"id":"shipping-direct","keyword":"运费如何计算","expected_match":true,"expected_question":"订单运费如何计算？","fake_score":0.97},
+  {"id":"unrelated-weather","keyword":"明天会下雨吗","expected_match":false,"fake_score":0.21},
+  {"id":"unrelated-math","keyword":"一加一等于几","expected_match":false,"fake_score":0.18},
+  {"id":"unrelated-sports","keyword":"世界杯冠军是谁","expected_match":false,"fake_score":0.41}
+]

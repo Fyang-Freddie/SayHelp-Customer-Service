@@ -8,6 +8,7 @@ from typing import Literal
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 
 from app.config import Settings
+from app.knowledge_search import KnowledgeSearch
 from app.history import UnknownConversation, prepare_context
 from app.model_service import ModelService
 from app.prompts import render_service_system_prompt
@@ -24,10 +25,11 @@ class ChatEvent:
 
 class ChatService:
     def __init__(self, repository: Repository, model_service: ModelService,
-                 settings: Settings) -> None:
+                 settings: Settings, knowledge_search: KnowledgeSearch) -> None:
         self.repository = repository
         self.model_service = model_service
         self.settings = settings
+        self.knowledge_search = knowledge_search
 
     async def _append_message(self, conversation_id: int, role: str, content: str | None,
                               tool_calls: list[dict] | None = None,
@@ -63,7 +65,7 @@ class ChatService:
         messages = prepare_context(rows, system, current, self.settings)
         await self._append_message(conversation_id, 'user', message)
 
-        tools = build_tools(self.repository, conversation_id)
+        tools = build_tools(self.repository, conversation_id, self.knowledge_search)
         selection = await self.model_service.choose_tool(messages, list(tools.values()))
         # LangChain separates invalid JSON calls; both still need matching results.
         calls = [*selection.tool_calls, *selection.invalid_tool_calls]

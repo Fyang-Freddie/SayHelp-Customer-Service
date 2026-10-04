@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 import os
+import math
 from pathlib import Path
 
 from dotenv import dotenv_values
@@ -19,6 +20,7 @@ class Settings:
     max_turns_per_conversation: int = 20
     milvus_uri: str = 'http://127.0.0.1:19530'
     bge_cache_dir: str | None = None
+    knowledge_min_score: float = 0.55
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -45,6 +47,15 @@ class Settings:
                 raise ValueError(f"{name} must be a positive integer")
             return result
 
+        def minimum_score() -> float:
+            try:
+                result = float(value('KNOWLEDGE_MIN_SCORE') or '0.55')
+            except ValueError:
+                raise ValueError('KNOWLEDGE_MIN_SCORE must be finite and within [-1, 1]') from None
+            if not math.isfinite(result) or not -1 <= result <= 1:
+                raise ValueError('KNOWLEDGE_MIN_SCORE must be finite and within [-1, 1]')
+            return result
+
         base_url = required("CHAT_BASE_URL")
         model = required("CHAT_MODEL")
         api_key = required("CHAT_API_KEY")
@@ -64,4 +75,5 @@ class Settings:
             database_url=required("DATABASE_URL"),
             milvus_uri=value("MILVUS_URI") or 'http://127.0.0.1:19530',
             bge_cache_dir=value("BGE_CACHE_DIR"),
+            knowledge_min_score=minimum_score(),
         )

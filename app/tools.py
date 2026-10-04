@@ -7,6 +7,7 @@ from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
 from app.repository import Repository
+from app.knowledge_search import KnowledgeSearch, KnowledgeSearchUnavailable
 
 
 NonBlankString = Annotated[str, StringConstraints(min_length=1, pattern=r'\S')]
@@ -33,7 +34,7 @@ class TicketInput(ToolInput):
     ticket_type: Literal['售后', '投诉', '咨询']
 
 
-def build_tools(repository: Repository, conversation_id: int) -> dict[str, BaseTool]:
+def build_tools(repository: Repository, conversation_id: int, knowledge_search: KnowledgeSearch) -> dict[str, BaseTool]:
     """Capture the active conversation; the model cannot supply its identity."""
     @tool(args_schema=OrderInput)
     def query_order(order_id: str) -> dict:
@@ -58,9 +59,14 @@ def build_tools(repository: Repository, conversation_id: int) -> dict[str, BaseT
 
     @tool(args_schema=FaqInput)
     def query_faq(keyword: str) -> dict:
-        """从客户原话提取字面关键词查询 FAQ 问题字段。保留原词，不换同义词，例如邮费不能改成运费。"""
+        """用客户的问题或关键词语义检索知识库，支持同义问法（如邮费与运费）。仅依据返回答案回答；无匹配或暂时不可用时请人工核实。"""
+        try:
+            rows = knowledge_search.search(keyword, limit=5)
+        except KnowledgeSearchUnavailable:
+            return {'keyword': keyword, 'matches': [],
+                    'message': '知识库查询暂时不可用，请稍后重试或人工核实'}
         matches = [{'question': row.question, 'answer': row.answer, 'category': row.category}
-                   for row in repository.find_faq(keyword, limit=5)]
+                   for row in rows]
         return {'keyword': keyword, 'matches': matches,
                 'message': '找到相关常见问题' if matches else '未找到匹配的常见问题，请人工核实'}
 

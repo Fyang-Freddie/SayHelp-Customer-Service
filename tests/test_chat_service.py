@@ -13,6 +13,7 @@ from app.history import InputBudgetExceeded, UnknownConversation
 from app.model_service import ModelService
 from app.repository import Repository
 from test_db import database_url, sessions
+from test_tools import FakeKnowledgeSearch
 
 
 def settings(**overrides):
@@ -44,11 +45,8 @@ class MemoryRepository:
         self.rows.append(SimpleNamespace(role=role, content=content,
                                         tool_calls=copy.deepcopy(tool_calls), tool_call_id=tool_call_id))
 
-    def find_faq(self, keyword, limit=5):
-        self.keywords.append(keyword)
-        if keyword == '退货':
-            return [SimpleNamespace(question='退货政策是什么', answer='七天内申请', category='售后')]
-        return []
+    def find_faq(self, *args, **kwargs):
+        raise AssertionError('Online chat must never use SQL keyword lookup')
 
     def create_ticket(self, id, description, ticket_type):
         self.tickets.append((id, description, ticket_type))
@@ -88,7 +86,7 @@ def run(service, message='退货政策是什么', id=42):
 
 def test_no_tool_answer_streams_and_saves_only_final_answer():
     repo, model = MemoryRepository(), FakeModel()
-    events = run(ChatService(repo, model, settings()))
+    events = run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     assert [(event.kind, event.data) for event in events] == [('token', {'text': '流式'}), ('token', {'text': '回答'})]
     assert [(row.role, row.content) for row in repo.rows] == [('user', '退货政策是什么'), ('assistant', '流式回答')]
     assert [tool.name for tool in model.tools] == ['query_order', 'query_product', 'query_logistics', 'query_faq', 'create_ticket']
@@ -98,7 +96,7 @@ def test_no_tool_answer_streams_and_saves_only_final_answer():
 def test_one_tool_status_pairing_and_persisted_json():
     repo = MemoryRepository()
     model = FakeModel(AIMessage(content='', tool_calls=[call()]))
-    events = run(ChatService(repo, model, settings()))
+    events = run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     assert [(event.kind, event.data) for event in events[:2]] == [
         ('tool_status', {'name': 'query_faq', 'state': 'running'}),
         ('tool_status', {'name': 'query_faq', 'state': 'success'})]
@@ -115,7 +113,7 @@ def test_one_tool_status_pairing_and_persisted_json():
 def test_multiple_calls_execute_only_first_and_pair_every_request():
     repo = MemoryRepository()
     model = FakeModel(AIMessage(content='', tool_calls=[call(), call('create_ticket', {'description': '咨询', 'ticket_type': '咨询'}, 'call-2')]))
-    run(ChatService(repo, model, settings()))
+    run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     assert repo.keywords == ['退货'] and repo.tickets == []
     assert [row.tool_call_id for row in repo.rows if row.role == 'tool'] == ['call-1', 'call-2']
     skipped = model.final_prompts[0][-1]
@@ -123,12 +121,12 @@ def test_multiple_calls_execute_only_first_and_pair_every_request():
     assert len(repo.rows[1].tool_calls) == 2
 
 
-@pytest.mark.parametrize('word,keyword,has_match', [('退货政策是什么', '退货', True), ('邮费是多少', '邮费', False)])
+@pytest.mark.parametrize('word,keyword,has_match', [('退货政策是什么', '退货', True), ('邮费是多少', '邮费', True)])
 def test_labeled_faq_wording_handoff(word, keyword, has_match):
-    # These labels validate literal tool/result handoff. Live model selection is a later acceptance gate.
+    # Fake retrieval validates semantic result handoff; live BGE/Milvus acceptance is separate.
     repo = MemoryRepository()
     model = FakeModel(AIMessage(content='', tool_calls=[call(args={'keyword': keyword})]))
-    run(ChatService(repo, model, settings()), word)
+    run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)), word)
     payload = json.loads(model.final_prompts[0][-1].content)
     assert repo.keywords == [keyword]
     assert payload['keyword'] == keyword and bool(payload['matches']) is has_match
@@ -137,9 +135,9 @@ def test_labeled_faq_wording_handoff(word, keyword, has_match):
 def test_restarted_service_reconstructs_completed_tool_turn():
     repo = MemoryRepository()
     first = FakeModel(AIMessage(content='', tool_calls=[call()]))
-    run(ChatService(repo, first, settings()))
+    run(ChatService(repo, first, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     second = FakeModel()
-    run(ChatService(repo, second, settings()), '接下来怎么办')
+    run(ChatService(repo, second, settings(), knowledge_search=FakeKnowledgeSearch(repo)), '接下来怎么办')
     prompt = second.selection_prompts[0]
     assert [m.type for m in prompt] == ['system', 'human', 'ai', 'tool', 'ai', 'human']
     assert prompt[2].tool_calls == first.selection.tool_calls
@@ -150,10 +148,10 @@ def test_restarted_service_reconstructs_completed_tool_turn():
 def test_budget_pruning_removes_whole_tool_turn_without_deleting_rows():
     repo = MemoryRepository()
     first = FakeModel(AIMessage(content='', tool_calls=[call()]), chunks=('x' * 20000,))
-    run(ChatService(repo, first, settings()))
+    run(ChatService(repo, first, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     saved = copy.deepcopy(repo.rows)
     second = FakeModel()
-    run(ChatService(repo, second, settings()), '继续')
+    run(ChatService(repo, second, settings(), knowledge_search=FakeKnowledgeSearch(repo)), '继续')
     assert [m.type for m in second.selection_prompts[0]] == ['system', 'human']
     assert repo.rows[:len(saved)] == saved
 
@@ -161,9 +159,9 @@ def test_budget_pruning_removes_whole_tool_turn_without_deleting_rows():
 def test_max_turns_prunes_context_without_database_deletion():
     repo = MemoryRepository()
     for text in ['old', 'recent']:
-        run(ChatService(repo, FakeModel(chunks=(text,)), settings()), text)
+        run(ChatService(repo, FakeModel(chunks=(text,)), settings(), knowledge_search=FakeKnowledgeSearch(repo)), text)
     model = FakeModel()
-    run(ChatService(repo, model, settings(max_turns_per_conversation=1)), 'current')
+    run(ChatService(repo, model, settings(max_turns_per_conversation=1), knowledge_search=FakeKnowledgeSearch(repo)), 'current')
     assert [m.content for m in model.selection_prompts[0][1:]] == ['recent', 'recent', 'current']
     assert len(repo.rows) == 6
 
@@ -173,11 +171,11 @@ def test_upstream_failure_retains_audit_trail_without_final_assistant(stage):
     repo = MemoryRepository()
     model = FakeModel(AIMessage(content='', tool_calls=[call()]), **{stage + '_error': RuntimeError('private error')})
     with pytest.raises(RuntimeError):
-        run(ChatService(repo, model, settings()))
+        run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     assert [row.role for row in repo.rows] == (['user'] if stage == 'selection' else ['user', 'assistant', 'tool'])
     saved_count = len(repo.rows)
     restarted = FakeModel()
-    run(ChatService(repo, restarted, settings()), 'new turn')
+    run(ChatService(repo, restarted, settings(), knowledge_search=FakeKnowledgeSearch(repo)), 'new turn')
     assert [m.type for m in restarted.selection_prompts[0]] == ['system', 'human']
     assert len(repo.rows) == saved_count + 2
 
@@ -185,16 +183,16 @@ def test_upstream_failure_retains_audit_trail_without_final_assistant(stage):
 def test_unknown_conversation_and_input_budget_fail_before_writing():
     repo, model = MemoryRepository(), FakeModel()
     with pytest.raises(UnknownConversation):
-        run(ChatService(repo, model, settings()), id=99)
+        run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)), id=99)
     with pytest.raises(InputBudgetExceeded):
-        run(ChatService(repo, model, settings(context_token_budget=20, response_token_reserve=10)))
+        run(ChatService(repo, model, settings(context_token_budget=20, response_token_reserve=10), knowledge_search=FakeKnowledgeSearch(repo)))
     assert repo.rows == [] and model.selection_prompts == []
 
 
 def test_invalid_name_status_does_not_publish_raw_model_name():
     repo = MemoryRepository()
     model = FakeModel(AIMessage(content='', tool_calls=[call('private-model-name')]))
-    events = run(ChatService(repo, model, settings()))
+    events = run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     assert events[0].data == {'name': 'unknown', 'state': 'running'}
     assert events[1].data == {'name': 'unknown', 'state': 'error'}
     assert model.final_prompts[0][-1].status == 'error'
@@ -204,13 +202,13 @@ def test_real_mysql_persists_order_json_and_reconstructs_after_restart(sessions)
     repo = Repository(sessions)
     cid = repo.create_conversation('guest-chat')
     model = FakeModel(AIMessage(content='', tool_calls=[call()]))
-    run(ChatService(repo, model, settings()), id=cid)
+    run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)), id=cid)
     rows = repo.load_messages(cid)
     assert [r.role for r in rows] == ['user', 'assistant', 'tool', 'assistant']
     assert rows[1].tool_calls == model.selection.tool_calls
     assert rows[2].tool_call_id == rows[1].tool_calls[0]['id']
     next_model = FakeModel()
-    run(ChatService(Repository(sessions), next_model, settings()), '继续', cid)
+    run(ChatService(Repository(sessions), next_model, settings(), knowledge_search=FakeKnowledgeSearch()), '继续', cid)
     assert [m.type for m in next_model.selection_prompts[0]] == ['system', 'human', 'ai', 'tool', 'ai', 'human']
 
 
@@ -248,13 +246,13 @@ def test_invalid_json_call_is_paired_and_skips_later_valid_call_after_restart():
                               {'id': 'bad-1', 'type': 'function', 'function': {'name': 'query_faq', 'arguments': '{bad json'}},
                               {'id': 'good-2', 'type': 'function', 'function': {'name': 'query_faq', 'arguments': '{"keyword":"退货"}'}}]})
     model = FakeModel(selection)
-    run(ChatService(repo, model, settings()))
+    run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     assert repo.keywords == []
     assert [row.tool_call_id for row in repo.rows if row.role == 'tool'] == ['bad-1', 'good-2']
     assert len(repo.rows[1].tool_calls) == 2
     assert all(m.status == 'error' for m in model.final_prompts[0] if isinstance(m, ToolMessage))
     restarted = FakeModel()
-    run(ChatService(repo, restarted, settings()), '继续')
+    run(ChatService(repo, restarted, settings(), knowledge_search=FakeKnowledgeSearch(repo)), '继续')
     assert restarted.selection_prompts[0][2].invalid_tool_calls[0]['id'] == 'bad-1'
 
 
@@ -263,7 +261,7 @@ def test_missing_or_duplicate_call_ids_stop_before_any_execution(ids):
     repo = MemoryRepository()
     model = FakeModel(AIMessage(content='', tool_calls=[call(id=id) for id in ids]))
     with pytest.raises(ValueError, match='IDs'):
-        run(ChatService(repo, model, settings()))
+        run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
     assert [row.role for row in repo.rows] == ['user', 'assistant']
     assert repo.keywords == [] and model.final_prompts == []
 
@@ -272,7 +270,7 @@ def test_selection_content_blocks_are_persisted_as_text_in_mysql(sessions):
     repo = Repository(sessions)
     cid = repo.create_conversation('guest-blocks')
     model = FakeModel(AIMessage(content=[{'type': 'text', 'text': '查询中'}], tool_calls=[call()]))
-    run(ChatService(repo, model, settings()), id=cid)
+    run(ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)), id=cid)
     assert repo.load_messages(cid)[1].content == '查询中'
 
 
@@ -308,7 +306,7 @@ def test_cancelled_persistence_settles_before_reservation_release_and_next_turn(
 
         async def reserved_turn():
             try:
-                return [event async for event in ChatService(repo, model, settings()).stream_turn(42, 'old-question')]
+                return [event async for event in ChatService(repo, model, settings(), knowledge_search=FakeKnowledgeSearch(repo)).stream_turn(42, 'old-question')]
             finally:
                 reservation['held'] = False
 
@@ -329,7 +327,7 @@ def test_cancelled_persistence_settles_before_reservation_release_and_next_turn(
         assert settled.is_set() and reservation['held'] is False
         saved = copy.deepcopy(repo.rows)
         next_model = FakeModel(chunks=('new-answer',))
-        await collect_next(ChatService(repo, next_model, settings()))
+        await collect_next(ChatService(repo, next_model, settings(), knowledge_search=FakeKnowledgeSearch(repo)))
         assert repo.rows[:len(saved)] == saved
         expected = [('old-question', 'old-answer'), ('new-question', 'new-answer')] if phase == 'final' else [('new-question', 'new-answer')]
         assert [(turn[0].content, turn[-1].content) for turn in completed_turns(repo.rows)] == expected

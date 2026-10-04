@@ -14,6 +14,7 @@ from app.main import create_app
 from app.model_service import ModelService
 from app.repository import Repository
 from test_db import database_url, sessions
+from test_tools import FakeKnowledgeSearch
 
 
 def settings(**overrides):
@@ -49,11 +50,11 @@ class FakeModel:
 
 def test_app_requires_database_url_or_injected_storage():
     with pytest.raises(ValueError, match='DATABASE_URL'):
-        create_app(settings(), FakeModel())
+        create_app(settings(), FakeModel(), knowledge_search=FakeKnowledgeSearch())
 
 
 def test_stream_emits_decimal_session_chunks_and_persists_final(sessions):
-    app = create_app(settings(), FakeModel(), session_factory=sessions)
+    app = create_app(settings(), FakeModel(), session_factory=sessions, knowledge_search=FakeKnowledgeSearch())
     response = asyncio.run(post(app, {'message': '你好'}))
     assert response.status_code == 200
     assert response.headers['content-type'].startswith('text/event-stream')
@@ -74,7 +75,7 @@ def test_tool_status_precedes_tokens_and_contains_only_public_badge_data(session
             return AIMessage(content='', tool_calls=[{
                 'id': 'request-1', 'name': 'query_order', 'args': {'order_id': 'private-order'},
             }])
-    app = create_app(settings(), ToolModel(), session_factory=sessions)
+    app = create_app(settings(), ToolModel(), session_factory=sessions, knowledge_search=FakeKnowledgeSearch())
     response = asyncio.run(post(app, {'message': '查询订单'}))
     events = parse_events(response.text)
     assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'done']
@@ -91,15 +92,15 @@ def test_restart_uses_completed_persisted_context(sessions):
     class ContextModel(FakeModel):
         async def stream_chat(self, messages):
             yield 'saved' if [m.content for m in messages[1:-1]] == ['first', '你好'] else 'lost'
-    first = parse_events(asyncio.run(post(create_app(settings(), FakeModel(), sessions), {'message': 'first'})).text)
+    first = parse_events(asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch()), {'message': 'first'})).text)
     cid = first[0][1]['conversation_id']
-    restarted = create_app(settings(), ContextModel(), sessions)
+    restarted = create_app(settings(), ContextModel(), sessions, knowledge_search=FakeKnowledgeSearch())
     response = asyncio.run(post(restarted, {'message': 'second', 'conversation_id': cid}))
     assert parse_events(response.text)[1] == ('token', {'text': 'saved'})
 
 
 def test_unknown_decimal_conversation_returns_404_before_stream(sessions):
-    response = asyncio.run(post(create_app(settings(), FakeModel(), sessions),
+    response = asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch()),
                                 {'message': '你好', 'conversation_id': '18446744073709551615'}))
     assert response.status_code == 404
     assert 'text/event-stream' not in response.headers['content-type']
@@ -107,7 +108,7 @@ def test_unknown_decimal_conversation_returns_404_before_stream(sessions):
 
 @pytest.mark.parametrize('cid', ['missing', '', '0', '-1', '+1', '1.0', ' 1', '١', '18446744073709551616', 1])
 def test_malformed_conversation_returns_422_before_stream(cid, sessions):
-    response = asyncio.run(post(create_app(settings(), FakeModel(), sessions),
+    response = asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch()),
                                 {'message': '你好', 'conversation_id': cid}))
     assert response.status_code == 422
     assert 'text/event-stream' not in response.headers['content-type']
@@ -116,7 +117,7 @@ def test_malformed_conversation_returns_422_before_stream(cid, sessions):
 def test_oversized_request_creates_no_conversation_and_preserves_existing(sessions):
     repo = Repository(sessions)
     cid = repo.create_conversation('existing')
-    app = create_app(settings(), FakeModel(), sessions)
+    app = create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch())
     for id in (None, str(cid)):
         response = asyncio.run(post(app, {'message': 'x' * 20000, 'conversation_id': id}))
         assert response.status_code == 413
@@ -136,7 +137,7 @@ def test_upstream_error_is_safe_and_incomplete_audit_suffix_is_ignored(phase, se
         async def stream_chat(self, messages):
             yield 'partial'
             raise RuntimeError('test-secret provider credentials')
-    first = asyncio.run(post(create_app(settings(), FailingModel(), sessions), {'message': 'first'}))
+    first = asyncio.run(post(create_app(settings(), FailingModel(), sessions, knowledge_search=FakeKnowledgeSearch()), {'message': 'first'}))
     events = parse_events(first.text)
     assert [kind for kind, _ in events] == (['session', 'error'] if phase == 'selection' else ['session', 'token', 'error'])
     assert 'test-secret' not in first.text and 'credentials' not in first.text
@@ -145,7 +146,7 @@ def test_upstream_error_is_safe_and_incomplete_audit_suffix_is_ignored(phase, se
     class RetryModel(FakeModel):
         async def stream_chat(self, messages):
             yield 'clean' if len(messages) == 2 else 'dirty'
-    retry = asyncio.run(post(create_app(settings(), RetryModel(), sessions), {'message': 'retry', 'conversation_id': cid}))
+    retry = asyncio.run(post(create_app(settings(), RetryModel(), sessions, knowledge_search=FakeKnowledgeSearch()), {'message': 'retry', 'conversation_id': cid}))
     assert parse_events(retry.text)[1] == ('token', {'text': 'clean'})
 
 
@@ -156,7 +157,7 @@ def test_final_persistence_failure_emits_safe_error_and_releases_reservation(ses
             raise RuntimeError('test-secret commit details')
         return original(self, id, role, content, **kwargs)
     monkeypatch.setattr(Repository, 'append_message', fail_final)
-    app = create_app(settings(), FakeModel(), sessions)
+    app = create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch())
     response = asyncio.run(post(app, {'message': 'first'}))
     events = parse_events(response.text)
     assert [kind for kind, _ in events] == ['session', 'token', 'token', 'error']
@@ -166,7 +167,7 @@ def test_final_persistence_failure_emits_safe_error_and_releases_reservation(ses
 
 
 def test_done_on_wire_has_already_committed_final_answer(sessions):
-    app = create_app(settings(), FakeModel(), sessions)
+    app = create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch())
     repo = Repository(sessions)
     async def scenario():
         payload = json.dumps({'message': 'first'}).encode()
@@ -215,7 +216,7 @@ def test_overlap_rejected_until_stream_and_cancelled_write_settle_then_retry(ses
                     yield 'old-answer'
                 else:
                     yield 'new-answer'
-        app = create_app(settings(), SlowModel(), sessions)
+        app = create_app(settings(), SlowModel(), sessions, knowledge_search=FakeKnowledgeSearch())
         active = asyncio.create_task(post(app, {'message': 'active', 'conversation_id': cid}))
         try:
             await asyncio.wait_for(entered.wait(), 2)
@@ -256,7 +257,7 @@ def test_cancelled_generation_releases_reservation_without_invented_answer(sessi
                     entered.set()
                     await asyncio.Event().wait()
                 yield 'clean'
-        app = create_app(settings(), SlowModel(), sessions)
+        app = create_app(settings(), SlowModel(), sessions, knowledge_search=FakeKnowledgeSearch())
         active = asyncio.create_task(post(app, {'message': 'active', 'conversation_id': cid}))
         await asyncio.wait_for(entered.wait(), 2)
         active.cancel()
@@ -297,7 +298,7 @@ def test_http_disconnect_waits_for_pending_write_before_releasing_id(sessions, m
     class DisconnectModel(FakeModel):
         async def stream_chat(self, messages):
             yield 'old-answer' if messages[-1].content == 'active' else 'new-answer'
-    app = create_app(settings(), DisconnectModel(), sessions)
+    app = create_app(settings(), DisconnectModel(), sessions, knowledge_search=FakeKnowledgeSearch())
     async def scenario():
         disconnect = asyncio.Event()
         payload = json.dumps({'message': 'active', 'conversation_id': cid}).encode()
@@ -348,7 +349,7 @@ def test_active_capacity_limits_streams_without_evicting_persisted_chats(session
                     entered.set()
                     await release.wait()
                 yield 'ok'
-        app = create_app(settings(max_conversations=1), SlowModel(), sessions)
+        app = create_app(settings(max_conversations=1), SlowModel(), sessions, knowledge_search=FakeKnowledgeSearch())
         active = asyncio.create_task(post(app, {'message': 'active', 'conversation_id': cid}))
         try:
             await asyncio.wait_for(entered.wait(), 2)
@@ -367,3 +368,19 @@ def test_active_capacity_limits_streams_without_evicting_persisted_chats(session
     asyncio.run(scenario())
     with sessions() as session:
         assert session.scalar(select(func.count()).select_from(Conversation)) == 2
+
+
+def test_other_tools_and_sse_unchanged(sessions):
+    class PostageModel(FakeModel):
+        async def choose_tool(self, messages, tools):
+            assert [tool.name for tool in tools] == ['query_order', 'query_product', 'query_logistics', 'query_faq', 'create_ticket']
+            return AIMessage(content='', tool_calls=[{'id': 'postage-1', 'name': 'query_faq', 'args': {'keyword': '邮费'}}])
+
+    app = create_app(settings(), PostageModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+    events = parse_events(asyncio.run(post(app, {'message': '邮费是多少'})).text)
+    assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'done']
+    assert events[1:3] == [('tool_status', {'name': 'query_faq', 'state': 'running'}), ('tool_status', {'name': 'query_faq', 'state': 'success'})]
+    rows = Repository(sessions).load_messages(int(events[0][1]['conversation_id']))
+    payload = json.loads(rows[2].content)
+    assert set(payload) == {'keyword', 'matches', 'message'}
+    assert payload['matches'][0]['question'] == '订单运费如何计算？'

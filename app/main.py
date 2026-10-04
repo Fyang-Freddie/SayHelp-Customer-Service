@@ -15,6 +15,9 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.chat_service import ChatService
 from app.config import Settings
+from app.embedding import BgeM3Embedder
+from app.knowledge_search import KnowledgeSearch
+from app.vector_store import MilvusKnowledgeStore
 from app.db import make_session_factory
 from app.history import InputBudgetExceeded, prepare_context
 from app.model_service import ModelService
@@ -29,6 +32,7 @@ def create_app(
     settings: Settings | None = None,
     model_service: ModelService | None = None,
     session_factory: sessionmaker[Session] | None = None,
+    knowledge_search: KnowledgeSearch | None = None,
 ) -> FastAPI:
     settings = settings if settings is not None else Settings.from_env()
     owns_engine = session_factory is None
@@ -38,7 +42,13 @@ def create_app(
         session_factory = make_session_factory(settings.database_url)
     model_service = model_service if model_service is not None else ModelService(settings)
     repository = Repository(session_factory)
-    service = ChatService(repository, model_service, settings)
+    if knowledge_search is None:
+        # Shared across turns; BGE weights and the Milvus client remain lazy.
+        knowledge_search = KnowledgeSearch(
+            session_factory, BgeM3Embedder(cache_dir=settings.bge_cache_dir),
+            MilvusKnowledgeStore(uri=settings.milvus_uri),
+            min_score=settings.knowledge_min_score)
+    service = ChatService(repository, model_service, settings, knowledge_search)
     active: set[int] = set()
     reservation_lock = RLock()
 
