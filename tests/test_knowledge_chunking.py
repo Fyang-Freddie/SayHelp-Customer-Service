@@ -1,0 +1,76 @@
+from pathlib import Path
+
+import pytest
+
+from app.knowledge_chunking import chunk_markdown
+
+
+FIXTURES = Path(__file__).parent / 'fixtures'
+
+
+def test_heading_path_and_policy_fields():
+    chunks = chunk_markdown((FIXTURES / 'ch03_policy.md').read_text(encoding='utf-8'), content_type='policy')
+    assert [(c.category, c.questions, c.section_path) for c in chunks] == [
+        ('售后政策 / 退货', '期限', '售后政策 / 退货 / 期限'),
+        ('售后政策 / 退货', '期限', '售后政策 / 退货 / 期限'),
+        ('售后政策 / 退货', '期限', '售后政策 / 退货 / 期限'),
+        ('售后政策', '运费', '售后政策 / 运费'),
+    ]
+    assert [c.is_key_clause for c in chunks] == [False, True, False, False]
+    assert [c.source_order for c in chunks] == [0, 1, 2, 3]
+    assert [c.source_line for c in chunks] == [4, 7, 9, 13]
+    assert all(c.content_type == 'policy' for c in chunks)
+    assert chunks[1].answer == '商品必须保留原包装。请附上订单号。'
+    assert chunks[2].answer == '[!WARNING]\n请勿寄送到付款包裹。'
+
+
+def test_sentence_overlap_preserves_decimal_and_full_stops():
+    chunks = chunk_markdown('# 费率\n价格为3.14元。Ready! Next? Done.结束。', content_type='manual', max_chars=20, overlap_chars=7)
+    assert [c.answer for c in chunks] == ['价格为3.14元。Ready!', 'Ready! Next? Done.', 'Done.结束。']
+    assert all(len(c.answer) <= 20 for c in chunks)
+    assert [c.source_order for c in chunks] == [0, 1, 2]
+    assert chunk_markdown('', content_type='manual') == []
+    # Removing the "new content" requirement would produce a duplicate tail.
+    assert [c.answer for c in chunk_markdown('甲。乙。', content_type='manual', max_chars=4, overlap_chars=3)] == ['甲。乙。']
+    assert [c.answer for c in chunk_markdown('第一句很长。第二句。', content_type='manual', max_chars=7, overlap_chars=6)] == ['第一句很长。', '第二句。']
+
+
+def test_table_groups_repeat_header():
+    chunks = chunk_markdown((FIXTURES / 'ch03_manual.md').read_text(encoding='utf-8'), content_type='manual', max_chars=70, overlap_chars=10)
+    header = '| 操作 | 说明 |\n| --- | --- |'
+    assert [c.answer for c in chunks] == [
+        '先确认设备已经断电。',
+        header + '\n| 开机 | 按住电源键三秒后松开。 |\n| 关机 | 保存设置后关闭电源。 |',
+        header + '\n| 复位 | 长按复位键五秒后等待重启。 |',
+        '完成后检查指示灯。',
+    ]
+    assert all(len(c.answer) <= 70 for c in chunks)
+    assert [c.source_line for c in chunks] == [3, 7, 9, 11]
+    assert all(c.section_path == '设备手册 / 使用' for c in chunks)
+
+
+def test_table_preserves_empty_and_escaped_pipe_cells():
+    text = '| A | B | C |\n| --- | --- | --- |\n|| x\\|y ||'
+    chunks = chunk_markdown(text, content_type='manual')
+    assert [c.answer for c in chunks] == [text]
+
+
+def test_sentence_keeps_closing_quote_with_punctuation():
+    chunks = chunk_markdown('“第一句。”下一句。', content_type='policy', max_chars=8, overlap_chars=0)
+    assert [c.answer for c in chunks] == ['“第一句。”', '下一句。']
+
+
+@pytest.mark.parametrize('body, limit, location, kind', [
+    ('# 标题\n' + '长' * 21 + '。', 20, 2, 'sentence'),
+    ('# 表格\n| A | B |\n| --- | --- |\n| x | ' + '长' * 30 + ' |', 35, 4, 'row'),
+    ('# 表格\n| A | B |\n| --- | --- |\n| x |', 80, 4, 'row'),
+])
+def test_indivisible_input_rejected_with_location(body, limit, location, kind):
+    with pytest.raises(ValueError, match=rf'line {location}.*{kind}'):
+        chunk_markdown(body, content_type='policy', max_chars=limit)
+
+
+@pytest.mark.parametrize('kwargs', [{'max_chars': 0}, {'overlap_chars': -1}])
+def test_invalid_limits_rejected(kwargs):
+    with pytest.raises(ValueError):
+        chunk_markdown('正文。', content_type='policy', **kwargs)
