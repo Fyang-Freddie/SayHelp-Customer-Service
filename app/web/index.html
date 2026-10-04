@@ -152,6 +152,9 @@
     }
     .user .bubble { margin-left: auto; border-radius: 17px 5px 17px 17px; color: #fff; background: linear-gradient(135deg, #6477e5, #4d62d1); }
     .bubble-meta { margin-top: 6px; color: #a5afbf; font-size: 10px; }
+    .tool-trace { display: inline-flex; align-items: center; gap: 5px; margin: 8px 0 0; padding: 4px 8px; border: 1px solid #dbe3fb; border-radius: 7px; background: #f4f6ff; color: #4b60b6; font-size: 11px; font-weight: 650; }
+    .tool-trace[hidden] { display: none; }
+    .tool-trace[data-state="error"] { border-color: #f0ddd6; background: #fff7f3; color: #a7624b; }
     .user .bubble-meta { text-align: right; }
     .typing { display: inline-flex; gap: 4px; vertical-align: middle; padding: 4px 1px; }
     .typing span { width: 5px; height: 5px; border-radius: 50%; background: #8e9ac1; animation: pulse 1s infinite alternate; }
@@ -220,7 +223,7 @@
         <strong>有问题，随时问我</strong>
         <p>商品咨询、订单疑问、售后问题，都可以在这里开始对话。</p>
       </div>
-      <div class="side-foot">对话保存在当前服务进程中<br>重启服务后会话将失效</div>
+      <div class="side-foot">对话记录已保存<br>刷新页面会开启新对话</div>
     </aside>
     <main class="main">
       <header class="topbar">
@@ -327,10 +330,18 @@
         meta.className = "bubble-meta";
         meta.textContent = role === "user" ? "你" : "SayHelp";
         wrap.append(bubble, meta);
+        let trace = null;
+        if (role === "assistant") {
+          trace = document.createElement("div");
+          trace.className = "tool-trace";
+          trace.hidden = true;
+          trace.setAttribute("aria-live", "polite");
+          wrap.insertBefore(trace, meta);
+        }
         row.append(avatar, wrap);
         messages.append(row);
         scrollToBottom();
-        return bubble;
+        return { bubble, trace };
       }
 
       function addNotice(text) {
@@ -402,7 +413,7 @@
         input.style.height = "auto";
         setBusy(true);
 
-        const bubble = addMessage("assistant", "");
+        const { bubble, trace } = addMessage("assistant", "");
         const indicator = document.createElement("span");
         indicator.className = "typing";
         indicator.innerHTML = "<span></span><span></span><span></span>";
@@ -434,6 +445,14 @@
             if (!item) return;
             if (item.name === "session") {
               conversationId = item.payload.conversation_id;
+            } else if (item.name === "tool_status") {
+              const toolName = item.payload.name;
+              if (typeof toolName === "string" && /^[a-z_]+$/.test(toolName) && toolName !== "unknown") {
+                trace.hidden = false;
+                trace.dataset.state = item.payload.state || "running";
+                trace.textContent = item.payload.state === "running" ? "◌ 正在调用 " + toolName : "✦ 已调用 " + toolName;
+                scrollToBottom();
+              }
             } else if (item.name === "token") {
               if (!receivedToken) {
                 receivedToken = true;

@@ -1,79 +1,51 @@
-# Ecommerce customer service, Chapter 1
+# SayHelp 客服系统 · 第 2 章 Function Calling
 
-This FastAPI service provides a streamed customer service conversation and a separate after-sales information extractor. The conversation history is kept in the API process memory and is lost when the process restarts.
+FastAPI 流式客服现在会先让模型选择一次业务工具，执行并把结果回灌给模型，然后逐块输出最终回答。会话、消息、工具调用和结果保存在 MySQL；聊天气泡显示本轮调用的工具。
 
-## Set up and run
+## 启动
 
-Use PowerShell from the repository root. Python 3.14 is the version used for this chapter.
+在仓库根目录使用 PowerShell。已验证环境为 Python 3.14、Docker Desktop 4.93.0（安装在 `E:\docker`，数据目录 `E:\docker\wsl`）、MySQL 8.4。Docker Desktop 启动后运行：
 
 ```powershell
 py -3.14 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Create a local `.env` file in the repository root. It is ignored by Git. Set the following values to your own OpenAI-compatible chat endpoint; do not commit or print the API key:
-
-```dotenv
-CHAT_BASE_URL=https://api.deepseek.com
-CHAT_MODEL=deepseek-chat
-CHAT_API_KEY=your-key-here
-```
-
-Start the API in a PowerShell window, from the repository root:
+创建不会提交的 `.env`，设置 `CHAT_BASE_URL`、`CHAT_MODEL`、`CHAT_API_KEY`、`MYSQL_DATABASE`、`MYSQL_USER`、`MYSQL_PASSWORD`、`MYSQL_ROOT_PASSWORD`、`DATABASE_URL`。例如 `DATABASE_URL` 的格式为 `mysql+pymysql://用户:密码@127.0.0.1:3307/数据库名?charset=utf8mb4`。默认宿主机端口是 3307，可用 `MYSQL_PORT` 改动。用于数据库集成测试时，另设 `TEST_DATABASE_URL` 为有权创建和删除**临时测试库**的本机 MySQL 管理连接；测试会自动创建并清理独立库。不要把真实生产库或密钥写进仓库。
 
 ```powershell
+& 'E:\docker\resources\bin\docker.exe' compose up -d --wait
+.\.venv\Scripts\python.exe -m app.init_db
 .\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000
 ```
 
-`CHAT_BASE_URL`, `CHAT_MODEL`, and `CHAT_API_KEY` are the only settings needed to change chat providers. Chat uses an OpenAI-compatible endpoint. The configured DeepSeek model is the live acceptance target for both routes. Other compatible providers may handle chat, but extraction requires their support for the selected JSON output mode and is not guaranteed for them.
+`app.init_db` 按 [建表 DDL](db/schema.sql) 创建 `conversations`、`messages`、`faq`、`tickets` 并灌入示例 FAQ，可重复执行。商品、订单、物流由工具内部随机生成演示数据，不连接公司真实系统，也不建对应表。
 
-## Web chat
+打开 [聊天页](http://127.0.0.1:8000/)。例如询问“订单 1001 的物流到哪了”，等待气泡中的 `query_logistics` 徽章和流式回答。“新对话”会开始新的会话；刷新页面后当前页面不会恢复旧会话 ID，但已保存的数据库记录仍在。一次用户请求至多执行一个工具，不运行多轮 Agent Loop。
 
-Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) after starting the API. Send a question in the chat box; the assistant bubble grows as SSE text arrives. Send a follow-up in the same page to reuse its conversation ID. You can use the mouse wheel to read earlier messages while a reply is streaming; **Jump to latest** returns to the live reply. **New conversation** clears the page and starts a fresh session. The page keeps its conversation ID only while that tab remains open; server restart invalidates in-memory sessions.
+## 三条验收样例
 
-If the API was already running before this page was added, stop it with Ctrl+C and run the start command again. The page uses the existing `POST /v1/chat/stream` endpoint and needs no front-end build step.
+样例和预期保存在 [ch02_cases.json](tests/fixtures/ch02_cases.json)。在聊天页分别使用“新对话”提交：
 
-## Acceptance checks
+| 提问 | 预期工具 | 预期结果 |
+| --- | --- | --- |
+| 订单 1001 的物流到哪了 | `query_logistics` | 随机模拟物流状态和位置；回答明确说明是演示数据 |
+| 退货政策是什么 | `query_faq` | SQL LIKE 命中退货 FAQ，回答包含七天内可申请等内容 |
+| 邮费是多少 | `query_faq` | 按原词“邮费”查询无命中，回答承认未查到；这是第 3 章检索升级要解决的漏召回 |
 
-Run these in a second PowerShell window from the repository root. The commands write only demonstration request bodies to temporary files and use `curl.exe` so they work in Windows PowerShell as well as PowerShell 7. `-N` disables curl's output buffering, making each server-sent event visible as it arrives. The examples do not require your API key in any command.
+`POST /v1/chat/stream` 接收 `{"message":"...","conversation_id":null}`；后续请求可带第一次 `session` 事件给出的 ID。SSE 依次提供 `session`、可选的 `tool_status`、`token` 和 `done`。工具选择、工具结果、最终回答都写入 `messages`。`POST /v1/aftersales/extract` 保留第 1 章售后字段提取接口。
 
-### 1. Stream a new conversation
-
-```powershell
-$firstBody = Join-Path $env:TEMP 'customer-service-first.json'
-'{"message":"My callback code is maple-731. Please remember it."}' | Set-Content -Path $firstBody -Encoding ascii
-curl.exe -sS -N -H 'Content-Type: application/json' --data-binary "@$firstBody" http://127.0.0.1:8000/v1/chat/stream
-```
-
-The expected event sequence is `session`, one or more `token` events, then `done`. Copy the `conversation_id` from the `session` event for the next check. Each `token` event carries a text chunk, which may contain more than one model token. An `error` event indicates that streaming failed after it began.
-
-### 2. Continue with the same conversation ID
+## 测试
 
 ```powershell
-$conversationId = 'paste-conversation-id-from-session-event'
-$secondBody = Join-Path $env:TEMP 'customer-service-second.json'
-@{ message = 'What is my callback code?'; conversation_id = $conversationId } | ConvertTo-Json -Compress | Set-Content -Path $secondBody -Encoding ascii
-curl.exe -sS -N -H 'Content-Type: application/json' --data-binary "@$secondBody" http://127.0.0.1:8000/v1/chat/stream
+& 'E:\docker\resources\bin\docker.exe' compose config --quiet
+.\.venv\Scripts\python.exe -c "from dotenv import load_dotenv; import pytest; load_dotenv(); raise SystemExit(pytest.main(['-q']))"
 ```
 
-The `session` and `done` events should contain the same conversation ID, and the reply should refer to `maple-731`. An unknown or evicted ID returns HTTP 404. A concurrent request using a conversation ID with an active stream returns HTTP 409; retry after that stream ends. If all conversation slots are active, a new conversation returns HTTP 503; retry after an active stream ends. History is local to one process, so use the same running API for both turns.
+第二条从忽略的 `.env` 只向测试进程加载变量，使 `TEST_DATABASE_URL` 生效。没有该变量时，数据库集成案例会跳过。2026-10-04 完整 MySQL 测试在第 4 阶段为 137 项通过；第 5 阶段的最终结果见 [开发记录](dev-notes/ch02.md)。
 
-### 3. Extract after-sales information
+## 范围和限制
 
-```powershell
-$extractBody = Join-Path $env:TEMP 'customer-service-extract.json'
-'{"description":"Order A-123: the item arrived damaged. I want a refund to my original payment method."}' | Set-Content -Path $extractBody -Encoding ascii
-curl.exe -sS -H 'Content-Type: application/json' --data-binary "@$extractBody" http://127.0.0.1:8000/v1/aftersales/extract
-```
+五个 LangChain `@tool` 为 `query_order`、`query_product`、`query_logistics`、`query_faq`、`create_ticket`。前三个随机模拟，FAQ 使用字面 SQL LIKE，工单写入 MySQL。读工具有超时和有限重试；创建工单不会自动重试，以免重复创建。聊天页只显示工具名称与状态，不显示参数或错误细节。并发会话预约在单个 API 进程内协调；本章不含跨进程协调、向量检索或 RAG。
 
-The response is a JSON object with exactly `order_id`, `request_type`, and `expected_solution`. `request_type` is one of `退货`, `换货`, `退款`, `维修`, `补发`, or `其他`. Missing order IDs or solutions are `null`; the service must not invent an order ID. An invalid or unsupported upstream JSON response returns HTTP 502 with a safe error message.
-
-## Budget and retention settings
-
-Optional `.env` values are `CONTEXT_TOKEN_BUDGET=4096`, `RESPONSE_TOKEN_RESERVE=512`, `MAX_CONVERSATIONS=100`, and `MAX_TURNS_PER_CONVERSATION=20`. The input limit is the context budget minus the reserved response budget. The service estimates token use across providers, keeps the system prompt and current message, and drops the oldest complete turns as needed. A current message too large for that input limit returns HTTP 413. Conversation and turn caps bound in-memory retention; evicted IDs return HTTP 404.
-
-## Deterministic tests
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-```
+可选上下文参数：`CONTEXT_TOKEN_BUDGET=4096`、`RESPONSE_TOKEN_RESERVE=512`、`MAX_CONVERSATIONS=100`、`MAX_TURNS_PER_CONVERSATION=20`。模型服务使用 `CHAT_BASE_URL` 指向的 OpenAI 兼容接口；实际验收使用已配置的 DeepSeek。

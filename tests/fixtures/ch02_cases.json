@@ -1,0 +1,22 @@
+[
+  {
+    "id": "logistics_1001",
+    "message": "订单 1001 的物流到哪了",
+    "expected_tool": "query_logistics",
+    "expected_result": "assistant uses the simulated logistics status and location"
+  },
+  {
+    "id": "returns_policy",
+    "message": "退货政策是什么",
+    "expected_tool": "query_faq",
+    "expected_keyword": "退货",
+    "expected_result": "FAQ policy answer is found and used"
+  },
+  {
+    "id": "postage_miss",
+    "message": "邮费是多少",
+    "expected_tool": "query_faq",
+    "expected_keyword": "邮费",
+    "expected_result": "literal SQL LIKE has no match, and the answer acknowledges the miss"
+  }
+]
