@@ -1,0 +1,57 @@
+"""Short database transactions for conversations, literal FAQ search, and tickets."""
+
+from uuid import uuid4
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session, sessionmaker
+
+from app.db import Conversation, Faq, Message, Ticket
+
+
+class Repository:
+    def __init__(self, session_factory: sessionmaker[Session]):
+        self.session_factory = session_factory
+
+    def create_conversation(self, user_id: str) -> int:
+        with self.session_factory.begin() as session:
+            row = Conversation(user_id=user_id)
+            session.add(row)
+            session.flush()
+            return row.id
+
+    def get_conversation(self, id: int) -> Conversation | None:
+        with self.session_factory() as session:
+            return session.get(Conversation, id)
+
+    def append_message(self, id: int, role: str, content: str | None,
+                       tool_calls: list[dict] | None = None,
+                       tool_call_id: str | None = None) -> None:
+        with self.session_factory.begin() as session:
+            session.add(Message(conversation_id=id, role=role, content=content,
+                                tool_calls=tool_calls, tool_call_id=tool_call_id))
+
+    def load_messages(self, id: int) -> list[Message]:
+        with self.session_factory() as session:
+            return list(session.scalars(select(Message).where(Message.conversation_id == id).order_by(Message.id)))
+
+    def find_faq(self, keyword: str, limit: int = 5) -> list[Faq]:
+        if not 1 <= limit <= 100:
+            raise ValueError('FAQ limit must be between 1 and 100')
+        if not keyword.strip():
+            return []
+        with self.session_factory() as session:
+            statement = select(Faq).where(Faq.question.contains(keyword, autoescape=True)).order_by(Faq.id).limit(limit)
+            return list(session.scalars(statement))
+
+    def create_ticket(self, conversation_id: int, description: str, ticket_type: str) -> str:
+        if ticket_type not in ('售后', '投诉', '咨询'):
+            raise ValueError('Unsupported ticket type')
+        number = 'T' + uuid4().hex[:31]
+        with self.session_factory.begin() as session:
+            conversation = session.get(Conversation, conversation_id)
+            if conversation is None:
+                raise ValueError('Conversation does not exist')
+            session.add(Ticket(ticket_no=number, conversation_id=conversation_id,
+                               description=description, ticket_type=ticket_type))
+            conversation.status = '已转人工'
+        return number

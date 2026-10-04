@@ -25,7 +25,7 @@ def test_missing_provider_setting_is_rejected(monkeypatch, tmp_path, missing):
 def test_env_file_loads_provider_settings_without_overriding_process_env(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     (tmp_path / ".env").write_text(
-        "CHAT_BASE_URL=https://file.example/v1\nCHAT_MODEL=file-model\nCHAT_API_KEY=file-key\n",
+        "CHAT_BASE_URL=https://file.example/v1\nCHAT_MODEL=file-model\nCHAT_API_KEY=file-key\nDATABASE_URL=mysql+pymysql://test:test@localhost/test\n",
         encoding="utf-8",
     )
     for key in ("CHAT_BASE_URL", "CHAT_MODEL", "CHAT_API_KEY"):

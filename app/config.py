@@ -12,6 +12,7 @@ class Settings:
     chat_base_url: str
     chat_model: str
     chat_api_key: str = field(repr=False)
+    database_url: str | None = field(default=None, repr=False)
     context_token_budget: int = 4096
     response_token_reserve: int = 512
     max_conversations: int = 100
@@ -58,4 +59,5 @@ class Settings:
             response_token_reserve=reserve,
             max_conversations=positive_int("MAX_CONVERSATIONS", 100),
             max_turns_per_conversation=positive_int("MAX_TURNS_PER_CONVERSATION", 20),
+            database_url=required("DATABASE_URL"),
         )
