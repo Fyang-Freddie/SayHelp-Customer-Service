@@ -252,7 +252,7 @@ docker compose -f compose.milvus.yaml config --quiet
 git diff --check
 ```
 
-Full verified result: **234 passed, 0 skipped in 119.19s**. MySQL fixtures create
+Final branch verification: **245 passed, 0 skipped in 125.60s**. MySQL fixtures create
 and clean independent databases. Both Compose checks and diff-check passed.
 Private connections were loaded into process variables; `.env`, credentials,
 model weights, virtual environments and ignored evidence scripts stay out of
