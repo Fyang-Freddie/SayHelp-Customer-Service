@@ -12,7 +12,7 @@ import unicodedata
 from sqlalchemy import select, text
 
 from app.db import Faq
-from app.knowledge_chunking import chunk_markdown
+from app.knowledge_chunking import chunk_markdown, _fence_open, _fence_close
 from app.knowledge_db import KnowledgeChunk
 
 _FIELDS = ('category', 'questions', 'answer', 'section_path', 'content_type', 'is_key_clause')
@@ -23,7 +23,22 @@ def _normalize(value):
     if not isinstance(value, str):
         return value
     value = unicodedata.normalize('NFC', value).replace('\r\n', '\n').replace('\r', '\n')
-    return '\n'.join(line.rstrip() for line in value.split('\n')).strip()
+    lines = []
+    fence = None
+    has_fence = False
+    for line in value.split('\n'):
+        if fence:
+            lines.append(line)
+            if _fence_close(line, fence):
+                fence = None
+        else:
+            fence = _fence_open(line)
+            has_fence = has_fence or fence is not None
+            lines.append(line if fence else line.rstrip())
+    normalized = '\n'.join(lines)
+    # Whitespace within a code fence is authoritative, including at EOF when
+    # the fence is unclosed. Ordinary FAQ/prose keeps its previous normalization.
+    return normalized.strip('\n') if has_fence else normalized.strip()
 
 
 def _key(row):

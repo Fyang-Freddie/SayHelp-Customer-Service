@@ -155,3 +155,15 @@ def test_lock_released_if_commit_after_acquisition_fails(sessions, database_url)
             assert connection.execute(text(f'SELECT RELEASE_LOCK({lock_name})')).scalar() == 1
     finally:
         independent.dispose()
+
+
+def test_ingested_fenced_code_preserves_whitespace_and_section(sessions, tmp_path):
+    from app.knowledge_ingest import ingest_markdown
+    block = '```sh\n# reboot system\n  reboot  \n```'
+    path = markdown(tmp_path, '# Manual\n## Restart\n' + block + '\nAfter.')
+    ids = ingest_markdown(sessions, path, 'manual')
+    assert ingest_markdown(sessions, path, 'manual') == ids
+    with sessions() as session:
+        rows = [session.get(KnowledgeChunk, id) for id in ids]
+        assert [row.answer for row in rows] == [block, 'After.']
+        assert all(row.section_path == 'Manual / Restart' for row in rows)

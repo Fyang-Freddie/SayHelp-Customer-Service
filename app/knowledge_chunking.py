@@ -37,6 +37,18 @@ def _heading(line: str):
     return re.fullmatch(r'[ \t]{0,3}(#{1,6})(?:[ \t]+(.*))?', line)
 
 
+def _fence_open(line: str):
+    match = re.fullmatch(r'[ \t]{0,3}(`{3,}|~{3,})(.*)', line)
+    if match and (match[1][0] != '`' or '`' not in match[2]):
+        return match[1]
+    return None
+
+
+def _fence_close(line: str, opening: str) -> bool:
+    return re.fullmatch(r'[ \t]{0,3}' + re.escape(opening[0]) +
+                        '{' + str(len(opening)) + r',}[ \t]*', line) is not None
+
+
 def _sentences(text: str, line: int) -> list[tuple[str, int]]:
     units = []
     start = 0
@@ -88,7 +100,7 @@ def _prose(text: str, line: int, limit: int, overlap: int) -> list[tuple[str, in
 
 def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
                    overlap_chars: int = 120) -> list[KnowledgeDraft]:
-    """Split heading sections, paragraphs, callouts, and Markdown row groups.
+    """Split heading sections, paragraphs, callouts, tables, and intact code fences.
 
     Heading paths use `` / ``. Text before the first heading has empty heading
     fields. Only an exact ``> [!IMPORTANT]`` callout marks a key clause. Errors
@@ -113,6 +125,21 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
     index = 0
     while index < len(lines):
         line = lines[index]
+        fence = _fence_open(line)
+        if fence:
+            start = index
+            index += 1
+            while index < len(lines):
+                closing = _fence_close(lines[index], fence)
+                index += 1
+                if closing:
+                    break
+            answer = '\n'.join(lines[start:index])
+            if len(answer) > max_chars:
+                raise ValueError(f'line {start + 1}: oversized indivisible fenced code '
+                                 f'(limit {max_chars})')
+            emit(answer, start + 1)
+            continue
         heading = _heading(line)
         if heading:
             title = re.sub(r'(?:^|\s+)#+\s*$', '', heading[2] or '').strip()
@@ -163,7 +190,7 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
             start = index
         while index < len(lines) and lines[index].strip():
             candidate = lines[index]
-            if _heading(candidate):
+            if _heading(candidate) or _fence_open(candidate):
                 break
             if candidate.lstrip().startswith('>') != quoted:
                 break

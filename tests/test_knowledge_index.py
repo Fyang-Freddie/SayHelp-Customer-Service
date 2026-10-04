@@ -93,6 +93,8 @@ def test_model_is_lazy_fixed_and_dense(monkeypatch):
     from app.embedding import BgeM3Embedder
     calls = []
     class Model:
+        max_seq_length = 8192
+        tokenizer = staticmethod(lambda texts, **kwargs: {"input_ids": [[0] * (len(text) + 2) for text in texts]})
         def __init__(self, name, **kwargs):
             calls.append((name, kwargs))
         def encode(self, texts, **kwargs):
@@ -300,3 +302,116 @@ def test_build_cli_zero_progress_with_pending_is_failure(sessions, monkeypatch, 
     with pytest.raises(SystemExit, match='pending rows can be retried'):
         build.main([])
     assert 'completed' not in capsys.readouterr().out
+
+
+class CharacterTokenizerModel:
+    """Cheap inference double; production adapter still owns all validation."""
+    max_seq_length = 100
+
+    def tokenizer(self, texts, *, truncation, add_special_tokens, padding):
+        assert truncation is False and add_special_tokens is True and padding is False
+        return {'input_ids': [[0] * (len(text) + 2) for text in texts]}
+
+    def encode(self, texts, **kwargs):
+        # Any truncated inference on an oversized input must fail this regression.
+        assert all(len(text) + 2 <= self.max_seq_length for text in texts)
+        return [[1.0] + [0.0] * 1023 for _ in texts]
+
+
+def bounded_embedder():
+    from app.embedding import BgeM3Embedder
+    embedder = BgeM3Embedder()
+    embedder._model = CharacterTokenizerModel()
+    return embedder
+
+
+def test_embedding_token_limit_includes_special_tokens_and_checks_entire_batch():
+    embedder = bounded_embedder()
+    assert len(embedder.encode(['x' * 98])[0]) == 1024
+    with pytest.raises(ValueError, match=r'input 2.*101 tokens.*100'):
+        embedder.encode(['short', 'x' * 99])
+
+
+@pytest.mark.parametrize('source', ['faq', 'manual'])
+def test_oversized_complete_vector_text_stays_pending_with_source_context(sessions, source):
+    from app.knowledge_ingest import ingest_faq
+    from app.knowledge_index import index_pending
+    from app.knowledge_chunking import chunk_markdown
+    from app.db import Faq
+    with sessions() as session, session.begin():
+        # Isolate the oversized input from seeded FAQs.
+        for row in session.query(Faq).all():
+            session.delete(row)
+        if source == 'faq':
+            session.add(Faq(category='FAQ source', question='x' * 75, answer='safe.'))
+        else:
+            draft = chunk_markdown('# Manual source\n' + 'x' * 75 + '.',
+                                   content_type='manual', max_chars=200)[0]
+            session.add(KnowledgeChunk(category=draft.category, questions=draft.questions,
+                answer=draft.answer, section_path=draft.section_path, content_type='manual',
+                vectorize_status='pending'))
+    if source == 'faq':
+        ids = ingest_faq(sessions)
+    else:
+        with sessions() as session:
+            ids = [row.id for row in session.query(KnowledgeChunk).all()]
+    store = FakeStore()
+    with pytest.raises(ValueError, match=rf'chunk {ids[0]}.*{source}.*tokens'):
+        index_pending(sessions, bounded_embedder(), store)
+    assert store.vectors == {}
+    with sessions() as session:
+        row = session.get(KnowledgeChunk, ids[0])
+        assert (row.vectorize_status, row.vector_id) == ('pending', None)
+        assert ('x' * 75) in (row.questions + row.answer)
+
+
+def test_real_bge_tokenizer_rejects_8193_tokens_without_inference():
+    import os
+    if os.environ.get('TEST_BGE_M3') != '1':
+        pytest.skip('Set TEST_BGE_M3=1 for cached public BGE-M3 tokenizer boundary')
+    from transformers import AutoTokenizer
+    from app.embedding import BgeM3Embedder, MODEL_ID
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, cache_dir=os.environ.get('BGE_CACHE_DIR'),
+                                              local_files_only=True)
+    class TokenizerModel:
+        max_seq_length = 8192
+        def __init__(self):
+            self.tokenizer = tokenizer
+        def encode(self, texts, **kwargs):
+            # Cheap inference double prevents quadratic 8192-token transformer work.
+            return [[1.0] + [0.0] * 1023 for _ in texts]
+    embedder = BgeM3Embedder()
+    embedder._model = TokenizerModel()
+    boundary = 'the ' * 8190
+    assert len(tokenizer(boundary, truncation=False, add_special_tokens=True)['input_ids']) == 8192
+    assert len(embedder.encode([boundary])[0]) == 1024
+    with pytest.raises(ValueError, match='8193 tokens.*8192'):
+        embedder.encode([boundary + 'the'])
+
+
+def test_build_cli_reports_safe_token_limit_source_and_leaves_pending(sessions, monkeypatch):
+    from app import build_knowledge as build
+    with sessions() as session, session.begin():
+        row = KnowledgeChunk(category='Manual', questions='Restart', answer='private-body-' * 10,
+                             content_type='manual', section_path='Manual / Restart',
+                             vectorize_status='pending')
+        session.add(row)
+        session.flush()
+        id = row.id
+    monkeypatch.setenv('DATABASE_URL', 'credential-sentinel')
+    monkeypatch.setattr(build, 'initialize_knowledge_database', lambda url: None)
+    monkeypatch.setattr(build, 'create_engine', lambda *args, **kwargs: SimpleNamespace(dispose=lambda: None))
+    monkeypatch.setattr(build, 'sessionmaker', lambda engine: sessions)
+    monkeypatch.setattr(build, 'ingest_faq', lambda sessions: None)
+    monkeypatch.setattr(build, 'BgeM3Embedder', lambda **kwargs: bounded_embedder())
+    store = FakeStore()
+    store.ensure_collection = lambda: None
+    monkeypatch.setattr(build, 'MilvusKnowledgeStore', lambda **kwargs: store)
+    with pytest.raises(SystemExit, match=rf'chunk {id}.*manual.*Manual / Restart.*tokens.*100') as error:
+        build.main([])
+    assert 'credential-sentinel' not in str(error.value)
+    assert 'private-body' not in str(error.value)
+    assert 'pending rows can be retried' in str(error.value)
+    with sessions() as session:
+        assert session.get(KnowledgeChunk, id).vectorize_status == 'pending'
+    assert store.vectors == {}

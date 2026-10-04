@@ -2,7 +2,7 @@
 from contextlib import contextmanager
 from sqlalchemy import func, select, text
 
-from app.embedding import validate_vector
+from app.embedding import EmbeddingInputTooLongError, validate_vector
 from app.knowledge_db import KnowledgeChunk
 
 _LOCK_NAME = "CONCAT('sayhelp_index_', MD5(DATABASE()))"
@@ -47,12 +47,17 @@ def index_pending(session_factory, embedder, store, limit: int = 100) -> int:
         raise ValueError('limit must be positive')
     with _index_writer(session_factory):
         with session_factory() as session:
-            pending = [(row.id, knowledge_text(row)) for row in session.scalars(
+            pending = [(row.id, knowledge_text(row), row.content_type, row.section_path) for row in session.scalars(
                 select(KnowledgeChunk).where(KnowledgeChunk.vectorize_status == 'pending')
                 .order_by(KnowledgeChunk.id).limit(limit))]
         completed = 0
-        for id, content in pending:
-            vectors = embedder.encode([content])
+        for id, content, content_type, section_path in pending:
+            try:
+                vectors = embedder.encode([content])
+            except EmbeddingInputTooLongError as error:
+                raise EmbeddingInputTooLongError(
+                    error.input_index, error.token_count, error.limit, chunk_id=id,
+                    content_type=content_type, section_path=section_path) from error
             if len(vectors) != 1:
                 raise ValueError('Expected one embedding per chunk')
             returned_id = store.upsert(id, validate_vector(vectors[0]))

@@ -5,7 +5,7 @@ from pathlib import Path
 from dotenv import dotenv_values
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.embedding import BgeM3Embedder
+from app.embedding import BgeM3Embedder, EmbeddingInputTooLongError
 from app.init_knowledge_db import initialize_knowledge_database
 from app.knowledge_ingest import ingest_faq, ingest_markdown
 from app.knowledge_index import count_pending, index_pending
@@ -47,6 +47,8 @@ def main(argv=None):
                 break
             total += count
         print(f'Knowledge indexing completed: {total} pending rows marked done.')
+    except EmbeddingInputTooLongError as error:
+        raise SystemExit(f'Knowledge build failed: {error}; pending rows can be retried.') from None
     except Exception:
         # Raw library errors may include credential-bearing connection URLs.
         raise SystemExit('Knowledge build failed; pending rows can be retried. Check MySQL, Milvus, model cache and input files.') from None

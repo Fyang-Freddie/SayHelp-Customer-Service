@@ -110,3 +110,36 @@ def test_indivisible_input_rejected_with_location(body, limit, location, kind):
 def test_invalid_limits_rejected(kwargs):
     with pytest.raises(ValueError):
         chunk_markdown('正文。', content_type='policy', **kwargs)
+
+
+@pytest.mark.parametrize('fence', ['```', '~~~'])
+def test_fenced_code_is_verbatim_and_does_not_change_heading_context(fence):
+    block = (fence + 'sh\n# reboot system\n\n  reboot --now  \n'
+             '| A | B |\n| --- | --- |\n| malformed |\n'
+             '> [!IMPORTANT]\n> literal code\n' + fence)
+    chunks = chunk_markdown('# Manual\n## Restart\nBefore.\n' + block + '\nAfter.',
+                            content_type='manual')
+    assert [c.answer for c in chunks] == ['Before.', block, 'After.']
+    assert [c.source_line for c in chunks] == [3, 4, 14]
+    assert all(c.section_path == 'Manual / Restart' for c in chunks)
+    assert all(c.questions == 'Restart' and not c.is_key_clause for c in chunks)
+
+
+def test_fence_requires_matching_character_and_at_least_opening_length():
+    block = '````text\n```\n~~~\n# literal\n````'
+    chunks = chunk_markdown('# Manual\n' + block + '\n## Next\nDone.', content_type='manual')
+    assert [c.answer for c in chunks] == [block, 'Done.']
+    assert [c.section_path for c in chunks] == ['Manual', 'Manual / Next']
+
+
+def test_unclosed_fence_preserves_remaining_lines_verbatim():
+    block = '~~~\n# literal\n\n> [!IMPORTANT]\n  code  '
+    chunks = chunk_markdown('# Manual\n' + block, content_type='manual')
+    assert [c.answer for c in chunks] == [block]
+    assert chunks[0].section_path == 'Manual' and not chunks[0].is_key_clause
+
+
+def test_oversized_fence_rejected_as_indivisible_with_source_line():
+    with pytest.raises(ValueError, match='line 3.*indivisible fenced code'):
+        chunk_markdown('# Manual\n\n```\nlong code\n```',
+                       content_type='manual', max_chars=12)
