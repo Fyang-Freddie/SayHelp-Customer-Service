@@ -1,0 +1,1620 @@
+{
+  "version": 1,
+  "split": "test",
+  "source_digests": {
+    "knowledge_db/after-sales-manual.md": "48c1250f119356ca2a6a728498b9ce75b5fa4177c713925fa06f8ceff7d98eda",
+    "knowledge_db/product-faq.md": "d3bcbacd6311213b5e6bb9e4382a7e8a70c3d597c0b799b29e3463d8a60461de",
+    "knowledge_db/product-specs.md": "2653b12c566f4a84c403d947c8077bb837bb9ef3b5bceb9bd54d4b8e48f8764b",
+    "knowledge_db/returns-policy.md": "cd99d5dd3f043936196d61fcc04d7411aa8eda2c31c76a6342d8ec69d9b19508"
+  },
+  "cases": [
+    {
+      "eval_id": "A01",
+      "bucket": "A_policy",
+      "difficulty": "easy",
+      "query": "无理由退货需要什么条件，定制商品也可以吗？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "签收起7天内，商品完好且不影响二次销售可无理由退货；定制、生鲜除外。",
+      "required_facts": [
+        "签收起7天内",
+        "完好且不影响二次销售",
+        "定制和生鲜除外"
+      ],
+      "forbidden_claims": [
+        "无理由退货没有期限",
+        "定制和生鲜都可无理由退货"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 无理由退货 / 适用范围",
+          "evidence_quote": "自签收之日起 7 天内,商品完好、不影响二次销售的,支持无理由退货。定制类、生鲜类商品除外。"
+        }
+      ]
+    },
+    {
+      "eval_id": "A02",
+      "bucket": "A_policy",
+      "difficulty": "easy",
+      "query": "收到货几天内能换同款，配件有什么要求？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "收到7天内，商品完好且配件齐全可申请一次同款换货。",
+      "required_facts": [
+        "收到商品7天内",
+        "商品完好且配件齐全",
+        "一次同款换货"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 换货政策 / 换货条件",
+          "evidence_quote": "收到商品 7 天内,商品完好且配件齐全的,可申请一次同款换货"
+        }
+      ]
+    },
+    {
+      "eval_id": "A03",
+      "bucket": "A_policy",
+      "difficulty": "easy",
+      "query": "非质量问题换货，往返运费由谁承担？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "非质量问题换货往返运费由买家承担。",
+      "required_facts": [
+        "非质量问题",
+        "往返运费买家承担"
+      ],
+      "forbidden_claims": [
+        "非质量换货往返运费平台承担"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 换货政策 / 换货运费",
+          "evidence_quote": "非质量问题的换货,往返运费由买家承担"
+        }
+      ]
+    },
+    {
+      "eval_id": "A04",
+      "bucket": "A_policy",
+      "difficulty": "easy",
+      "query": "质量问题、发错或少发造成退换货，运费谁出？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "上述退换运费由平台承担，最终以平台售后规则判定为准。",
+      "required_facts": [
+        "质量问题、发错货、少发漏发运费平台承担",
+        "最终以平台售后规则判定"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 退换货运费承担",
+          "evidence_quote": "因商品质量问题、发错货、少发漏发导致的退换货,运费由平台承担。运费承担以平台售后规则最终判定为准。"
+        }
+      ]
+    },
+    {
+      "eval_id": "A05",
+      "bucket": "A_policy",
+      "difficulty": "medium",
+      "query": "电子商品保修多久，非人为损坏在保修期怎么处理？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "签收起保修12个月；保修期非人为损坏可申请免费维修或换货。",
+      "required_facts": [
+        "保修12个月",
+        "保修期非人为损坏可申请免费维修或换货"
+      ],
+      "forbidden_claims": [
+        "人为损坏无条件免费保修"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 质量问题与保修",
+          "evidence_quote": "电子类商品自签收起保修 12 个月,保修期内非人为损坏可申请免费维修或换货"
+        }
+      ]
+    },
+    {
+      "eval_id": "A06",
+      "bucket": "A_policy",
+      "difficulty": "medium",
+      "query": "运输破损需要哪些证明，核实后可以怎么处理，运费谁承担？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "提供开箱视频与照片；核实后可免费补发或退款，相关运费平台承担。",
+      "required_facts": [
+        "开箱视频与照片",
+        "核实后免费补发或退款",
+        "相关运费平台承担"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 运输破损处理",
+          "evidence_quote": "提供开箱视频与照片,核实后可免费补发或退款,相关运费由平台承担"
+        }
+      ]
+    },
+    {
+      "eval_id": "A07",
+      "bucket": "A_policy",
+      "difficulty": "medium",
+      "query": "已经拆封的猫砂非质量问题可以退吗？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "已拆封猫砂等消耗品非质量问题不支持退货。",
+      "required_facts": [
+        "已拆封猫砂等消耗品",
+        "非质量问题不支持退货"
+      ],
+      "forbidden_claims": [
+        "拆封猫砂非质量问题可无条件退"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 不支持退货的商品",
+          "evidence_quote": "已拆封的猫砂等消耗品,以及标注「不支持无理由退货」的商品,非质量问题不支持退货"
+        }
+      ]
+    },
+    {
+      "eval_id": "A08",
+      "bucket": "A_policy",
+      "difficulty": "medium",
+      "query": "预售什么时候发货，付了定金能无理由退定金吗？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "预售按详情页标注发货时间；定金付后不支持无理由退定金。",
+      "required_facts": [
+        "预售按详情页标注时间发货",
+        "定金付后不支持无理由退定金"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 预售与定金",
+          "evidence_quote": "预售商品以详情页标注的时间发货;定金支付后不支持无理由退定金"
+        }
+      ]
+    },
+    {
+      "eval_id": "A09",
+      "bucket": "A_policy",
+      "difficulty": "hard",
+      "query": "换货时想换另一个型号或颜色能直接换吗？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "不同型号或颜色需先退货再重新下单，直接换货只允许同款。",
+      "required_facts": [
+        "不同型号或颜色先退货再重新下单",
+        "直接换货是同款"
+      ],
+      "forbidden_claims": [
+        "任意型号颜色可直接换"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 换货政策 / 换货条件",
+          "evidence_quote": "不同型号或颜色需先退货再重新下单"
+        }
+      ]
+    },
+    {
+      "eval_id": "A10",
+      "bucket": "A_policy",
+      "difficulty": "hard",
+      "query": "人为损坏或者超保送修，一定免费吗？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "人为损坏、超保维修可能收取工本费，不能承诺一定免费。",
+      "required_facts": [
+        "人为损坏或超保维修可能收工本费",
+        "不能保证免费"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 质量问题与保修",
+          "evidence_quote": "人为损坏、超保商品维修可能收取工本费"
+        }
+      ]
+    },
+    {
+      "eval_id": "A11",
+      "bucket": "A_policy",
+      "difficulty": "hard",
+      "query": "无理由退货邮费谁出，定制商品是否也能按无理由退？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "无理由退货退回运费买家承担；定制商品不在7天无理由退货适用范围。",
+      "required_facts": [
+        "无理由退货退回运费买家承担",
+        "定制商品除外"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 退换货运费承担",
+          "evidence_quote": "无理由退货的退回运费由买家承担"
+        },
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 无理由退货 / 适用范围",
+          "evidence_quote": "定制类、生鲜类商品除外"
+        }
+      ]
+    },
+    {
+      "eval_id": "A12",
+      "bucket": "A_policy",
+      "difficulty": "hard",
+      "query": "预售尾款没按时付，定金一定原路全额退吗？",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": true,
+      "ground_truth": "尾款未按时支付，定金按活动规则处理；未提供保证全额退款的依据。",
+      "required_facts": [
+        "尾款未按时支付按活动规则处理",
+        "不能保证全额原路退定金"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 预售与定金",
+          "evidence_quote": "尾款未按时支付的,定金按活动规则处理"
+        }
+      ]
+    },
+    {
+      "eval_id": "B01",
+      "bucket": "B_model",
+      "difficulty": "easy",
+      "query": "MH-LP50猫砂容量多大，适用猫咪体重范围是什么？",
+      "filters": {
+        "content_type": "manual",
+        "product_category": "猫砂盆"
+      },
+      "answerable": true,
+      "ground_truth": "猫砂容量6L，适用1.5kg至6kg猫咪。",
+      "required_facts": [
+        "猫砂容量6L",
+        "适用1.5kg至6kg"
+      ],
+      "forbidden_claims": [
+        "容量9L",
+        "适用至8kg"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Lite(型号 MH-LP50)",
+          "evidence_quote": "适用猫咪体重:1.5kg 至 6kg"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Lite(型号 MH-LP50)",
+          "evidence_quote": "猫砂容量:6L"
+        }
+      ]
+    },
+    {
+      "eval_id": "B02",
+      "bucket": "B_model",
+      "difficulty": "easy",
+      "query": "MH-LP50是否支持App远程监控和健康记录？",
+      "filters": {
+        "content_type": "manual",
+        "product_category": "猫砂盆"
+      },
+      "answerable": true,
+      "ground_truth": "Lite无App联网、远程监控与健康记录；保留自动感应清理和物理除臭盖板。",
+      "required_facts": [
+        "无App联网功能",
+        "无App远程监控和健康记录",
+        "自动感应清理和物理除臭盖板"
+      ],
+      "forbidden_claims": [
+        "MH-LP50支持App联网或健康记录"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Lite(型号 MH-LP50)",
+          "evidence_quote": "核心功能:自动感应清理、物理除臭盖板;不含 App 联网功能"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Lite(型号 MH-LP50)",
+          "evidence_quote": "Lite 无 App 远程监控与健康记录"
+        }
+      ]
+    },
+    {
+      "eval_id": "B03",
+      "bucket": "B_model",
+      "difficulty": "easy",
+      "query": "MH-W40水箱容量、过滤材料和杀菌功能是什么？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "容量4L，五重过滤棉加椰壳活性炭，具UV紫外杀菌。",
+      "required_facts": [
+        "水箱4L",
+        "五重过滤棉加椰壳活性炭",
+        "UV紫外杀菌"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机 Plus(型号 MH-W40)",
+          "evidence_quote": "水箱容量:4L"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机 Plus(型号 MH-W40)",
+          "evidence_quote": "过滤:五重过滤棉 + 椰壳活性炭"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机 Plus(型号 MH-W40)",
+          "evidence_quote": "UV 紫外杀菌"
+        }
+      ]
+    },
+    {
+      "eval_id": "B04",
+      "bucket": "B_model",
+      "difficulty": "easy",
+      "query": "MH-CT30多高有几层，单层最大承重多少？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "高1.6m、四层带顶层吊床，单层最大10kg。",
+      "required_facts": [
+        "1.6m",
+        "四层带顶层吊床",
+        "单层最大10kg"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 大型猫爬架(型号 MH-CT30)",
+          "evidence_quote": "高度:1.6m,共四层带顶层吊床"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 大型猫爬架(型号 MH-CT30)",
+          "evidence_quote": "承重:单层最大 10kg"
+        }
+      ]
+    },
+    {
+      "eval_id": "B05",
+      "bucket": "B_model",
+      "difficulty": "medium",
+      "query": "8kg的猫是否在MH-LP100适用体重内，猫砂容量是多少？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "适用1.5kg至8kg，8kg在范围内；容量9L。",
+      "required_facts": [
+        "体重1.5kg至8kg",
+        "8kg在适用范围内",
+        "猫砂容量9L"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Pro(型号 MH-LP100)",
+          "evidence_quote": "适用猫咪体重:1.5kg 至 8kg"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Pro(型号 MH-LP100)",
+          "evidence_quote": "猫砂容量:9L"
+        }
+      ]
+    },
+    {
+      "eval_id": "B06",
+      "bucket": "B_model",
+      "difficulty": "medium",
+      "query": "MH-LP200适合多猫和12kg大型猫吗，有什么防夹与App功能？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "适用2kg至12kg，适合大型猫/多猫；有双重称重防夹与App多猫健康档案。",
+      "required_facts": [
+        "2kg至12kg",
+        "适合大型猫和多猫家庭",
+        "双重称重防夹",
+        "App多猫健康档案"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Max(型号 MH-LP200)",
+          "evidence_quote": "适用猫咪体重:2kg 至 12kg,适合大型猫与多猫家庭"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Max(型号 MH-LP200)",
+          "evidence_quote": "双重称重防夹、活性炭除臭、App 多猫健康档案"
+        }
+      ]
+    },
+    {
+      "eval_id": "B07",
+      "bucket": "B_model",
+      "difficulty": "medium",
+      "query": "MH-W20容量是多少，滤芯多久更换？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "水箱2L，三重过滤棉，建议每2周更换滤芯。",
+      "required_facts": [
+        "水箱2L",
+        "三重过滤棉",
+        "每2周更换滤芯"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机(型号 MH-W20)",
+          "evidence_quote": "水箱容量:2L"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机(型号 MH-W20)",
+          "evidence_quote": "过滤:三重过滤棉,建议每 2 周更换一次滤芯"
+        }
+      ]
+    },
+    {
+      "eval_id": "B08",
+      "bucket": "B_model",
+      "difficulty": "medium",
+      "query": "MH-W60容量、面盘材质与水泵冗余有什么配置？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "6L、304不锈钢表面盘、双泵冗余。",
+      "required_facts": [
+        "6L",
+        "304不锈钢表面盘",
+        "双泵冗余"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机 Pro 不锈钢(型号 MH-W60)",
+          "evidence_quote": "水箱容量:6L,304 不锈钢表面盘"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机 Pro 不锈钢(型号 MH-W60)",
+          "evidence_quote": "双泵冗余"
+        }
+      ]
+    },
+    {
+      "eval_id": "B09",
+      "bucket": "B_model",
+      "difficulty": "hard",
+      "query": "MH-HP12尺寸、恒温温度和连续通电建议是什么？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "40cm×30cm，恒温38℃且有过热保护，连续通电不超过12小时为宜。",
+      "required_facts": [
+        "40cm×30cm",
+        "恒温38℃并有过热保护",
+        "连续通电不超过12小时为宜"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 恒温加热垫(型号 MH-HP12)",
+          "evidence_quote": "尺寸:40cm × 30cm"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 恒温加热垫(型号 MH-HP12)",
+          "evidence_quote": "温控:恒温 38℃,内置过热保护,连续通电不超过 12 小时为宜"
+        }
+      ]
+    },
+    {
+      "eval_id": "B10",
+      "bucket": "B_model",
+      "difficulty": "hard",
+      "query": "MH-HP20尺寸和可调温度档位是什么，布面能拆洗吗？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "60cm×45cm，可调30/38/45℃，表面绒布可拆洗。",
+      "required_facts": [
+        "60cm×45cm",
+        "30℃/38℃/45℃三档",
+        "表面绒布可拆洗"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 大号三档加热垫(型号 MH-HP20)",
+          "evidence_quote": "尺寸:60cm × 45cm"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 大号三档加热垫(型号 MH-HP20)",
+          "evidence_quote": "三档可调 30℃ / 38℃ / 45℃"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 大号三档加热垫(型号 MH-HP20)",
+          "evidence_quote": "表面绒布可拆洗"
+        }
+      ]
+    },
+    {
+      "eval_id": "B11",
+      "bucket": "B_model",
+      "difficulty": "hard",
+      "query": "MH-FD10粮桶多大，每日最多几餐，有摄像头或App投喂吗？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "4L、每日最多6餐；基础版无摄像头与App远程投喂。",
+      "required_facts": [
+        "4L粮桶",
+        "每日最多6餐",
+        "不含摄像头与App远程投喂"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动喂食器 基础版(型号 MH-FD10)",
+          "evidence_quote": "粮桶容量:4L"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动喂食器 基础版(型号 MH-FD10)",
+          "evidence_quote": "每日最多 6 餐"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动喂食器 基础版(型号 MH-FD10)",
+          "evidence_quote": "基础版不含摄像头与 App 远程投喂"
+        }
+      ]
+    },
+    {
+      "eval_id": "B12",
+      "bucket": "B_model",
+      "difficulty": "hard",
+      "query": "MH-FD30摄像头分辨率、语音与App功能是什么，需要什么Wi-Fi？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "1080P摄像头、双向语音、App远程手动/定时投喂；支持视频回看，连接2.4G Wi-Fi。",
+      "required_facts": [
+        "1080P",
+        "双向语音",
+        "App远程手动及定时投喂",
+        "视频回看",
+        "2.4G Wi-Fi"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动喂食器 摄像头版(型号 MH-FD30)",
+          "evidence_quote": "1080P 摄像头、双向语音、App 远程手动投喂与定时投喂"
+        },
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动喂食器 摄像头版(型号 MH-FD30)",
+          "evidence_quote": "摄像头版支持视频回看,需连接 2.4G Wi-Fi"
+        }
+      ]
+    },
+    {
+      "eval_id": "C01",
+      "bucket": "C_colloquial",
+      "difficulty": "easy",
+      "query": "买东西凑到多少免邮啊，不够要加多少？",
+      "filters": {
+        "content_type": "faq"
+      },
+      "answerable": true,
+      "ground_truth": "单笔满99元包邮，未满10元，偏远地区另计。",
+      "required_facts": [
+        "满99元包邮",
+        "未满10元运费",
+        "偏远地区另计"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 运费怎么算",
+          "evidence_quote": "单笔订单满 99 元包邮,未满收取 10 元运费,偏远地区运费另计"
+        }
+      ]
+    },
+    {
+      "eval_id": "C02",
+      "bucket": "C_colloquial",
+      "difficulty": "easy",
+      "query": "下单付款能走啥方式，线下汇款行不行？",
+      "filters": {
+        "content_type": "faq"
+      },
+      "answerable": true,
+      "ground_truth": "支持支付宝、微信与主流银行储蓄卡/信用卡在线支付，暂不支持线下汇款。",
+      "required_facts": [
+        "支付宝、微信和主流银行在线卡支付",
+        "暂不支持线下汇款"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 支持哪些支付方式",
+          "evidence_quote": "下单支持支付宝、微信支付与主流银行储蓄卡/信用卡在线支付。暂不支持线下汇款"
+        }
+      ]
+    },
+    {
+      "eval_id": "C03",
+      "bucket": "C_colloquial",
+      "difficulty": "easy",
+      "query": "银卡下单有几次免邮，偏远附加费能抵吗，没用完能留到下月不？",
+      "filters": {
+        "content_type": "faq"
+      },
+      "answerable": true,
+      "ground_truth": "每月1次，不能抵偏远附加运费，未用完不结转。",
+      "required_facts": [
+        "银卡每月1次",
+        "不抵偏远地区附加运费",
+        "当月未用完不结转"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 会员运费权益",
+          "evidence_quote": "银卡会员享 1 次;权益不与偏远地区附加运费冲抵,当月未用完不结转"
+        }
+      ]
+    },
+    {
+      "eval_id": "C04",
+      "bucket": "C_colloquial",
+      "difficulty": "easy",
+      "query": "电子票开了后大概几个工作日发我邮箱呀？",
+      "filters": {
+        "content_type": "faq"
+      },
+      "answerable": true,
+      "ground_truth": "电子发票3个工作日内发到邮箱。",
+      "required_facts": [
+        "3个工作日内",
+        "发送至邮箱"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 发票如何开具",
+          "evidence_quote": "电子发票将于 3 个工作日内发送至邮箱"
+        }
+      ]
+    },
+    {
+      "eval_id": "C05",
+      "bucket": "C_colloquial",
+      "difficulty": "medium",
+      "query": "新疆西藏寄过去啥规矩，港澳台和海外也送不？",
+      "filters": {
+        "content_type": "faq"
+      },
+      "answerable": true,
+      "ground_truth": "偏远地区运费另计时效顺延；港澳台海外暂不支持自营配送。",
+      "required_facts": [
+        "新疆西藏等偏远运费另计且时效顺延",
+        "港澳台海外暂不支持自营配送"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 配送范围与偏远地区",
+          "evidence_quote": "新疆、西藏、内蒙古等偏远地区运费另计且时效顺延;港澳台及海外暂不支持自营配送"
+        }
+      ]
+    },
+    {
+      "eval_id": "C06",
+      "bucket": "C_colloquial",
+      "difficulty": "medium",
+      "query": "已经发货了还能改收货信息吗，要改买的数量咋办？",
+      "filters": {
+        "content_type": "faq"
+      },
+      "answerable": true,
+      "ground_truth": "已发货无法改收货信息，可拒收退款；改数量需取消重新下单。",
+      "required_facts": [
+        "已发货不能改收货信息",
+        "可拒收后退款",
+        "修改数量取消再下单"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 订单可以修改或取消吗",
+          "evidence_quote": "已发货订单无法修改收货信息,可拒收后走退款流程。修改商品数量需取消后重新下单"
+        }
+      ]
+    },
+    {
+      "eval_id": "C07",
+      "bucket": "C_colloquial",
+      "difficulty": "medium",
+      "query": "结账那个券咋勾，满减和店铺券能随便叠好几张不？",
+      "filters": {
+        "content_type": "faq"
+      },
+      "answerable": true,
+      "ground_truth": "结算页勾选使用优惠券，满减按商品页门槛；一般限一张店铺券，活动细则以页面为准。",
+      "required_facts": [
+        "结算页勾选使用优惠券",
+        "满减按商品页门槛",
+        "一般一张店铺券并以页面细则为准"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 优惠券和满减怎么用",
+          "evidence_quote": "优惠券在结算页「使用优惠券」中勾选"
+        },
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 优惠券和满减怎么用",
+          "evidence_quote": "同一订单一般限用一张店铺券,活动细则以页面为准"
+        }
+      ]
+    },
+    {
+      "eval_id": "C08",
+      "bucket": "C_colloquial",
+      "difficulty": "medium",
+      "query": "自营买完没几天同款降价了，价保去哪申请，差价怎么回？",
+      "filters": {
+        "content_type": "faq"
+      },
+      "answerable": true,
+      "ground_truth": "下单7天内同款降价，在我的订单申请价保，差价退原支付渠道。",
+      "required_facts": [
+        "下单后7天内同款降价",
+        "我的订单申请价保",
+        "差价退原支付渠道"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 价格保护怎么申请",
+          "evidence_quote": "自营商品支持下单后 7 天内价保,期间若同款降价可在「我的订单」-「申请价保」提交,差价将退回原支付渠道"
+        }
+      ]
+    },
+    {
+      "eval_id": "C09",
+      "bucket": "C_colloquial",
+      "difficulty": "hard",
+      "query": "饮水机那小泵不出水了，自己先查啥呀？",
+      "filters": {
+        "category": "售后手册",
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "检查水位最低线和水泵卡阻，断电清洗水泵再试。",
+      "required_facts": [
+        "水位是否低于最低线",
+        "水泵是否卡阻",
+        "断电清洗水泵后重试"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 常见故障自查",
+          "evidence_quote": "饮水机不出水:检查水位是否低于最低线、水泵是否卡阻,断电清洗水泵后重试"
+        }
+      ]
+    },
+    {
+      "eval_id": "C10",
+      "bucket": "C_colloquial",
+      "difficulty": "hard",
+      "query": "猫砂盆报错了筒不转，先咋弄，还是不行找谁？",
+      "filters": {
+        "category": "售后手册",
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "清空废砂盒，查滚筒卡砂，重启；仍报错联系售后。",
+      "required_facts": [
+        "清空废砂盒",
+        "检查滚筒卡砂并重启",
+        "仍报错联系售后"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 常见故障自查",
+          "evidence_quote": "猫砂盆报错:清空废砂盒并检查滚筒是否卡砂,重启设备;仍报错联系售后"
+        }
+      ]
+    },
+    {
+      "eval_id": "C11",
+      "bucket": "C_colloquial",
+      "difficulty": "hard",
+      "query": "喂食器卡粮，颗粒超过12mm会有影响吗，潮了咋查？",
+      "filters": {
+        "category": "售后手册",
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "检查颗粒是否超过12mm、粮桶受潮结块，清理出粮口后重试。",
+      "required_facts": [
+        "检查粒径是否超过12mm",
+        "检查受潮结块",
+        "清理出粮口后重试"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 常见故障自查",
+          "evidence_quote": "喂食器卡粮:检查粮食颗粒直径是否超 12mm、粮桶是否受潮结块,清理出粮口后重试"
+        }
+      ]
+    },
+    {
+      "eval_id": "C12",
+      "bucket": "C_colloquial",
+      "difficulty": "hard",
+      "query": "摄像头老离线，Wi-Fi连5G行不行，咋重新连？",
+      "filters": {
+        "category": "售后手册",
+        "content_type": "manual"
+      },
+      "answerable": true,
+      "ground_truth": "先确认Wi-Fi为2.4G且信号良好，再重启或App重新配网；不能保证5G恢复。",
+      "required_facts": [
+        "确认Wi-Fi为2.4G",
+        "信号良好",
+        "重启或App重新配网"
+      ],
+      "forbidden_claims": [
+        "保证使用5G恢复"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 常见故障自查",
+          "evidence_quote": "摄像头离线:确认 Wi-Fi 为 2.4G 频段、信号良好,重启设备或在 App 内重新配网"
+        }
+      ]
+    },
+    {
+      "eval_id": "D01",
+      "bucket": "D_unknown",
+      "difficulty": "easy",
+      "query": "实体门店的地址和营业时间是什么？",
+      "filters": {},
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供实体门店地址/营业时间，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造实体门店地址/营业时间",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D02",
+      "bucket": "D_unknown",
+      "difficulty": "easy",
+      "query": "MH-MW9000微波炉的加热功率是多少瓦？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供未知MH-MW9000微波炉功率，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造未知MH-MW9000微波炉功率",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D03",
+      "bucket": "D_unknown",
+      "difficulty": "easy",
+      "query": "更换绑定手机号的身份验证规则是什么？",
+      "filters": {},
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供手机号改绑身份验证规则，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造手机号改绑身份验证规则",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D04",
+      "bucket": "D_unknown",
+      "difficulty": "easy",
+      "query": "平台目前的ICP备案号是多少？",
+      "filters": {},
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供ICP备案号，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造ICP备案号",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D05",
+      "bucket": "D_unknown",
+      "difficulty": "medium",
+      "query": "MH-LP50的机身长宽高分别是多少厘米？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供MH-LP50机身长宽高，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造MH-LP50机身长宽高",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D06",
+      "bucket": "D_unknown",
+      "difficulty": "medium",
+      "query": "MH-W40备用电池容量和断电续航多久？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供MH-W40电池容量和续航，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造MH-W40电池容量和续航",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D07",
+      "bucket": "D_unknown",
+      "difficulty": "medium",
+      "query": "MH-FD30云端视频回看最多保存几天？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供MH-FD30云端保存期限，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造MH-FD30云端保存期限",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D08",
+      "bucket": "D_unknown",
+      "difficulty": "medium",
+      "query": "MH-LP100此刻精确库存还有多少台？",
+      "filters": {},
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供具体型号实时库存数量，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造具体型号实时库存数量",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D09",
+      "bucket": "D_unknown",
+      "difficulty": "hard",
+      "query": "明天金卡会员能领的专属券具体折扣是多少？",
+      "filters": {},
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供明日动态优惠券折扣，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造明日动态优惠券折扣",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D10",
+      "bucket": "D_unknown",
+      "difficulty": "hard",
+      "query": "我这笔退款会在哪一天几点几分到账，请给精确时刻。",
+      "filters": {
+        "content_type": "policy"
+      },
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供单笔退款精确到账时刻，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造单笔退款精确到账时刻",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D11",
+      "bucket": "D_unknown",
+      "difficulty": "hard",
+      "query": "MH-CAM1有人脸识别吗，识别准确率是多少？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供MH-CAM1人脸识别与准确率，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造MH-CAM1人脸识别与准确率",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "D12",
+      "bucket": "D_unknown",
+      "difficulty": "hard",
+      "query": "MH-HP12表面布能拆洗吗，整垫IP防水等级是多少？",
+      "filters": {
+        "content_type": "manual"
+      },
+      "answerable": false,
+      "ground_truth": "明确拒答：知识库未提供MH-HP12拆洗与整垫IP等级，不能从通用规则或其他型号推断。",
+      "required_facts": [],
+      "forbidden_claims": [
+        "编造MH-HP12拆洗与整垫IP等级",
+        "承诺固定到账时刻"
+      ],
+      "evidence": []
+    },
+    {
+      "eval_id": "E01",
+      "bucket": "E_multi",
+      "difficulty": "easy",
+      "query": "MH-LP50有App吗，完好的商品还能7天无理由退吗？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "MH-LP50无App；签收起7天内完好、不影响二次销售可无理由退。",
+      "required_facts": [
+        "MH-LP50无App",
+        "签收起7天内且完好不影响二次销售可退"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Lite(型号 MH-LP50)",
+          "evidence_quote": "不含 App 联网功能"
+        },
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 无理由退货 / 适用范围",
+          "evidence_quote": "自签收之日起 7 天内,商品完好、不影响二次销售的,支持无理由退货"
+        }
+      ]
+    },
+    {
+      "eval_id": "E02",
+      "bucket": "E_multi",
+      "difficulty": "easy",
+      "query": "MH-W40水箱多大，电子产品非人为故障的保修规则是什么？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "水箱4L；电子商品签收起12个月保修，期内非人为故障可申请免费维修或换货。",
+      "required_facts": [
+        "水箱4L",
+        "电子商品12个月保修",
+        "期内非人为损坏可申请免费维修或换货"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机 Plus(型号 MH-W40)",
+          "evidence_quote": "水箱容量:4L"
+        },
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 质量问题与保修",
+          "evidence_quote": "电子类商品自签收起保修 12 个月,保修期内非人为损坏可申请免费维修或换货"
+        }
+      ]
+    },
+    {
+      "eval_id": "E03",
+      "bucket": "E_multi",
+      "difficulty": "easy",
+      "query": "MH-FD10有摄像头和App吗，无质量问题完好退回去运费谁出？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "基础版无摄像头和App远程投喂；无理由退货退回运费买家承担。",
+      "required_facts": [
+        "MH-FD10无摄像头与App远程投喂",
+        "无理由退回运费买家承担"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动喂食器 基础版(型号 MH-FD10)",
+          "evidence_quote": "基础版不含摄像头与 App 远程投喂"
+        },
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 退换货运费承担",
+          "evidence_quote": "无理由退货的退回运费由买家承担"
+        }
+      ]
+    },
+    {
+      "eval_id": "E04",
+      "bucket": "E_multi",
+      "difficulty": "easy",
+      "query": "MH-CT30是什么材质，金卡每月有几次免邮，能抵偏远附加运费吗？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "剑麻柱身、绒布平台；金卡每月3次免运费，不能抵偏远附加运费。",
+      "required_facts": [
+        "剑麻柱身和绒布平台",
+        "金卡每月3次免运费",
+        "不抵偏远附加运费"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 大型猫爬架(型号 MH-CT30)",
+          "evidence_quote": "材质:剑麻柱身、绒布平台"
+        },
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 会员运费权益",
+          "evidence_quote": "金卡会员每月享 3 次免运费权益"
+        },
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 会员运费权益",
+          "evidence_quote": "权益不与偏远地区附加运费冲抵"
+        }
+      ]
+    },
+    {
+      "eval_id": "E05",
+      "bucket": "E_multi",
+      "difficulty": "medium",
+      "query": "现货和预售各按什么时候发货，预售也保证付款48小时内吗？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "现货付款48小时内发货；预售按详情页标注时间，不能套现货48小时承诺。",
+      "required_facts": [
+        "现货付款48小时内发货",
+        "预售按详情页时间",
+        "不能承诺预售48小时内发货"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 发货时效多久",
+          "evidence_quote": "现货商品付款后 48 小时内发货,预售商品以商品详情页标注的发货时间为准"
+        },
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 预售与定金",
+          "evidence_quote": "预售商品以详情页标注的时间发货"
+        }
+      ]
+    },
+    {
+      "eval_id": "E06",
+      "bucket": "E_multi",
+      "difficulty": "medium",
+      "query": "银卡下单免邮和售后退换运费权益分别有多少，购物免邮能抵偏远附加费吗？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "银卡购物免运费每月1次、不抵偏远附加费；售后退换运费权益1次/月，以会员中心标注为准。",
+      "required_facts": [
+        "银卡购物免邮1次/月且不抵偏远附加费",
+        "银卡退换运费权益1次/月",
+        "售后具体权益以会员中心标注为准"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 会员运费权益",
+          "evidence_quote": "银卡会员享 1 次;权益不与偏远地区附加运费冲抵"
+        },
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 会员专属售后权益",
+          "evidence_quote": "银卡会员享退换货运费权益 1 次/月。具体权益以会员中心页面标注为准"
+        }
+      ]
+    },
+    {
+      "eval_id": "E07",
+      "bucket": "E_multi",
+      "difficulty": "medium",
+      "query": "退款首次响应和处理时限各多久，3个工作日处理就能保证3个工作日到账吗？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "退款首次响应2小时、处理3个工作日；到账以平台售后规则为准，处理不等于保证到账。",
+      "required_facts": [
+        "首次响应2小时",
+        "处理3个工作日",
+        "到账以平台售后规则为准",
+        "不能把处理时限作为到账承诺"
+      ],
+      "forbidden_claims": [
+        "保证3个工作日到账"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 常见问题处理时限",
+          "evidence_quote": "| 退款 | 2 小时 | 3 个工作日 |"
+        },
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 无理由退货 / 退款时效",
+          "evidence_quote": "退货商品经平台核验通过后,退款原路退回,到账时效以平台售后规则为准"
+        }
+      ]
+    },
+    {
+      "eval_id": "E08",
+      "bucket": "E_multi",
+      "difficulty": "medium",
+      "query": "电子设备人为损坏还能免费保修吗，要寄修怎么走，收费会提前说吗？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "人为损坏不属于免费保修；联系客服登记按指引寄修，超保/人为损坏可能收费并提前告知。",
+      "required_facts": [
+        "人为损坏不在免费保修范围",
+        "联系客服登记按指引寄指定维修点",
+        "费用可能收取并提前告知"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 保修说明",
+          "evidence_quote": "人为损坏不在保修范围"
+        },
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 维修寄修流程",
+          "evidence_quote": "联系客服登记后按指引将设备寄回指定维修点"
+        },
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 维修寄修流程",
+          "evidence_quote": "超保或人为损坏维修可能收取工本费,费用会提前告知"
+        }
+      ]
+    },
+    {
+      "eval_id": "E09",
+      "bucket": "E_multi",
+      "difficulty": "hard",
+      "query": "运输破损需要提交什么证明，维修咨询首次响应和处理时限是多少？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "破损提供开箱视频与照片；维修首次响应4小时、处理7个工作日。",
+      "required_facts": [
+        "开箱视频与照片",
+        "维修首次响应4小时",
+        "维修处理7个工作日"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 运输破损处理",
+          "evidence_quote": "提供开箱视频与照片"
+        },
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 常见问题处理时限",
+          "evidence_quote": "| 维修 | 4 小时 | 7 个工作日 |"
+        }
+      ]
+    },
+    {
+      "eval_id": "E10",
+      "bucket": "E_multi",
+      "difficulty": "hard",
+      "query": "MH-W60面盘能高温消毒吗，无理由退货对商品完好程度有什么要求？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "不锈钢面盘可高温消毒；无理由退货需完好、不影响二次销售并在签收7天内。",
+      "required_facts": [
+        "不锈钢面盘可高温消毒",
+        "完好不影响二次销售",
+        "签收7天内"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动饮水机 Pro 不锈钢(型号 MH-W60)",
+          "evidence_quote": "不锈钢面盘可高温消毒"
+        },
+        {
+          "source_file": "knowledge_db/returns-policy.md",
+          "section_path": "退货退款政策 / 无理由退货 / 适用范围",
+          "evidence_quote": "自签收之日起 7 天内,商品完好、不影响二次销售的,支持无理由退货"
+        }
+      ]
+    },
+    {
+      "eval_id": "E11",
+      "bucket": "E_multi",
+      "difficulty": "hard",
+      "query": "MH-LP100断电会丢配置吗，平台退款申请从哪里提交？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "断电配置自动保存；我的订单找到订单点击申请退款，按提示提交。",
+      "required_facts": [
+        "MH-LP100断电配置自动保存",
+        "我的订单申请退款按提示提交"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 智能猫砂盆 Pro(型号 MH-LP100)",
+          "evidence_quote": "断电后配置自动保存"
+        },
+        {
+          "source_file": "knowledge_db/product-faq.md",
+          "section_path": "商品与购物 FAQ / 如何申请退款",
+          "evidence_quote": "在「我的订单」找到对应订单点击「申请退款」,按提示提交"
+        }
+      ]
+    },
+    {
+      "eval_id": "E12",
+      "bucket": "E_multi",
+      "difficulty": "hard",
+      "query": "MH-FD30需要什么Wi-Fi，首次使用联网设备怎样在App激活？",
+      "filters": {},
+      "answerable": true,
+      "ground_truth": "MH-FD30需2.4G Wi-Fi；首次下载喵喵优选App，扫码添加设备并连接2.4G Wi-Fi激活。",
+      "required_facts": [
+        "MH-FD30需2.4G Wi-Fi",
+        "下载喵喵优选App",
+        "扫码添加设备并连接2.4G Wi-Fi完成激活"
+      ],
+      "forbidden_claims": [
+        "保证退款在固定时刻到账",
+        "无证据承诺当前价格或库存数量"
+      ],
+      "evidence": [
+        {
+          "source_file": "knowledge_db/product-specs.md",
+          "section_path": "商品规格手册 / 自动喂食器 摄像头版(型号 MH-FD30)",
+          "evidence_quote": "需连接 2.4G Wi-Fi"
+        },
+        {
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "section_path": "售后手册 / 设备安装与激活",
+          "evidence_quote": "智能设备首次使用需下载「喵喵优选」App,按说明书扫码添加设备并连接 2.4G Wi-Fi 完成激活"
+        }
+      ]
+    }
+  ]
+}

@@ -100,10 +100,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** `QueryUnderstanding.prepare(raw_question: str) -> PreparedQuery`（async）；`ModelService.understand_query(raw_question: str) -> QueryDecision`。模型只收到本轮原话；输出严格结构，保留限制验证由本地函数完成。已保留 filters 不由模型猜出更窄商品范围。
 
-- [ ] **Step 1 — RED（代码）:** schema 拒绝额外字段/无效 intent；型号缺失、数字变化、否定消失不能继续回答；坏 JSON/模型失败报安全服务错误；不向模型传历史；纯 BM25 不触发 embedder。运行 `tests/test_ch04_query.py` 确认失败。
-- [ ] **Step 2 — 实现:** Context7 核对 LangChain structured_output/json_mode 与解析失败；QueryDecision 固定字段 standard_question/synonyms/intent/clarification。规范化副本可改变型号空格/大小写，检索文本必须额外带原型号；受控同义词限 8 个、每个最多 32 字，去重，不删除原句条件。模糊型号/涉及上一轮代词返回 clarify；库存/当前价格不让商品随机工具补事实。
-- [ ] **Step 3 — Prompt 样例验证:** 人工对照真实文档编写至少 12 个样例，含“邮费谁出”、MH-LP50 无 App、退货质量/非质量、未知型号、明确订单操作、问候及无法单轮判定的问题；用实际聊天模型跑一遍，保存预期/实际标准问法、意图和限制保留结果。未通过例子修 Prompt 重跑，不能以 mock 通过替代。
-- [ ] **Step 4 — GREEN/提交:** 代码测试通过且样例验证有实测记录，提交 `feat: normalize single queries for retrieval without duplicating knowledge`。
+- [x] **Step 1 — RED（代码）:** schema 拒绝额外字段/无效 intent；型号缺失、数字变化、否定消失不能继续回答；坏 JSON/模型失败报安全服务错误；不向模型传历史；纯 BM25 不触发 embedder。运行 `tests/test_ch04_query.py` 确认失败。
+- [x] **Step 2 — 实现:** Context7 核对 LangChain structured_output/json_mode 与解析失败；QueryDecision 固定字段 standard_question/synonyms/intent/clarification。规范化副本可改变型号空格/大小写，检索文本必须额外带原型号；受控同义词限 8 个、每个最多 32 字，去重，不删除原句条件。模糊型号/涉及上一轮代词返回 clarify；库存/当前价格不让商品随机工具补事实。
+- [x] **Step 3 — Prompt 样例验证:** 人工对照真实文档编写至少 12 个样例，含“邮费谁出”、MH-LP50 无 App、退货质量/非质量、未知型号、明确订单操作、问候及无法单轮判定的问题；用实际聊天模型跑一遍，保存预期/实际标准问法、意图和限制保留结果。未通过例子修 Prompt 重跑，不能以 mock 通过替代。
+- [x] **Step 4 — GREEN/提交:** 代码测试通过且样例验证有实测记录，提交 `feat: normalize single queries for retrieval without duplicating knowledge`。
 
 ### Task 5：指定重排模型与真实标注集
 
