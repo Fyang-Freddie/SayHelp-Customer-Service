@@ -49,7 +49,7 @@ def main(argv=None):
         initialize_ch04_database(url)
         factory=make_session_factory(url)
         snapshot=ingest_corpus(factory,args.manifest)
-        store=HybridMilvusStore(uri=value('MILVUS_URI','http://127.0.0.1:19530'))
+        store=HybridMilvusStore(uri=value('MILVUS_URI','http://127.0.0.1:19530'),collection_name=value('KNOWLEDGE_COLLECTION','knowledge_ch04'))
         summary=build_index(factory,BgeM3Embedder(cache_dir=value('BGE_CACHE_DIR')),store,snapshot,args.batch_size)
         print(json.dumps({'mode':'built',**asdict(summary)},ensure_ascii=False))
     except Exception:

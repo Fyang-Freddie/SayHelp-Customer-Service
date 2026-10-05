@@ -78,10 +78,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** 保持 `chunk_markdown(...) -> list[KnowledgeDraft]` 旧参数与 source_line，新增 source_end_line，解析单元同时携带实际起止位置；`ingest_corpus(session_factory, manifest: Path) -> CorpusSnapshot`；`build_index(session_factory, embedder, store, snapshot: CorpusSnapshot, batch_size=32) -> BuildSummary`；CLI `python -m app.build_ch04_knowledge --manifest eval/ch04/corpus.json`，可重跑恢复。CorpusSnapshot 定义在 app/knowledge_types.py，包含 files（source_file→digest）、chunks（id→EvidenceChunk）、payload_digests（id→digest）、corpus_digest；BuildSummary 包含 indexed/reused/removed/verified 整数计数及 corpus_digest。
 
-- [ ] **Step 1 — RED:** 验段落重叠、跨行句子、引用、代码块、表格重复表头的实际行范围；两次导入不复制同义词/正文；已有 done 行仍入新构建；新版本不与旧来源混淆。模拟 upsert 后提交失败、行被并发修改及集合被重建；恢复后有效 ID/payload 指纹与清单相等。跑两文件及 test_knowledge_chunking，确认失败。
-- [ ] **Step 2 — 实现:** corpus.json 显式列出四个文件及 content_type。用标题/型号映射标准商品品类，政策/售后类型明确；不调用 ingest_faq 或 QA staging。同一来源版本精确复用唯一链，无法确认的旧行不伪造来源；新版本单独完整链，旧链保留但从当前构建清单排除。text 统一为标题/问题/正文，payload_digest 包含索引文本、过滤元数据与 source_digest。
-- [ ] **Step 3 — 实现恢复边界:** 新 collection 独立遍历清单中所有 ID；每次外部 I/O 之前关闭 MySQL 事务。确认 Milvus 主键/元数据后才标记独立状态；存在已完成清单也必须对照服务端实体，发现漏行/旧指纹重新写入。构建完成删除的仅是本新集合中不在当前清单的旧版本实体，保留 MySQL 和旧 knowledge；未全量验证不能切换在线检索。
-- [ ] **Step 4 — GREEN/提交:** 聚焦测试通过；四份真实文件 dry-run 输出文件/chunk 数量和定位抽检，不能把测试 fixture 当正式知识。记录结果，提交 `feat: build recoverable chapter 4 corpus with exact provenance`。
+- [x] **Step 1 — RED:** 验段落重叠、跨行句子、引用、代码块、表格重复表头的实际行范围；两次导入不复制同义词/正文；已有 done 行仍入新构建；新版本不与旧来源混淆。模拟 upsert 后提交失败、行被并发修改及集合被重建；恢复后有效 ID/payload 指纹与清单相等。跑两文件及 test_knowledge_chunking，确认失败。
+- [x] **Step 2 — 实现:** corpus.json 显式列出四个文件及 content_type。用标题/型号映射标准商品品类，政策/售后类型明确；不调用 ingest_faq 或 QA staging。同一来源版本精确复用唯一链，无法确认的旧行不伪造来源；新版本单独完整链，旧链保留但从当前构建清单排除。text 统一为标题/问题/正文，payload_digest 包含索引文本、过滤元数据与 source_digest。
+- [x] **Step 3 — 实现恢复边界:** 新 collection 独立遍历清单中所有 ID；每次外部 I/O 之前关闭 MySQL 事务。确认 Milvus 主键/元数据后才标记独立状态；存在已完成清单也必须对照服务端实体，发现漏行/旧指纹重新写入。构建完成删除的仅是本新集合中不在当前清单的旧版本实体，保留 MySQL 和旧 knowledge；未全量验证不能切换在线检索。
+- [x] **Step 4 — GREEN/提交:** 聚焦测试通过；四份真实文件 dry-run 输出文件/chunk 数量和定位抽检，不能把测试 fixture 当正式知识。记录结果，提交 `feat: build recoverable chapter 4 corpus with exact provenance`。
 
 ### Task 3：Milvus 原生 BM25、前置过滤与 RRF
 

@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 import os
 import math
+import re
 from pathlib import Path
 
 from dotenv import dotenv_values
@@ -21,6 +22,7 @@ class Settings:
     milvus_uri: str = 'http://127.0.0.1:19530'
     bge_cache_dir: str | None = None
     knowledge_min_score: float = 0.55
+    knowledge_collection: str = 'knowledge_ch04'
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -56,6 +58,9 @@ class Settings:
                 raise ValueError('KNOWLEDGE_MIN_SCORE must be finite and within [-1, 1]')
             return result
 
+        collection = value('KNOWLEDGE_COLLECTION') or 'knowledge_ch04'
+        if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,127}',collection) or collection=='knowledge':
+            raise ValueError('KNOWLEDGE_COLLECTION must name an independent chapter 4 collection')
         base_url = required("CHAT_BASE_URL")
         model = required("CHAT_MODEL")
         api_key = required("CHAT_API_KEY")
@@ -76,4 +81,5 @@ class Settings:
             milvus_uri=value("MILVUS_URI") or 'http://127.0.0.1:19530',
             bge_cache_dir=value("BGE_CACHE_DIR"),
             knowledge_min_score=minimum_score(),
+            knowledge_collection=collection,
         )

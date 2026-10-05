@@ -82,6 +82,7 @@ class StoreResult:
     hits: list[StageHit]
     stage_hits: dict[str, list[StageHit]]
     entities: dict[int, dict]
+    timings_ms: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
