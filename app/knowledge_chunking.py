@@ -17,7 +17,9 @@ class KnowledgeDraft:
     content_type: str
     is_key_clause: bool
     source_order: int  # Zero-based position in this document's returned list.
-    source_line: int  # One-based first body sentence/row line, including overlap.
+    source_line: int  # Legacy first body sentence/row line, including overlap.
+    source_start_line: int  # Inclusive hull; includes table header at its original location.
+    source_end_line: int  # Inclusive last original body/fence line.
 
 
 def _cells(line: str) -> list[str]:
@@ -49,7 +51,7 @@ def _fence_close(line: str, opening: str) -> bool:
                         '{' + str(len(opening)) + r',}[ \t]*', line) is not None
 
 
-def _sentences(text: str, line: int) -> list[tuple[str, int]]:
+def _sentences(text: str, line: int) -> list[tuple[str, int, int]]:
     units = []
     start = 0
     for index, char in enumerate(text):
@@ -65,24 +67,26 @@ def _sentences(text: str, line: int) -> list[tuple[str, int]]:
         while end < len(text) and text[end] in '\"\'”’）)]】》」』':
             end += 1
         leading = len(text[start:end]) - len(text[start:end].lstrip())
-        units.append((text[start:end], line + text[:start + leading].count('\n')))
+        units.append((text[start:end], line + text[:start + leading].count('\n'),
+                      line + text[:end - (len(text[start:end]) - len(text[start:end].rstrip()))].count('\n')))
         start = end
     if text[start:].strip():
         leading = len(text[start:]) - len(text[start:].lstrip())
-        units.append((text[start:], line + text[:start + leading].count('\n')))
+        units.append((text[start:], line + text[:start + leading].count('\n'),
+                      line + text[:len(text.rstrip())].count('\n')))
     return units
 
 
-def _prose(text: str, line: int, limit: int, overlap: int) -> list[tuple[str, int]]:
+def _prose(text: str, line: int, limit: int, overlap: int) -> list[tuple[str, int, int]]:
     units = _sentences(text, line)
-    for sentence, source_line in units:
+    for sentence, source_line, end_line in units:
         if len(sentence.strip()) > limit:
             raise ValueError(f'line {source_line}: oversized indivisible sentence (limit {limit})')
     result = []
     current = []
     for unit in units:
         if current and len(''.join(item[0] for item in current + [unit]).strip()) > limit:
-            result.append((''.join(item[0] for item in current).strip(), current[0][1]))
+            result.append((''.join(item[0] for item in current).strip(), current[0][1], current[-1][2]))
             suffix = []
             for old in reversed(current):
                 candidate = [old] + suffix
@@ -94,7 +98,7 @@ def _prose(text: str, line: int, limit: int, overlap: int) -> list[tuple[str, in
             current = suffix
         current.append(unit)
     if current:
-        result.append((''.join(item[0] for item in current).strip(), current[0][1]))
+        result.append((''.join(item[0] for item in current).strip(), current[0][1], current[-1][2]))
     return result
 
 
@@ -112,7 +116,7 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
     headings = []
     result = []
 
-    def emit(answer: str, source_line: int, key: bool = False) -> None:
+    def emit(answer: str, source_line: int, source_end_line: int, key: bool = False, *, source_start_line: int | None = None) -> None:
         if not answer.strip():
             return
         titles = [title for _, title in headings]
@@ -120,6 +124,8 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
             category=' / '.join(titles[:-1]), questions=titles[-1] if titles else '',
             answer=answer, section_path=' / '.join(titles), content_type=content_type,
             is_key_clause=key, source_order=len(result), source_line=source_line,
+            source_start_line=source_start_line if source_start_line is not None else source_line,
+            source_end_line=source_end_line,
         ))
 
     index = 0
@@ -138,7 +144,7 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
             if len(answer) > max_chars:
                 raise ValueError(f'line {start + 1}: oversized indivisible fenced code '
                                  f'(limit {max_chars})')
-            emit(answer, start + 1)
+            emit(answer, start + 1, index)
             continue
         heading = _heading(line)
         if heading:
@@ -156,6 +162,7 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
             continue
         # Tables precede prose detection: punctuation inside rows never splits.
         if '|' in line and index + 1 < len(lines) and _separator(lines[index + 1]):
+            header_start = index + 1
             header = line.strip() + '\n' + lines[index + 1].strip()
             width = len(_cells(line))
             if len(_cells(lines[index + 1])) != width:
@@ -172,14 +179,14 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
                 if len(header + '\n' + row) > max_chars:
                     raise ValueError(f'line {index + 1}: oversized indivisible table row (limit {max_chars})')
                 if group and len(header + '\n' + '\n'.join(group + [row])) > max_chars:
-                    emit(header + '\n' + '\n'.join(group), first)
+                    emit(header + '\n' + '\n'.join(group), first, index, source_start_line=header_start)
                     group = []
                 if not group:
                     first = index + 1
                 group.append(row)
                 index += 1
             if group:
-                emit(header + '\n' + '\n'.join(group), first)
+                emit(header + '\n' + '\n'.join(group), first, index, source_start_line=header_start)
             continue
         quoted = line.lstrip().startswith('>')
         key = line.strip() == '> [!IMPORTANT]'
@@ -198,6 +205,6 @@ def chunk_markdown(text: str, *, content_type: str, max_chars: int = 800,
                 break
             paragraph.append(re.sub(r'^\s*> ?', '', candidate) if quoted else candidate)
             index += 1
-        for answer, source_line in _prose('\n'.join(paragraph), start + 1, max_chars, overlap_chars):
-            emit(answer, source_line, key)
+        for answer, source_line, end_line in _prose('\n'.join(paragraph), start + 1, max_chars, overlap_chars):
+            emit(answer, source_line, end_line, key)
     return result

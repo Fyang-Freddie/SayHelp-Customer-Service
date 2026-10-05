@@ -1,0 +1,8 @@
+{
+  "documents": [
+    {"source_file": "knowledge_db/after-sales-manual.md", "content_type": "manual"},
+    {"source_file": "knowledge_db/product-faq.md", "content_type": "faq"},
+    {"source_file": "knowledge_db/product-specs.md", "content_type": "manual"},
+    {"source_file": "knowledge_db/returns-policy.md", "content_type": "policy"}
+  ]
+}
