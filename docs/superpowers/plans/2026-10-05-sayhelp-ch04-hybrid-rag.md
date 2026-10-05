@@ -67,10 +67,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** `initialize_ch04_database(database_url: str) -> None`；映射 `LowConfidenceQuestion`、`FaithCase`、`KnowledgeIndexState`。附加迁移为 knowledge_chunks 的五个来源/品类字段、conversations.is_pinned/pinned_at/deleted_at、messages.citations（nullable JSON）、独立 knowledge_index_states。后者以 (collection_name, chunk_id) 为唯一键保存 payload_digest、状态、错误及更新时间；不复用旧 vectorize_status。shared types 使用上文定义。
 
-- [ ] **Step 1 — RED:** test_ch04_db 验 db/ch04_schema.sql 与 spec 附录 A 的用户 DDL 原文一致；ORM 及真实 information_schema 的类型、默认、ENUM、注释、索引/外键全部一致；重复初始化数据不变；部分/不兼容 schema 报错；旧行来源/citations 为空、未置顶未删除。运行 `& $py -m pytest tests/test_ch04_db.py -q`，确认新接口缺失失败。
-- [ ] **Step 2 — 实现:** 先 Context7 查 SQLAlchemy/MySQL schema inspection 和 DDL；新两表 SQL 完整保留用户原文，附加项另存 migration。不能按简单 split(';') 切 SQL：用户 COMMENT 字符串内包含分号，脚本执行需识别字符串/注释边界。初始化使用数据库级命名锁和结构预检，每步执行后再核验；MySQL DDL 自动提交的半途失败给出明确修复说明，不假装全部回滚。不改变前三章 DDL/种子或原数据。
-- [ ] **Step 3 — GREEN:** 同命令通过；既有 test_db/test_knowledge_db 回归，临时库验证证据 JSON 中文与超 JavaScript 安全整数 ID。旧 DDL 精确验证仍对原始 schema 的列/索引/外键逐项全量检查，不能删断言；ORM 原字段对照不变，新增字段由 ch04 复合迁移测试单独精确验证。业务 fixture 升级至 ch04，避免新映射查询不存在列；原 initializer 幂等/部分表拒绝测试继续用旧 fixture。
-- [ ] **Step 4 — 留痕/提交:** 记迁移边界与验证数字，提交 `feat: add chapter 4 schema and provenance migrations`，推送工作分支。
+- [x] **Step 1 — RED:** test_ch04_db 验 db/ch04_schema.sql 与 spec 附录 A 的用户 DDL 原文一致；ORM 及真实 information_schema 的类型、默认、ENUM、注释、索引/外键全部一致；重复初始化数据不变；部分/不兼容 schema 报错；旧行来源/citations 为空、未置顶未删除。运行 `& $py -m pytest tests/test_ch04_db.py -q`，确认新接口缺失失败。
+- [x] **Step 2 — 实现:** 先 Context7 查 SQLAlchemy/MySQL schema inspection 和 DDL；新两表 SQL 完整保留用户原文，附加项另存 migration。不能按简单 split(';') 切 SQL：用户 COMMENT 字符串内包含分号，脚本执行需识别字符串/注释边界。初始化使用数据库级命名锁和结构预检，每步执行后再核验；MySQL DDL 自动提交的半途失败给出明确修复说明，不假装全部回滚。不改变前三章 DDL/种子或原数据。
+- [x] **Step 3 — GREEN:** 同命令通过；既有 test_db/test_knowledge_db 回归，临时库验证证据 JSON 中文与超 JavaScript 安全整数 ID。旧 DDL 精确验证仍对原始 schema 的列/索引/外键逐项全量检查，不能删断言；ORM 原字段对照不变，新增字段由 ch04 复合迁移测试单独精确验证。业务 fixture 升级至 ch04，避免新映射查询不存在列；原 initializer 幂等/部分表拒绝测试继续用旧 fixture。
+- [x] **Step 4 — 留痕/提交:** 记迁移边界与验证数字，提交 `feat: add chapter 4 schema and provenance migrations`，推送工作分支。
 
 ### Task 2：真实文件来源、行范围与可恢复全量构建
 
