@@ -89,10 +89,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** `HybridMilvusStore(uri, *, collection_name='knowledge_ch04', client=None)`，`ensure_collection()`、`upsert(chunk_id: int, vector: list[float], text: str, metadata: dict[str,str]) -> int`、`retrieve(query: PreparedQuery, vector: list[float] | None, strategy: RetrievalStrategy, filters: KnowledgeFilters) -> StoreResult`、`close()`。StoreResult 定义在 app/knowledge_types.py，含 hits（服务端融合/单路 StageHit）、stage_hits（stage→StageHit列表）、entities（id→text及过滤字段/source_digest），各路名为 dense/bm25/rrf；hybrid_rerank 在此仅作 hybrid，由 Task 6 重排。
 
-- [ ] **Step 1 — RED:** 验 schema 的 id/vector/text/sparse/category/product_category/content_type/source_digest，VARCHAR analyzer 和 BM25 Function；不兼容既有 schema 拒绝；写入不含 sparse。spy 验两条 AnnSearchRequest.limit==50、同一 expr/expr_params、RRFRanker(k=60)、hybrid_search limit50。参数注入/未知字段拒绝，纯 BM25 不需要 vector。运行 `tests/test_ch04_milvus.py`，确认失败。
-- [ ] **Step 2 — 实现:** Context7 再核对 PyMilvus 2.6 与本机签名；text VARCHAR max_length=65535、enable_analyzer=True、chinese；BM25 sparse SPARSE_INVERTED_INDEX，dense COSINE AUTOINDEX，Strong consistency。文本/字段长度按 UTF-8 字节验证，主键为正 INT64。白名单过滤编译为带参数表达式，并传入每条请求；不是 MySQL 事后筛选。
-- [ ] **Step 3 — 阶段 trace:** 融合以 Milvus hybrid_search 返回为准，不在 Python 重算 RRF。为记录各路分数/名次另运行同参数 dense/BM25 Top-50 查询；报告标明额外诊断查询及耗时，不将其结果冒充 hybrid_search 内部返回。纯路只执行自己的请求。
-- [ ] **Step 4 — 真实 GREEN:** 独立集合导入真实手册片段，BM25 查询 `MH-LP50` 命中其正确来源，品类/类型前置过滤排除其他实体；检查 schema/函数/索引，再执行两路/RRF。结果必须来自真实 Milvus。旧集合列表/数量不变，lazy client/close 回归通过；记录、提交 `feat: add native Milvus BM25 hybrid retrieval`。
+- [x] **Step 1 — RED:** 验 schema 的 id/vector/text/sparse/category/product_category/content_type/source_digest，VARCHAR analyzer 和 BM25 Function；不兼容既有 schema 拒绝；写入不含 sparse。spy 验两条 AnnSearchRequest.limit==50、同一 expr/expr_params、RRFRanker(k=60)、hybrid_search limit50。参数注入/未知字段拒绝，纯 BM25 不需要 vector。运行 `tests/test_ch04_milvus.py`，确认失败。
+- [x] **Step 2 — 实现:** Context7 再核对 PyMilvus 2.6 与本机签名；text VARCHAR max_length=65535、enable_analyzer=True、chinese；BM25 sparse SPARSE_INVERTED_INDEX，dense COSINE AUTOINDEX，Strong consistency。文本/字段长度按 UTF-8 字节验证，主键为正 INT64。白名单过滤编译为带参数表达式，并传入每条请求；不是 MySQL 事后筛选。
+- [x] **Step 3 — 阶段 trace:** 融合以 Milvus hybrid_search 返回为准，不在 Python 重算 RRF。为记录各路分数/名次另运行同参数 dense/BM25 Top-50 查询；报告标明额外诊断查询及耗时，不将其结果冒充 hybrid_search 内部返回。纯路只执行自己的请求。
+- [x] **Step 4 — 真实 GREEN:** 独立集合导入真实手册片段，BM25 查询 `MH-LP50` 命中其正确来源，品类/类型前置过滤排除其他实体；检查 schema/函数/索引，再执行两路/RRF。结果必须来自真实 Milvus。旧集合列表/数量不变，lazy client/close 回归通过；记录、提交 `feat: add native Milvus BM25 hybrid retrieval`。
 
 ### Task 4：单条 Query 理解与检索侧扩展
 

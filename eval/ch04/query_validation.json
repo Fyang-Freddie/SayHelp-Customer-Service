@@ -1,0 +1,610 @@
+{
+  "run_at": "2026-10-05T16:11:41.602717+00:00",
+  "model": "deepseek-v4-flash",
+  "provider_host": "api.deepseek.com",
+  "data_origin": "All cases are author-written test questions about repository manuals or simulated intent; TEST_ORDER_ID is a non-personal placeholder. No real conversation, order record, customer identity or credential is used.",
+  "prompt_sha256": "a82dc294aaf88b5ff3de7a9d1f3a3f48812f2561f8ce6e005267e5f51d247d43",
+  "cases": [
+    {
+      "id": "Q01",
+      "raw_question": "退回去的邮费到底谁出啊？",
+      "expected_intent": "knowledge",
+      "reference_standard": "退货运费由谁承担？",
+      "model_decision": {
+        "standard_question": "退货的邮费由谁承担？",
+        "synonyms": [
+          "退货运费谁出",
+          "退货邮费谁承担",
+          "退回去的邮费谁付",
+          "退货寄回运费谁承担",
+          "退货运费规则",
+          "退货费用承担方"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "退回去的邮费到底谁出啊？",
+        "standard_question": "退货的邮费由谁承担？",
+        "search_text": "退货的邮费由谁承担？\n退回去的邮费到底谁出啊？\n退货运费谁出\n退货邮费谁承担\n退回去的邮费谁付\n退货寄回运费谁承担\n退货运费规则\n退货费用承担方",
+        "synonyms": [
+          "退货运费谁出",
+          "退货邮费谁承担",
+          "退回去的邮费谁付",
+          "退货寄回运费谁承担",
+          "退货运费规则",
+          "退货费用承担方"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "退货邮费范围保留，未猜质量类型"
+    },
+    {
+      "id": "Q02",
+      "raw_question": "MH-LP50没App也能自动清猫砂吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-LP50没有App是否仍支持自动清理猫砂？",
+      "model_decision": {
+        "standard_question": "MH-LP50没有App也能自动清猫砂吗？",
+        "synonyms": [
+          "MH-LP50 无App 自动清猫砂",
+          "MH-LP50 离线自动清洁",
+          "无App 自动清理猫砂",
+          "不连App 自动清猫砂",
+          "无应用程序 自动清猫砂",
+          "离线模式 自动铲屎",
+          "自动清洁猫砂",
+          "无App自动运行"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "MH-LP50没App也能自动清猫砂吗？",
+        "standard_question": "MH-LP50没有App也能自动清猫砂吗？",
+        "search_text": "MH-LP50没有App也能自动清猫砂吗？\nMH-LP50没App也能自动清猫砂吗？\nMH-LP50\nMH-LP50 无App 自动清猫砂\nMH-LP50 离线自动清洁\n无App 自动清理猫砂\n不连App 自动清猫砂\n无应用程序 自动清猫砂\n离线模式 自动铲屎\n自动清洁猫砂\n无App自动运行",
+        "synonyms": [
+          "MH-LP50 无App 自动清猫砂",
+          "MH-LP50 离线自动清洁",
+          "无App 自动清理猫砂",
+          "不连App 自动清猫砂",
+          "无应用程序 自动清猫砂",
+          "离线模式 自动铲屎",
+          "自动清洁猫砂",
+          "无App自动运行"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [
+          "MH-LP50"
+        ],
+        "preserved_numbers": [
+          "50"
+        ],
+        "preserved_negations": [
+          "没"
+        ]
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "MH-LP50与无App条件保留"
+    },
+    {
+      "id": "Q03",
+      "raw_question": "不是质量问题，7天内换货来回邮费我要出吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "非质量问题7天内换货的往返运费由谁承担？",
+      "model_decision": {
+        "standard_question": "非质量问题7天内换货，来回运费我要出吗？",
+        "synonyms": [
+          "非质量问题换货运费",
+          "7天内换货运费",
+          "换货来回邮费",
+          "换货运费谁承担",
+          "换货邮费承担",
+          "非质量原因换货",
+          "七天换货运费",
+          "换货来回运费"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "不是质量问题，7天内换货来回邮费我要出吗？",
+        "standard_question": "非质量问题7天内换货，来回运费我要出吗？",
+        "search_text": "非质量问题7天内换货，来回运费我要出吗？\n不是质量问题，7天内换货来回邮费我要出吗？\n非质量问题换货运费\n7天内换货运费\n换货来回邮费\n换货运费谁承担\n换货邮费承担\n非质量原因换货\n七天换货运费\n换货来回运费",
+        "synonyms": [
+          "非质量问题换货运费",
+          "7天内换货运费",
+          "换货来回邮费",
+          "换货运费谁承担",
+          "换货邮费承担",
+          "非质量原因换货",
+          "七天换货运费",
+          "换货来回运费"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [
+          "7"
+        ],
+        "preserved_negations": [
+          "不是"
+        ]
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "非质量条件与7天保留"
+    },
+    {
+      "id": "Q04",
+      "raw_question": "刚到的东西坏了，退换邮费咋算？",
+      "expected_intent": "knowledge",
+      "reference_standard": "收到商品存在质量问题，退换货运费由谁承担？",
+      "model_decision": {
+        "standard_question": "刚收到的东西坏了，退换货邮费怎么算？",
+        "synonyms": [
+          "退换货邮费",
+          "退换货运费",
+          "退货运费",
+          "换货运费",
+          "邮费怎么算",
+          "运费谁承担",
+          "质量问题退换运费",
+          "运费规则"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "刚到的东西坏了，退换邮费咋算？",
+        "standard_question": "刚收到的东西坏了，退换货邮费怎么算？",
+        "search_text": "刚收到的东西坏了，退换货邮费怎么算？\n刚到的东西坏了，退换邮费咋算？\n退换货邮费\n退换货运费\n退货运费\n换货运费\n邮费怎么算\n运费谁承担\n质量问题退换运费\n运费规则",
+        "synonyms": [
+          "退换货邮费",
+          "退换货运费",
+          "退货运费",
+          "换货运费",
+          "邮费怎么算",
+          "运费谁承担",
+          "质量问题退换运费",
+          "运费规则"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "刚收到商品损坏问题保留，不擅定运输或人为原因"
+    },
+    {
+      "id": "Q05",
+      "raw_question": "MH-X999可以自动清理吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-X999是否支持自动清理？",
+      "model_decision": {
+        "standard_question": "MH-X999可以自动清理吗？",
+        "synonyms": [
+          "MH-X999自动清洁",
+          "MH-X999自动清洗",
+          "MH-X999自动清扫",
+          "自动清理功能",
+          "自动清洁功能",
+          "自动清洗功能",
+          "自动清扫功能"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "MH-X999可以自动清理吗？",
+        "standard_question": "MH-X999可以自动清理吗？",
+        "search_text": "MH-X999可以自动清理吗？\nMH-X999\nMH-X999自动清洁\nMH-X999自动清洗\nMH-X999自动清扫\n自动清理功能\n自动清洁功能\n自动清洗功能\n自动清扫功能",
+        "synonyms": [
+          "MH-X999自动清洁",
+          "MH-X999自动清洗",
+          "MH-X999自动清扫",
+          "自动清理功能",
+          "自动清洁功能",
+          "自动清洗功能",
+          "自动清扫功能"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [
+          "MH-X999"
+        ],
+        "preserved_numbers": [
+          "999"
+        ],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "未知完整型号MH-X999保留，没有猜相似型号"
+    },
+    {
+      "id": "Q06",
+      "raw_question": "请查询测试订单 TEST_ORDER_ID 的物流状态",
+      "expected_intent": "operation",
+      "reference_standard": "查询测试订单 TEST_ORDER_ID 的物流状态。",
+      "model_decision": {
+        "standard_question": "查询测试订单 TEST_ORDER_ID 的物流状态",
+        "synonyms": [
+          "物流查询",
+          "订单物流",
+          "物流状态",
+          "配送状态",
+          "快递状态",
+          "跟踪物流",
+          "查快递",
+          "订单配送"
+        ],
+        "intent": "operation",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "请查询测试订单 TEST_ORDER_ID 的物流状态",
+        "standard_question": "查询测试订单 TEST_ORDER_ID 的物流状态",
+        "search_text": "查询测试订单 TEST_ORDER_ID 的物流状态\n请查询测试订单 TEST_ORDER_ID 的物流状态\n物流查询\n订单物流\n物流状态\n配送状态\n快递状态\n跟踪物流\n查快递\n订单配送",
+        "synonyms": [
+          "物流查询",
+          "订单物流",
+          "物流状态",
+          "配送状态",
+          "快递状态",
+          "跟踪物流",
+          "查快递",
+          "订单配送"
+        ],
+        "intent": "operation",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "仅操作意图，TEST_ORDER_ID为显式无身份占位符"
+    },
+    {
+      "id": "Q07",
+      "raw_question": "你好呀",
+      "expected_intent": "chitchat",
+      "reference_standard": "你好。",
+      "model_decision": {
+        "standard_question": "你好",
+        "synonyms": [
+          "打招呼",
+          "问候",
+          "寒暄",
+          "您好",
+          "hi",
+          "hello"
+        ],
+        "intent": "chitchat",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "你好呀",
+        "standard_question": "你好",
+        "search_text": "你好\n你好呀\n打招呼\n问候\n寒暄\n您好\nhi\nhello",
+        "synonyms": [
+          "打招呼",
+          "问候",
+          "寒暄",
+          "您好",
+          "hi",
+          "hello"
+        ],
+        "intent": "chitchat",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "普通问候"
+    },
+    {
+      "id": "Q08",
+      "raw_question": "那款呢，还能用App吗？",
+      "expected_intent": "clarify",
+      "reference_standard": "请确认具体商品型号。",
+      "model_decision": {
+        "standard_question": "那款还能用App吗？",
+        "synonyms": [
+          "还能用App吗",
+          "App支持情况"
+        ],
+        "intent": "clarify",
+        "clarification": "请问您指的是哪一款产品？请提供完整型号，以便确认是否能用App。"
+      },
+      "actual": {
+        "raw_question": "那款呢，还能用App吗？",
+        "standard_question": "那款还能用App吗？",
+        "search_text": "那款还能用App吗？\n那款呢，还能用App吗？",
+        "synonyms": [],
+        "intent": "clarify",
+        "clarification": "请提供这次要咨询的商品完整型号或具体问题。",
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "单轮对象不明，明确澄清"
+    },
+    {
+      "id": "Q09",
+      "raw_question": "猫砂盆有App吗？",
+      "expected_intent": "clarify",
+      "reference_standard": "请确认具体猫砂盆型号。",
+      "model_decision": {
+        "standard_question": "猫砂盆有App吗？",
+        "synonyms": [
+          "猫砂盆 有App吗",
+          "猫砂盆 支持App",
+          "猫砂盆 手机应用",
+          "猫砂盆 应用程序",
+          "猫砂盆 App支持",
+          "猫砂盆 手机App"
+        ],
+        "intent": "clarify",
+        "clarification": "请问您咨询的是哪款猫砂盆？请提供完整型号。"
+      },
+      "actual": {
+        "raw_question": "猫砂盆有App吗？",
+        "standard_question": "猫砂盆有App吗？",
+        "search_text": "猫砂盆有App吗？",
+        "synonyms": [],
+        "intent": "clarify",
+        "clarification": "请问您咨询的是哪款猫砂盆？请提供完整型号。",
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "未指定猫砂盆型号，明确澄清"
+    },
+    {
+      "id": "Q10",
+      "raw_question": "MH-W40那个滤芯多久换呀？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-W40滤芯更换周期是多少？",
+      "model_decision": {
+        "standard_question": "MH-W40滤芯多久更换一次？",
+        "synonyms": [
+          "MH-W40滤芯",
+          "滤芯更换周期",
+          "滤芯寿命",
+          "多久换一次",
+          "更换频率",
+          "保养更换周期"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "MH-W40那个滤芯多久换呀？",
+        "standard_question": "MH-W40滤芯多久更换一次？",
+        "search_text": "MH-W40滤芯多久更换一次？\nMH-W40那个滤芯多久换呀？\nMH-W40\nMH-W40滤芯\n滤芯更换周期\n滤芯寿命\n多久换一次\n更换频率\n保养更换周期",
+        "synonyms": [
+          "MH-W40滤芯",
+          "滤芯更换周期",
+          "滤芯寿命",
+          "多久换一次",
+          "更换频率",
+          "保养更换周期"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [
+          "MH-W40"
+        ],
+        "preserved_numbers": [
+          "40"
+        ],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "MH-W40及滤芯更换问题保留"
+    },
+    {
+      "id": "Q11",
+      "raw_question": "MH-LP50现在多少钱，有库存吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-LP50当前价格和库存情况是什么？",
+      "model_decision": {
+        "standard_question": "MH-LP50现在多少钱，有库存吗？",
+        "synonyms": [
+          "MH-LP50价格",
+          "MH-LP50售价",
+          "MH-LP50库存",
+          "MH-LP50现货",
+          "MH-LP50有货吗",
+          "价格",
+          "库存",
+          "现货"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "MH-LP50现在多少钱，有库存吗？",
+        "standard_question": "MH-LP50现在多少钱，有库存吗？",
+        "search_text": "MH-LP50现在多少钱，有库存吗？\nMH-LP50\nMH-LP50价格\nMH-LP50售价\nMH-LP50库存\nMH-LP50现货\nMH-LP50有货吗\n价格\n库存\n现货",
+        "synonyms": [
+          "MH-LP50价格",
+          "MH-LP50售价",
+          "MH-LP50库存",
+          "MH-LP50现货",
+          "MH-LP50有货吗",
+          "价格",
+          "库存",
+          "现货"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [
+          "MH-LP50"
+        ],
+        "preserved_numbers": [
+          "50"
+        ],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "MH-LP50当前价格/库存仍走证据检索"
+    },
+    {
+      "id": "Q12",
+      "raw_question": "退款处理3天就一定3天到账吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "退款处理3天是否代表3天到账？",
+      "model_decision": {
+        "standard_question": "退款处理3天是否一定3天到账",
+        "synonyms": [
+          "退款到账",
+          "退款处理时效",
+          "退款到账时间",
+          "退款处理时间",
+          "退款时长",
+          "到账时效",
+          "退款周期"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "退款处理3天就一定3天到账吗？",
+        "standard_question": "退款处理3天是否一定3天到账",
+        "search_text": "退款处理3天是否一定3天到账\n退款处理3天就一定3天到账吗？\n退款到账\n退款处理时效\n退款到账时间\n退款处理时间\n退款时长\n到账时效\n退款周期",
+        "synonyms": [
+          "退款到账",
+          "退款处理时效",
+          "退款到账时间",
+          "退款处理时间",
+          "退款时长",
+          "到账时效",
+          "退款周期"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [
+          "3"
+        ],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "3天处理与3天到账区分仍是问题，没有承诺到账"
+    },
+    {
+      "id": "Q13",
+      "raw_question": "MH-LP50和MH-LP100都能用App不？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-LP50和MH-LP100是否都支持App？",
+      "model_decision": {
+        "standard_question": "MH-LP50和MH-LP100都能用App吗？",
+        "synonyms": [
+          "MH-LP50 App",
+          "MH-LP100 App",
+          "App",
+          "APP",
+          "手机应用",
+          "应用程序",
+          "能否用App",
+          "App兼容"
+        ],
+        "intent": "knowledge",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "MH-LP50和MH-LP100都能用App不？",
+        "standard_question": "MH-LP50和MH-LP100都能用App吗？",
+        "search_text": "MH-LP50和MH-LP100都能用App吗？\nMH-LP50和MH-LP100都能用App不？\nMH-LP50\nMH-LP100\nMH-LP50 App\nMH-LP100 App\nApp\nAPP\n手机应用\n应用程序\n能否用App\nApp兼容",
+        "synonyms": [
+          "MH-LP50 App",
+          "MH-LP100 App",
+          "App",
+          "APP",
+          "手机应用",
+          "应用程序",
+          "能否用App",
+          "App兼容"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [
+          "MH-LP50",
+          "MH-LP100"
+        ],
+        "preserved_numbers": [
+          "50",
+          "100"
+        ],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "两型号保留，句末不按疑问语气处理"
+    },
+    {
+      "id": "Q14",
+      "raw_question": "谢啦",
+      "expected_intent": "chitchat",
+      "reference_standard": "谢谢。",
+      "model_decision": {
+        "standard_question": "用户表示感谢",
+        "synonyms": [
+          "谢谢",
+          "多谢",
+          "感谢",
+          "辛苦了",
+          "感谢你"
+        ],
+        "intent": "chitchat",
+        "clarification": null
+      },
+      "actual": {
+        "raw_question": "谢啦",
+        "standard_question": "用户表示感谢",
+        "search_text": "用户表示感谢\n谢啦\n谢谢\n多谢\n感谢\n辛苦了\n感谢你",
+        "synonyms": [
+          "谢谢",
+          "多谢",
+          "感谢",
+          "辛苦了",
+          "感谢你"
+        ],
+        "intent": "chitchat",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "intent_matches": true,
+      "author_review": "passed",
+      "review_note": "普通感谢"
+    }
+  ],
+  "matched": 14,
+  "total": 14,
+  "reviewed": 14
+}

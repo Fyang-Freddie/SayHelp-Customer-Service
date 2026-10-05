@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "Q01",
+      "raw_question": "退回去的邮费到底谁出啊？",
+      "expected_intent": "knowledge",
+      "reference_standard": "退货运费由谁承担？"
+    },
+    {
+      "id": "Q02",
+      "raw_question": "MH-LP50没App也能自动清猫砂吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-LP50没有App是否仍支持自动清理猫砂？"
+    },
+    {
+      "id": "Q03",
+      "raw_question": "不是质量问题，7天内换货来回邮费我要出吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "非质量问题7天内换货的往返运费由谁承担？"
+    },
+    {
+      "id": "Q04",
+      "raw_question": "刚到的东西坏了，退换邮费咋算？",
+      "expected_intent": "knowledge",
+      "reference_standard": "收到商品存在质量问题，退换货运费由谁承担？"
+    },
+    {
+      "id": "Q05",
+      "raw_question": "MH-X999可以自动清理吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-X999是否支持自动清理？"
+    },
+    {
+      "id": "Q06",
+      "raw_question": "请查询测试订单 TEST_ORDER_ID 的物流状态",
+      "expected_intent": "operation",
+      "reference_standard": "查询测试订单 TEST_ORDER_ID 的物流状态。"
+    },
+    {
+      "id": "Q07",
+      "raw_question": "你好呀",
+      "expected_intent": "chitchat",
+      "reference_standard": "你好。"
+    },
+    {
+      "id": "Q08",
+      "raw_question": "那款呢，还能用App吗？",
+      "expected_intent": "clarify",
+      "reference_standard": "请确认具体商品型号。"
+    },
+    {
+      "id": "Q09",
+      "raw_question": "猫砂盆有App吗？",
+      "expected_intent": "clarify",
+      "reference_standard": "请确认具体猫砂盆型号。"
+    },
+    {
+      "id": "Q10",
+      "raw_question": "MH-W40那个滤芯多久换呀？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-W40滤芯更换周期是多少？"
+    },
+    {
+      "id": "Q11",
+      "raw_question": "MH-LP50现在多少钱，有库存吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-LP50当前价格和库存情况是什么？"
+    },
+    {
+      "id": "Q12",
+      "raw_question": "退款处理3天就一定3天到账吗？",
+      "expected_intent": "knowledge",
+      "reference_standard": "退款处理3天是否代表3天到账？"
+    },
+    {
+      "id": "Q13",
+      "raw_question": "MH-LP50和MH-LP100都能用App不？",
+      "expected_intent": "knowledge",
+      "reference_standard": "MH-LP50和MH-LP100是否都支持App？"
+    },
+    {
+      "id": "Q14",
+      "raw_question": "谢啦",
+      "expected_intent": "chitchat",
+      "reference_standard": "谢谢。"
+    }
+  ],
+  "data_origin": "All cases are author-written test questions about repository manuals or simulated intent; TEST_ORDER_ID is a non-personal placeholder. No real conversation, order record, customer identity or credential is used."
+}

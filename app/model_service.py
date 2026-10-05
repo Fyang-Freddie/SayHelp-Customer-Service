@@ -47,3 +47,26 @@ class ModelService:
 
         payload = json.loads(raw, parse_constant=reject_non_json_constant)
         return AfterSalesExtraction.model_validate(payload)
+
+
+    async def understand_query(self, raw_question: str):
+        from app.query_understanding import QueryDecision
+        from app.query_prompts import query_messages
+        structured = self._model.with_structured_output(QueryDecision, method='json_mode', include_raw=True)
+        result = await structured.ainvoke(query_messages(raw_question))
+        if result['parsing_error'] is not None:
+            raise ValueError('Query understanding returned invalid JSON')
+        raw = result['raw'].content
+        if not isinstance(raw,str) or len(raw)>50000:
+            raise ValueError('Query understanding must return bounded JSON text')
+        def reject_constant(value): raise ValueError('Invalid JSON constant')
+        def unique_keys(items):
+            value={}
+            for key,item in items:
+                if key in value: raise ValueError('Duplicate JSON key')
+                value[key]=item
+            return value
+        try:
+            return QueryDecision.model_validate(json.loads(raw,parse_constant=reject_constant,object_pairs_hook=unique_keys))
+        except (ValueError,TypeError):
+            raise ValueError('Query understanding returned invalid structured JSON') from None
