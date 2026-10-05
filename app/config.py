@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 import os
 import math
+import json
 import re
 from pathlib import Path
 
@@ -23,6 +24,8 @@ class Settings:
     bge_cache_dir: str | None = None
     knowledge_min_score: float = 0.55
     knowledge_collection: str = 'knowledge_ch04'
+    knowledge_confidence_path: str = 'eval/ch04/confidence.json'
+    knowledge_confidence_overrides: dict[str,float] = field(default_factory=dict)
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -61,6 +64,11 @@ class Settings:
         collection = value('KNOWLEDGE_COLLECTION') or 'knowledge_ch04'
         if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,127}',collection) or collection=='knowledge':
             raise ValueError('KNOWLEDGE_COLLECTION must name an independent chapter 4 collection')
+        try:
+            overrides=json.loads(value('KNOWLEDGE_CONFIDENCE_OVERRIDES') or '{}')
+            if not isinstance(overrides,dict) or not set(overrides)<={'dense','bm25','hybrid','hybrid_rerank'} or any(type(v) not in (int,float) or not math.isfinite(v) for v in overrides.values()): raise ValueError()
+        except (TypeError,ValueError):
+            raise ValueError('KNOWLEDGE_CONFIDENCE_OVERRIDES must contain explicit finite strategy thresholds') from None
         base_url = required("CHAT_BASE_URL")
         model = required("CHAT_MODEL")
         api_key = required("CHAT_API_KEY")
@@ -82,4 +90,6 @@ class Settings:
             bge_cache_dir=value("BGE_CACHE_DIR"),
             knowledge_min_score=minimum_score(),
             knowledge_collection=collection,
+            knowledge_confidence_path=value("KNOWLEDGE_CONFIDENCE_PATH") or "eval/ch04/confidence.json",
+            knowledge_confidence_overrides=overrides,
         )

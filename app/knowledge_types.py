@@ -109,6 +109,7 @@ class RetrievalResult:
     candidates: list[RankedChunk]
     ranked: list[RankedChunk]
     stage_hits: dict[str, list[StageHit]]
+    timings_ms: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

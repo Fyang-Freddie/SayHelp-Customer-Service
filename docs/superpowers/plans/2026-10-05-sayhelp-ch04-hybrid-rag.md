@@ -111,10 +111,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** `BgeReranker(cache_dir=None, *, model=None).rerank(query: str, chunks: list[EvidenceChunk], limit=10) -> list[RankedChunk]`；RankedChunk 在 knowledge_types.py 定义为 chunk/rank/score。`load_cases(path: Path) -> list[EvalCase]`；EvalCase 在 evaluation/dataset.py 定义并验证 Step 3 全部字段，`bind_gold(cases, corpus: CorpusSnapshot, session_factory) -> list[BoundCase]`；BoundCase 为 case/gold_ids/corpus_digest。
 
-- [ ] **Step 1 — RED（代码）:** 输入 50 个候选，model spy 必须收到 50 对 query/text，输出恰最多10个，按重排分数降序、同分按原召回名次；非有限分、输出长度错误、过长 pair 或模型异常明确失败，不降级。dataset validator 拒重复 ID、交叉校准/测试题、不存在或歧义 gold。跑 reranking/dataset 两文件确认失败。
-- [ ] **Step 2 — 重排实现:** Context7 核对 CrossEncoder/predict；固定 BAAI/bge-reranker-v2-m3、惰性单例、推理锁、batch_size=8、原始 logits（Identity）。读取实际 tokenizer 支持上限，完整 pair 超限先报出 chunk/来源而非静默截断关键限制；不能用别的 reranker。运行 real model smoke 验真实型号近似干扰的 Top-10 和实际模型名。
-- [ ] **Step 3 — 数据制作与样例验证（代替 TDD）:** 人工编写独立校准12题、冻结测试60题；测试 A_policy/B_model/C_colloquial/D_unknown/E_multi 各12题，每桶 easy/medium/hard 各4。字段 eval_id(<=16)/bucket/difficulty/query/filters/answerable/ground_truth/required_facts/forbidden_claims/evidence，evidence 为 source_file/section_path/evidence_quote，每个 anchor 要唯一绑定当前清单 chunk，多来源明确所有必要条目。
-- [ ] **Step 4 — 实标复核:** 对照四份原文逐条复查事实/限定条件，自动验精确 quote 与来源指纹，unknown 不标 gold；至少一题涉及 MH-LP50 无 App，一题退款处理≠到账，一题多来源全覆盖。同一近似问法不跨校准/测试泄漏；冻结后不得根据测试成绩改标注/门槛。记录人工对照结果并跑 validator，提交 `feat: add fixed BGE reranking and source-labeled evaluation cases`。
+- [x] **Step 1 — RED（代码）:** 输入 50 个候选，model spy 必须收到 50 对 query/text，输出恰最多10个，按重排分数降序、同分按原召回名次；非有限分、输出长度错误、过长 pair 或模型异常明确失败，不降级。dataset validator 拒重复 ID、交叉校准/测试题、不存在或歧义 gold。跑 reranking/dataset 两文件确认失败。
+- [x] **Step 2 — 重排实现:** Context7 核对 CrossEncoder/predict；固定 BAAI/bge-reranker-v2-m3、惰性单例、推理锁、batch_size=8、原始 logits（Identity）。读取实际 tokenizer 支持上限，完整 pair 超限先报出 chunk/来源而非静默截断关键限制；不能用别的 reranker。运行 real model smoke 验真实型号近似干扰的 Top-10 和实际模型名。
+- [x] **Step 3 — 数据制作与样例验证（代替 TDD）:** 人工编写独立校准12题、冻结测试60题；测试 A_policy/B_model/C_colloquial/D_unknown/E_multi 各12题，每桶 easy/medium/hard 各4。字段 eval_id(<=16)/bucket/difficulty/query/filters/answerable/ground_truth/required_facts/forbidden_claims/evidence，evidence 为 source_file/section_path/evidence_quote，每个 anchor 要唯一绑定当前清单 chunk，多来源明确所有必要条目。
+- [x] **Step 4 — 实标复核:** 对照四份原文逐条复查事实/限定条件，自动验精确 quote 与来源指纹，unknown 不标 gold；至少一题涉及 MH-LP50 无 App，一题退款处理≠到账，一题多来源全覆盖。同一近似问法不跨校准/测试泄漏；冻结后不得根据测试成绩改标注/门槛。记录人工对照结果并跑 validator，提交 `feat: add fixed BGE reranking and source-labeled evaluation cases`。
 
 ### Task 6：四策略统一入口、置信校准与首尾证据
 

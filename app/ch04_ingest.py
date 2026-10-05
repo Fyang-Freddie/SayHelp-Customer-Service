@@ -147,3 +147,28 @@ def verify_source_versions(snapshot: CorpusSnapshot) -> None:
         path = ROOT / name
         if name not in DOCUMENTS or path.is_symlink() or digest_text(path.read_text(encoding='utf-8')) != digest:
             raise RuntimeError('Corpus source changed during indexing; re-ingest before retry')
+
+
+def read_current_corpus(session_factory,manifest:Path,collection_name=None)->CorpusSnapshot:
+    """Read and verify current exact source chains; never ingest or mutate on chat."""
+    files,chunks={},{}
+    with session_factory() as session:
+        rows=list(session.scalars(select(KnowledgeChunk).options(undefer('*')).order_by(KnowledgeChunk.id)))
+        for name,kind,body,digest in load_documents(manifest):
+            drafts=chunk_markdown(body,content_type=kind)
+            chain=_unique_chain([r for r in rows if r.source_file==name and r.source_digest==digest],drafts,name,digest)
+            if not chain: raise RuntimeError('Current source chain missing or ambiguous; rebuild knowledge')
+            files[name]=digest
+            for row,draft in zip(chain,drafts,strict=True):
+                c=row_evidence(row)
+                if c.source_start_line!=draft.source_start_line or c.source_end_line!=draft.source_end_line or c.product_category!=product_category(draft.section_path,name):
+                    raise RuntimeError('Current source provenance differs; rebuild knowledge')
+                chunks[row.id]=c
+        payloads={id_:payload_digest(c) for id_,c in chunks.items()}
+        if collection_name is not None:
+            from app.ch04_db import KnowledgeIndexState
+            states={r.chunk_id:r for r in session.scalars(select(KnowledgeIndexState).where(KnowledgeIndexState.collection_name==collection_name))}
+            if not set(chunks)<=set(states) or any(states[i].status!='done' or states[i].payload_digest!=digest for i,digest in payloads.items()):
+                raise RuntimeError('Independent index build is incomplete or stale')
+    identity={'files':files,'payloads':sorted(payloads.values())}
+    return CorpusSnapshot(files,chunks,payloads,digest_text(json.dumps(identity,sort_keys=True,ensure_ascii=False,separators=(',',':'))))
