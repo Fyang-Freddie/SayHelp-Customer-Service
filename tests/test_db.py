@@ -33,8 +33,17 @@ def database_url():
 
 
 @pytest.fixture
-def sessions(database_url):
+def legacy_sessions(database_url):
     initialize_database(database_url)
+    factory = make_session_factory(database_url)
+    yield factory
+    factory.kw['bind'].dispose()
+
+
+@pytest.fixture
+def sessions(database_url):
+    from app.init_ch04_db import initialize_ch04_database
+    initialize_ch04_database(database_url)
     factory = make_session_factory(database_url)
     yield factory
     factory.kw['bind'].dispose()
@@ -53,8 +62,8 @@ def test_database_url_required_and_hidden(monkeypatch, tmp_path):
     assert 'private-marker' not in repr(settings)
 
 
-def test_mysql_schema_all_columns_types_indexes_and_foreign_keys(sessions):
-    engine = sessions.kw['bind']
+def test_mysql_schema_all_columns_types_indexes_and_foreign_keys(legacy_sessions):
+    engine = legacy_sessions.kw['bind']
     expected = {
         'conversations': {'id': ('bigint unsigned', 'NO'), 'user_id': ('varchar(64)', 'NO'), 'status': ("enum('进行中','已转人工','已结束')", 'NO'), 'created_at': ('datetime', 'NO'), 'updated_at': ('datetime', 'NO')},
         'messages': {'id': ('bigint unsigned', 'NO'), 'conversation_id': ('bigint unsigned', 'NO'), 'role': ("enum('user','assistant','tool')", 'NO'), 'content': ('text', 'YES'), 'tool_calls': ('json', 'YES'), 'tool_call_id': ('varchar(64)', 'YES'), 'created_at': ('datetime', 'NO')},
@@ -66,8 +75,8 @@ def test_mysql_schema_all_columns_types_indexes_and_foreign_keys(sessions):
             actual = connection.execute(text('SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=:table'), {'table': table}).all()
             assert {r[0]: (r[1], r[2]) for r in actual} == columns
             mapped = Base.metadata.tables[table]
-            assert {col.name: (col.type.compile(dialect=engine.dialect).lower(), 'YES' if col.nullable else 'NO') for col in mapped.columns} == columns
-            assert {index.name for index in mapped.indexes} == {item['name'] for item in inspect(engine).get_indexes(table)}
+            assert {col.name: (col.type.compile(dialect=engine.dialect).lower(), 'YES' if col.nullable else 'NO') for col in mapped.columns if col.name in columns} == columns
+            assert {index.name for index in mapped.indexes if index.name != 'idx_history_order'} == {item['name'] for item in inspect(engine).get_indexes(table)}
             details = {r[0]: r for r in actual}
             if table != 'tickets':
                 assert 'auto_increment' in details['id'][4]

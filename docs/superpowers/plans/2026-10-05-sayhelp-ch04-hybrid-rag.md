@@ -8,7 +8,7 @@
 
 **Tech Stack:** Milvus 2.6.24 / PyMilvus 2.6.17，MySQL 8.4 / SQLAlchemy 2.0.54，FastAPI 0.142.2 原生 SSE，langchain-openai 1.6.7，sentence-transformers 6.1.0；BAAI/bge-m3、BAAI/bge-reranker-v2-m3。
 
-**Spec:** [已批准设计](../specs/2026-10-05-sayhelp-ch04-hybrid-rag-design.md)，用户于 2026-10-05 回复“设计文档过关”。本计划待用户评审，尚未进入实现。
+**Spec:** [已批准设计](../specs/2026-10-05-sayhelp-ch04-hybrid-rag-design.md)，用户于 2026-10-05 回复“设计文档过关”。用户已回复“计划通过，本会话执行”，按 Native 方式实施。
 
 ## Global Constraints
 
@@ -200,4 +200,4 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 Context7本轮查证：PyMilvus的AnnSearchRequest expr/expr_params与hybrid_search ranker，SQLAlchemy2.0 MySQL原子upsert/onupdate，CrossEncoder6.1.0 predict/Identity；已与本机inspect.signature对照，不能使用3.0TEXT字段。FastAPI/LC既有官方查询见spec第10节，各实现任务开始前再查本任务所涉API。
 
-**待用户评审及执行方式选择。** 当前仅产出可审阅计划，没有执行迁移、建新集合、运行正式评估或新增产品功能；设计通过不冒充计划通过。
+**用户已批准计划，本会话执行。** 任务按完成证据勾选，审批不等于实现或验收完成。

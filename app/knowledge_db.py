@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text, text
-from sqlalchemy.dialects.mysql import TINYINT
+from sqlalchemy.dialects.mysql import TINYINT, INTEGER
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base, bigint, table_options
@@ -17,6 +17,11 @@ class KnowledgeChunk(Base):
         table_options('知识库 chunk 原文权威源'),
     )
     id: Mapped[int] = mapped_column(bigint(), primary_key=True, autoincrement=True, nullable=False, comment='chunk 主键,与 Milvus 集合主键对齐')
+    source_file: Mapped[str | None] = mapped_column(String(255), nullable=True, server_default=text('NULL'), deferred=True, comment='仓库相对原文路径')
+    source_start_line: Mapped[int | None] = mapped_column(INTEGER(unsigned=True), nullable=True, server_default=text('NULL'), deferred=True, comment='原文开始行')
+    source_end_line: Mapped[int | None] = mapped_column(INTEGER(unsigned=True), nullable=True, server_default=text('NULL'), deferred=True, comment='原文结束行')
+    product_category: Mapped[str | None] = mapped_column(String(64), nullable=True, server_default=text('NULL'), deferred=True, comment='标准商品品类')
+    source_digest: Mapped[str | None] = mapped_column(String(64), nullable=True, server_default=text('NULL'), deferred=True, comment='原文 SHA256 版本')
     category: Mapped[str] = mapped_column(String(255), nullable=False, comment='分类 / 上级标题路径,进向量化文本')
     questions: Mapped[str] = mapped_column(Text, nullable=False, comment='问法或本节标题,多个问法换行分隔,进向量化文本')
     answer: Mapped[str] = mapped_column(Text, nullable=False, comment='正文答案,进向量化文本')

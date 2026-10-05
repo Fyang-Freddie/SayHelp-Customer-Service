@@ -62,8 +62,8 @@ def test_ch03_ddl_and_mappings_match_supplied_definitions():
     for model in (KnowledgeChunk, QaExtractionStaging):
         table = model.__table__
         columns = supplied_columns(table.name)
-        assert set(table.columns.keys()) == set(columns)
-        for column in table.columns:
+        assert set(table.columns.keys()) - {'source_file','source_start_line','source_end_line','product_category','source_digest'} == set(columns)
+        for column in (table.c[name] for name in columns):
             expected_type, nullable, default, extra, comment = columns[column.name]
             assert column.type.compile(dialect=dialect).lower().replace(', ', ',') == expected_type
             assert ('YES' if column.nullable else 'NO') == nullable

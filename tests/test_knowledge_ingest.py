@@ -12,7 +12,8 @@ from tests.test_knowledge_db import database_url
 @pytest.fixture
 def sessions(database_url):
     from sqlalchemy import create_engine
-    initialize_knowledge_database(database_url)
+    from app.init_ch04_db import initialize_ch04_database
+    initialize_ch04_database(database_url)
     engine = create_engine(database_url)
     try:
         yield sessionmaker(engine, expire_on_commit=False)

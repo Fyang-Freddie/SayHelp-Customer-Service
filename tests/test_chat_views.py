@@ -16,7 +16,8 @@ from test_tools import FakeKnowledgeSearch
 
 @pytest.fixture
 def factory(database_url):
-    initialize_database(database_url)
+    from app.init_ch04_db import initialize_ch04_database
+    initialize_ch04_database(database_url)
     result = make_session_factory(database_url)
     yield result
     result.kw['bind'].dispose()
