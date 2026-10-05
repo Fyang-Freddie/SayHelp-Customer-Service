@@ -2,7 +2,7 @@
 
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db import Conversation, Faq, Message, Ticket
@@ -33,6 +33,24 @@ class Repository:
     def load_messages(self, id: int) -> list[Message]:
         with self.session_factory() as session:
             return list(session.scalars(select(Message).where(Message.conversation_id == id).order_by(Message.id)))
+
+    def list_conversations(self, *, limit: int = 30, before: int | None = None) -> dict:
+        first_question = (select(Message.content).where(Message.conversation_id == Conversation.id,
+                          Message.role == 'user').order_by(Message.id).limit(1).scalar_subquery())
+        activity = (select(Message.conversation_id, func.max(Message.id).label('cursor'),
+                    func.max(Message.created_at).label('last_activity'))
+                    .group_by(Message.conversation_id).subquery())
+        statement = (select(Conversation, first_question, activity.c.cursor, activity.c.last_activity)
+                     .join(activity, activity.c.conversation_id == Conversation.id)
+                     .order_by(activity.c.cursor.desc()).limit(limit + 1))
+        if before is not None:
+            statement = statement.where(activity.c.cursor < before)
+        with self.session_factory() as session:
+            rows = session.execute(statement).all()
+            return {'conversations': [{'id': str(row.id), 'title': (title or '新对话')[:64],
+                     'status': row.status, 'updated_at': updated.isoformat()}
+                     for row, title, cursor, updated in rows[:limit]],
+                    'next_cursor': str(rows[limit - 1][2]) if len(rows) > limit else None}
 
     def find_faq(self, keyword: str, limit: int = 5) -> list[Faq]:
         if not 1 <= limit <= 100:

@@ -6,7 +6,7 @@ from threading import RLock
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -14,6 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.chat_service import ChatService
+from app.chat_views import public_messages, read_document
 from app.config import Settings
 from app.embedding import BgeM3Embedder
 from app.knowledge_search import KnowledgeSearch
@@ -23,7 +24,7 @@ from app.history import InputBudgetExceeded, prepare_context
 from app.model_service import ModelService
 from app.prompts import render_service_system_prompt
 from app.repository import Repository
-from app.schemas import AfterSalesExtraction, ChatRequest, ExtractRequest
+from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest
 
 PreparedChat = tuple[int, str]
 
@@ -71,6 +72,31 @@ def create_app(
     @app.get('/', include_in_schema=False)
     async def chat_page() -> FileResponse:
         return FileResponse(Path(__file__).parent / 'web' / 'index.html', media_type='text/html')
+
+    @app.get('/v1/conversations')
+    def conversation_list(limit: Annotated[int, Query(ge=1, le=100)] = 30,
+                          before: ConversationId | None = None) -> dict:
+        try:
+            return repository.list_conversations(limit=limit, before=int(before) if before else None)
+        except SQLAlchemyError:
+            raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
+
+    @app.get('/v1/conversations/{conversation_id}/messages')
+    def conversation_messages(conversation_id: ConversationId) -> dict:
+        try:
+            if repository.get_conversation(int(conversation_id)) is None:
+                raise HTTPException(status_code=404, detail='Conversation not found')
+            return {'conversation_id': conversation_id,
+                    'messages': public_messages(repository.load_messages(int(conversation_id)))}
+        except SQLAlchemyError:
+            raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
+
+    @app.get('/v1/knowledge/documents/{filename}')
+    def knowledge_document(filename: str) -> dict:
+        try:
+            return read_document(filename)
+        except (OSError, UnicodeError):
+            raise HTTPException(status_code=404, detail='Knowledge document not found') from None
 
     def prepare_chat(request: ChatRequest) -> Iterator[PreparedChat]:
         system = SystemMessage(content=render_service_system_prompt())

@@ -8,6 +8,7 @@ from typing import Literal
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 
 from app.config import Settings
+from app.chat_views import sources_from_tool
 from app.knowledge_search import KnowledgeSearch
 from app.history import UnknownConversation, prepare_context
 from app.model_service import ModelService
@@ -19,7 +20,7 @@ from app.tools import build_tools
 
 @dataclass(frozen=True)
 class ChatEvent:
-    kind: Literal['tool_status', 'token']
+    kind: Literal['tool_status', 'sources', 'token']
     data: dict
 
 
@@ -97,6 +98,10 @@ class ChatService:
                 suffix.append(result)
                 if index == 0:
                     yield ChatEvent('tool_status', {'name': public_name, 'state': result.status})
+                    if public_name == 'query_faq' and result.status == 'success':
+                        sources = await asyncio.to_thread(sources_from_tool, result.content)
+                        if sources:
+                            yield ChatEvent('sources', {'sources': sources})
 
         # All prior history pruning keeps the active request/results together.
         messages = prepare_context(rows, system, current, self.settings, suffix=suffix)

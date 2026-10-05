@@ -370,7 +370,7 @@ def test_active_capacity_limits_streams_without_evicting_persisted_chats(session
         assert session.scalar(select(func.count()).select_from(Conversation)) == 2
 
 
-def test_other_tools_and_sse_unchanged(sessions):
+def test_faq_adds_sources_without_changing_tool_contract(sessions):
     class PostageModel(FakeModel):
         async def choose_tool(self, messages, tools):
             assert [tool.name for tool in tools] == ['query_order', 'query_product', 'query_logistics', 'query_faq', 'create_ticket']
@@ -378,7 +378,8 @@ def test_other_tools_and_sse_unchanged(sessions):
 
     app = create_app(settings(), PostageModel(), sessions, knowledge_search=FakeKnowledgeSearch())
     events = parse_events(asyncio.run(post(app, {'message': '邮费是多少'})).text)
-    assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'done']
+    assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'sources', 'token', 'token', 'done']
+    assert events[3][1]['sources'][0]['question'] == '订单运费如何计算？'
     assert events[1:3] == [('tool_status', {'name': 'query_faq', 'state': 'running'}), ('tool_status', {'name': 'query_faq', 'state': 'success'})]
     rows = Repository(sessions).load_messages(int(events[0][1]['conversation_id']))
     payload = json.loads(rows[2].content)
