@@ -412,11 +412,17 @@
           historyMenu.append(button);
         }
         historyMenu.hidden = false;
-        const rect = trigger.getBoundingClientRect();
+        positionHistoryMenu();
+        if (focus) historyMenu.firstElementChild.focus();
+      }
+      function positionHistoryMenu() {
+        if (historyMenu.hidden || !menuTrigger) return;
+        const rect = menuTrigger.getBoundingClientRect();
+        const bounds = historySection.getBoundingClientRect();
+        if (rect.bottom <= bounds.top || rect.top >= bounds.bottom) { closeHistoryMenu(); return; }
         const top = rect.bottom + 4 + historyMenu.offsetHeight <= innerHeight - 8 ? rect.bottom + 4 : rect.top - historyMenu.offsetHeight - 4;
         historyMenu.style.left = Math.max(8, Math.min(rect.right - 142, innerWidth - 150)) + "px";
         historyMenu.style.top = Math.max(8, top) + "px";
-        if (focus) historyMenu.firstElementChild.focus();
       }
       historyMenu.addEventListener("mouseenter", () => clearTimeout(menuTimer));
       historyMenu.addEventListener("mouseleave", postponeMenuClose);
@@ -436,7 +442,7 @@
       document.addEventListener("pointerdown", event => {
         if (!historyMenu.contains(event.target) && !menuTrigger?.contains(event.target)) closeHistoryMenu();
       });
-      historySection.addEventListener("scroll", () => closeHistoryMenu(), {passive: true});
+      historySection.addEventListener("scroll", positionHistoryMenu, {passive: true});
       window.addEventListener("resize", () => closeHistoryMenu());
 
       function markActiveHistory() {
@@ -460,7 +466,7 @@
         if (item.is_pinned) {
           const badge = document.createElement("span");
           badge.className = "history-pin";
-          badge.textContent = "置顶";
+          badge.textContent = "📌 置顶";
           title.append(badge);
         }
         title.append(document.createTextNode(item.title));
@@ -491,7 +497,7 @@
       async function manageHistory(item, action) {
         closeHistoryMenu();
         if (historyMutating.has(item.id) || (busy && item.id === conversationId)) return;
-        if (action === "delete" && !window.confirm("删除对话「" + item.title + "」？删除后将从历史列表移除，无法继续此对话。")) return;
+        if (action === "delete" && !window.confirm("删除对话「" + item.title + "」？删除后将从历史列表移除，无法继续此对话；相关消息、工单和审计记录仍保留。")) return;
         historyMutating.add(item.id);
         markActiveHistory();
         historyStatus("正在更新…");

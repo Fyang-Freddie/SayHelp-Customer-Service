@@ -33,7 +33,8 @@
       "case": "unpin_restores_order"
     },
     {
-      "case": "cancel_delete_keeps_record"
+      "case": "cancel_delete_keeps_record",
+      "audit_retention_confirmed": true
     },
     {
       "case": "delete_other_keeps_active",
@@ -60,6 +61,23 @@
     {
       "case": "javascript_errors",
       "count": 0
+    },
+    {
+      "case": "hover_survives_queued_scroll",
+      "probe_events": [
+        {
+          "event": "mouseenter",
+          "hidden": false,
+          "scroll": 3698
+        },
+        {
+          "event": "scroll",
+          "hidden": false,
+          "scroll": 3698
+        }
+      ],
+      "trigger_remains_hovered": true,
+      "pin_badge": "📌 置顶"
     }
   ]
 }

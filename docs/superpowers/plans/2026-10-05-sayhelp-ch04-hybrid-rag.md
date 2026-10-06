@@ -168,10 +168,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** `Repository.set_pinned(id: int, is_pinned: bool) -> dict`；`soft_delete_conversation(id: int) -> None`；`list_conversations(limit=30, cursor: str | None=None) -> dict`；HTTP PATCH `/v1/conversations/{id}/pin` body `{is_pinned: bool}`，DELETE `/v1/conversations/{id}` 返回204。未知404，非法ID/body/cursor422，生成中409，存储失败503；重复成功删除204；已删除置顶/读取/续聊404。
 
-- [ ] **Step 1 — RED 排序/持久化:** 三条pin同秒和多页mixed排序，普通按max Message.id降序；pin按pinned_at降序、Conversation.id降序打破同分。重复同pin不更新时间；unpin恢复活动位置。带版本的base64url JSON cursor包含pin_group/pinned_at/activity_id/id，与完整lexicographic order一致，拒绝损坏/非法字段；静态遍历无dup/missing。
-- [ ] **Step 2 — RED 删除/竞态:** 删除后list/read/continue不可见、重复DELETE幂等，messages/tickets/lowconfidence均保留，别的会话不变；active pin/delete409。模拟聊天预留与删除争锁：先删除则新聊天404，先预留则删除409；HTTP存储异常无成功假响应。运行新测试确认失败。
-- [ ] **Step 3 — 实现:** Context7核对SQLAlchemy keyset条件/MySQL行锁与FastAPI请求校验。复用create_app的reservation_lock，聊天预留的存在/未删除检查移到同一锁内；pin/delete检查active并完成DB操作后才释放锁，事务用行锁。单worker运行契约写进README。pagination不再用消息ID作为唯一码；保留before入口名时其值为新opaque cursor，旧数字cursor拒绝并提示刷新。
-- [ ] **Step 4 — GREEN/提交:** 真临时MySQL与ASGI覆盖上述场景；旧history/API测试更新为新排序cursor且其他行为回归。仅测试库操作历史，不删除/置顶用户实际会话。记录、提交 `feat: persist chat history pinning and soft deletion`。
+- [x] **Step 1 — RED 排序/持久化:** 三条pin同秒和多页mixed排序，普通按max Message.id降序；pin按pinned_at降序、Conversation.id降序打破同分。重复同pin不更新时间；unpin恢复活动位置。带版本的base64url JSON cursor包含pin_group/pinned_at/activity_id/id，与完整lexicographic order一致，拒绝损坏/非法字段；静态遍历无dup/missing。
+- [x] **Step 2 — RED 删除/竞态:** 删除后list/read/continue不可见、重复DELETE幂等，messages/tickets/lowconfidence均保留，别的会话不变；active pin/delete409。模拟聊天预留与删除争锁：先删除则新聊天404，先预留则删除409；HTTP存储异常无成功假响应。运行新测试确认失败。
+- [x] **Step 3 — 实现:** Context7核对SQLAlchemy keyset条件/MySQL行锁与FastAPI请求校验。复用create_app的reservation_lock，聊天预留的存在/未删除检查移到同一锁内；pin/delete检查active并完成DB操作后才释放锁，事务用行锁。单worker运行契约写进README。pagination不再用消息ID作为唯一码；保留before入口名时其值为新opaque cursor，旧数字cursor拒绝并提示刷新。
+- [x] **Step 4 — GREEN/提交:** 真临时MySQL与ASGI覆盖上述场景；旧history/API测试更新为新排序cursor且其他行为回归。仅测试库操作历史，不删除/置顶用户实际会话。记录、提交 `feat: persist chat history pinning and soft deletion`。
 
 ### Task 11：前端引用快照、一次性满意度与历史菜单（Vibe Coding）
 
