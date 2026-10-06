@@ -1,7 +1,7 @@
 """HTTP request and after-sales extraction schemas."""
 from typing import Annotated, Literal
 from app.knowledge_types import KnowledgeFilters
-from pydantic import AfterValidator, BaseModel, StringConstraints
+from pydantic import AfterValidator, BaseModel, ConfigDict, StrictBool, StringConstraints
 
 NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
@@ -33,3 +33,8 @@ class AfterSalesExtraction(BaseModel):
     order_id: str | None = None
     request_type: Literal['退货', '换货', '退款', '维修', '补发', '其他']
     expected_solution: str | None = None
+
+
+class PinRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    is_pinned: StrictBool

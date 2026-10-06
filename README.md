@@ -30,7 +30,7 @@ python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --w
 
 知识库回答下方提供“来源原文”按钮，回答中的合法 `[n]` 也可点击。弹窗直接显示这次检索保存的知识片段；片段与 `knowledge_db/*.md` 的内容唯一精确对应时，同时显示完整 Markdown 文档、章节路径并高亮所在行。旧记录没有可靠文档对应关系时，只展示当时保存的片段并说明未关联文件，不猜原文路径。
 
-历史与原文接口：`GET /v1/conversations?limit=30&before=消息游标`、`GET /v1/conversations/{id}/messages`、`GET /v1/knowledge/documents/{filename}`。会话/消息 ID 使用十进制字符串；历史不会显示工具调用参数和模型内部草稿。来源通过新增 `sources` SSE 事件传给页面，原有 FAQ 工具契约不变。文档读取仅允许知识目录内的顶层 Markdown 文件。
+历史与原文接口：`GET /v1/conversations?limit=30&before=不透明游标`、`GET /v1/conversations/{id}/messages`、`GET /v1/knowledge/documents/{filename}`。会话/消息 ID 使用十进制字符串；历史不会显示工具调用参数和模型内部草稿。来源通过新增 `sources` SSE 事件传给页面，原有 FAQ 工具契约不变。文档读取仅允许知识目录内的顶层 Markdown 文件。
 
 验证本次界面修复（需 `.env` 中配置专用 `TEST_DATABASE_URL`）：
 
@@ -269,3 +269,13 @@ and clean independent databases. Both Compose checks and diff-check passed.
 Private connections were loaded into process variables; `.env`, credentials,
 model weights, virtual environments and ignored evidence scripts stay out of
 commits. Detailed evidence is in [dev-notes/ch03.md](dev-notes/ch03.md).
+
+
+### 历史置顶与删除
+
+历史列表支持鼠标滚轮和加载更多。每条记录右侧 `...` 悬停或点击可显示「置顶/取消置顶」「删除」，键盘可聚焦并打开菜单；删除需确认。置顶保存在 MySQL，刷新页面仍保留，置顶项按置顶时间及会话 ID 降序，其他项按最近消息 ID 降序。
+
+- `PATCH /v1/conversations/{id}/pin`，严格 JSON `{"is_pinned": true}`，返回置顶状态；取消置顶传 `false`。
+- `DELETE /v1/conversations/{id}`，成功及重复删除均返回 204。逻辑删除使列表、读取及续聊不可见，消息、工单与低置信度记录保留作追溯。
+- `GET /v1/conversations?limit=30&before=...` 中 before 取上一页 next_cursor，旧数字游标需刷新后重新加载。
+- 生成中的会话置顶/删除返回 409，存储失败返回 503。必须保持 **单进程 `--workers 1`**：聊天预留与历史管理共用进程内锁；多 worker 部署需要先实现跨进程协调。

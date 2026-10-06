@@ -7,7 +7,7 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.exc import SQLAlchemyError
@@ -30,7 +30,7 @@ from app.history import InputBudgetExceeded, prepare_context
 from app.model_service import ModelService
 from app.prompts import render_service_system_prompt
 from app.repository import Repository
-from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest
+from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest, PinRequest
 
 PreparedChat = tuple[int, str, object]
 
@@ -90,9 +90,38 @@ def create_app(
 
     @app.get('/v1/conversations')
     def conversation_list(limit: Annotated[int, Query(ge=1, le=100)] = 30,
-                          before: ConversationId | None = None) -> dict:
+                          before: Annotated[str | None, Query(max_length=512)] = None) -> dict:
         try:
-            return repository.list_conversations(limit=limit, before=int(before) if before else None)
+            return repository.list_conversations(limit=limit, cursor=before)
+        except ValueError:
+            raise HTTPException(status_code=422, detail='Invalid history cursor; refresh the history list') from None
+        except SQLAlchemyError:
+            raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
+
+    @app.patch('/v1/conversations/{conversation_id}/pin')
+    def pin_conversation(conversation_id: ConversationId, request: PinRequest) -> dict:
+        try:
+            with reservation_lock:
+                id = int(conversation_id)
+                if id in active:
+                    raise HTTPException(status_code=409, detail='Conversation is active')
+                return repository.set_pinned(id, request.is_pinned)
+        except KeyError:
+            raise HTTPException(status_code=404, detail='Conversation not found') from None
+        except SQLAlchemyError:
+            raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
+
+    @app.delete('/v1/conversations/{conversation_id}', status_code=204)
+    def delete_conversation(conversation_id: ConversationId) -> Response:
+        try:
+            with reservation_lock:
+                id = int(conversation_id)
+                if id in active:
+                    raise HTTPException(status_code=409, detail='Conversation is active')
+                repository.soft_delete_conversation(id)
+            return Response(status_code=204)
+        except KeyError:
+            raise HTTPException(status_code=404, detail='Conversation not found') from None
         except SQLAlchemyError:
             raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
 
@@ -123,9 +152,9 @@ def create_app(
         try:
             # Reject an oversized new turn before creating its conversation row.
             prepare_context([], system, current, settings)
-            if conversation_id is not None and repository.get_conversation(conversation_id) is None:
-                raise HTTPException(status_code=404, detail='Conversation not found')
             with reservation_lock:
+                if conversation_id is not None and repository.get_conversation(conversation_id) is None:
+                    raise HTTPException(status_code=404, detail='Conversation not found')
                 if conversation_id in active:
                     raise HTTPException(status_code=409, detail='Conversation is active')
                 if len(active) >= settings.max_conversations:

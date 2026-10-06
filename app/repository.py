@@ -2,12 +2,13 @@
 
 from uuid import uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.orm import Session, sessionmaker, undefer
 
 from app.db import Conversation, Faq, Message, Ticket
 from app.ch04_db import LowConfidenceQuestion
 from app.knowledge_types import KnowledgeAnswer
+from app.history_cursor import decode_cursor, encode_cursor
 
 
 class Repository:
@@ -23,7 +24,7 @@ class Repository:
 
     def get_conversation(self, id: int) -> Conversation | None:
         with self.session_factory() as session:
-            return session.get(Conversation, id)
+            return session.scalar(select(Conversation).options(undefer('*')).where(Conversation.id == id, Conversation.deleted_at.is_(None)))
 
     def append_message(self, id: int, role: str, content: str | None,
                        tool_calls: list[dict] | None = None,
@@ -53,23 +54,66 @@ class Repository:
         with self.session_factory() as session:
             return list(session.scalars(select(Message).options(undefer(Message.citations)).where(Message.conversation_id == id).order_by(Message.id)))
 
-    def list_conversations(self, *, limit: int = 30, before: int | None = None) -> dict:
+    def set_pinned(self, id: int, is_pinned: bool) -> dict:
+        if type(is_pinned) is not bool:
+            raise ValueError('Pin state must be a boolean')
+        with self.session_factory.begin() as session:
+            row = session.get(Conversation, id, options=[undefer('*')], with_for_update=True)
+            if row is None or row.deleted_at is not None:
+                raise KeyError('Conversation not found')
+            if bool(row.is_pinned) != is_pinned:
+                row.is_pinned = int(is_pinned)
+                row.pinned_at = func.now() if is_pinned else None
+                session.flush()
+            result = {'id': str(row.id), 'is_pinned': bool(row.is_pinned),
+                      'pinned_at': row.pinned_at.isoformat() if row.pinned_at else None}
+        return result
+
+    def soft_delete_conversation(self, id: int) -> None:
+        with self.session_factory.begin() as session:
+            row = session.get(Conversation, id, options=[undefer('*')], with_for_update=True)
+            if row is None:
+                raise KeyError('Conversation not found')
+            if row.deleted_at is None:
+                row.deleted_at = func.now()
+
+    def list_conversations(self, *, limit: int = 30, cursor: str | None = None) -> dict:
+        if type(limit) is not int or not 1 <= limit <= 100:
+            raise ValueError('History limit must be between 1 and 100')
+        key = decode_cursor(cursor) if cursor is not None else None
         first_question = (select(Message.content).where(Message.conversation_id == Conversation.id,
                           Message.role == 'user').order_by(Message.id).limit(1).scalar_subquery())
         activity = (select(Message.conversation_id, func.max(Message.id).label('cursor'),
                     func.max(Message.created_at).label('last_activity'))
                     .group_by(Message.conversation_id).subquery())
+        # Activity never changes the order within the pinned group.
+        normal_activity = case((Conversation.is_pinned == 0, activity.c.cursor), else_=0)
         statement = (select(Conversation, first_question, activity.c.cursor, activity.c.last_activity)
-                     .join(activity, activity.c.conversation_id == Conversation.id)
-                     .order_by(activity.c.cursor.desc()).limit(limit + 1))
-        if before is not None:
-            statement = statement.where(activity.c.cursor < before)
+                     .options(undefer('*')).join(activity, activity.c.conversation_id == Conversation.id)
+                     .where(Conversation.deleted_at.is_(None))
+                     .order_by(Conversation.is_pinned.desc(), Conversation.pinned_at.desc(),
+                               normal_activity.desc(), Conversation.id.desc()).limit(limit + 1))
+        if key is not None:
+            if key['pin_group'] == 1:
+                remaining = or_(Conversation.is_pinned == 0, and_(Conversation.is_pinned == 1,
+                    or_(Conversation.pinned_at < key['pinned_at'],
+                        and_(Conversation.pinned_at == key['pinned_at'], Conversation.id < key['id']))))
+            else:
+                remaining = and_(Conversation.is_pinned == 0, or_(activity.c.cursor < key['activity_id'],
+                    and_(activity.c.cursor == key['activity_id'], Conversation.id < key['id'])))
+            statement = statement.where(remaining)
         with self.session_factory() as session:
             rows = session.execute(statement).all()
+            visible = rows[:limit]
+            next_cursor = None
+            if len(rows) > limit:
+                row, _, activity_id, _ = visible[-1]
+                next_cursor = encode_cursor(int(row.is_pinned), row.pinned_at, activity_id, row.id)
             return {'conversations': [{'id': str(row.id), 'title': (title or '新对话')[:64],
-                     'status': row.status, 'updated_at': updated.isoformat()}
-                     for row, title, cursor, updated in rows[:limit]],
-                    'next_cursor': str(rows[limit - 1][2]) if len(rows) > limit else None}
+                     'status': row.status, 'updated_at': updated.isoformat(),
+                     'is_pinned': bool(row.is_pinned),
+                     'pinned_at': row.pinned_at.isoformat() if row.pinned_at else None}
+                     for row, title, activity_id, updated in visible], 'next_cursor': next_cursor}
 
     def find_faq(self, keyword: str, limit: int = 5) -> list[Faq]:
         if not 1 <= limit <= 100:
