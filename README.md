@@ -1,6 +1,8 @@
-# SayHelp 客服系统 · 第 3 章 BGE-M3 dense RAG
+# SayHelp 客服系统
 
-FastAPI 流式客服现在会先让模型选择一次业务工具，执行并把结果回灌给模型，然后逐块输出最终回答。会话、消息、工具调用和结果保存在 MySQL；聊天气泡显示本轮调用的工具。
+`main` 已整合 ch01–ch04 各功能分支当前已有的代码。知识问答默认使用 Milvus 原生 BM25 与 dense 混合检索、RRF 融合、bge-reranker-v2-m3 重排和证据门控；业务工具、会话和消息保存在 MySQL。历史列表支持滚动、置顶/取消置顶和逻辑删除。
+
+**ch04 仍在开发中。** 已合并代码不表示整章验收完成：真实模型演示、完整四策略评估、编造个案台账流程，以及引用/满意度前端收尾仍以[实施计划](docs/superpowers/plans/2026-10-05-sayhelp-ch04-hybrid-rag.md)的未完成项为准。开发和验证记录见 [dev-notes/ch04.md](dev-notes/ch04.md)。
 
 ## 启动
 
@@ -14,17 +16,21 @@ py -3.14 -m venv .venv
 
 创建不会提交的 `.env`，设置 `CHAT_BASE_URL`、`CHAT_MODEL`、`CHAT_API_KEY`、`MYSQL_DATABASE`、`MYSQL_USER`、`MYSQL_PASSWORD`、`MYSQL_ROOT_PASSWORD`、`DATABASE_URL`、`MILVUS_MINIO_USER`、`MILVUS_MINIO_PASSWORD`。例如 `DATABASE_URL` 的格式为 `mysql+pymysql://用户:密码@127.0.0.1:3307/数据库名?charset=utf8mb4`。默认宿主机端口是 3307，可用 `MYSQL_PORT` 改动。用于数据库集成测试时，另设 `TEST_DATABASE_URL` 为有权创建和删除**临时测试库**的本机 MySQL 管理连接；测试会自动创建并清理独立库。不要把真实生产库或密钥写进仓库。
 
-启动 API 前，先完成下方 [Chapter 3 建库准备](#chapter-3-offline-dense-knowledge-build) 中的固定 MinIO 官方源码镜像构建与公开 BGE-M3 权重下载。下载完成后保持该 PowerShell 中的 `BGE_CACHE_DIR`、`HF_HUB_OFFLINE`、`TRANSFORMERS_OFFLINE` 设置；然后按顺序启动 MySQL、初始化种子、启动 Milvus、完成知识建库，最后启动单 worker API：
+当前 API 需要 ch04 数据库迁移、真实知识库索引和匹配的校准产物。基础设施构建可参考下方 [Chapter 3 建库准备](#chapter-3-offline-dense-knowledge-build)；模型需准备 BGE-M3 与 bge-reranker-v2-m3，离线模式需要提前缓存两者。新环境按以下顺序准备；本机已完成这些步骤时可直接运行最后的 API 启动命令：
 
 ```powershell
 docker compose up -d --wait
-python -m app.init_db
+python -m app.init_ch04_db
 docker compose -f compose.milvus.yaml up -d --wait
-python -m app.build_knowledge --policy tests/fixtures/ch03_policy.md --manual tests/fixtures/ch03_manual.md
+python -m app.build_ch04_knowledge --dry-run
+python -m app.build_ch04_knowledge
+python -m app.calibrate_ch04
 python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
 ```
 
-`app.init_db` 按 [建表 DDL](db/schema.sql) 创建 `conversations`、`messages`、`faq`、`tickets` 并灌入示例 FAQ，可重复执行。商品、订单、物流由工具内部随机生成演示数据，不连接公司真实系统，也不建对应表。
+`app.init_ch04_db` 验证并补齐已有业务表及 [ch04 迁移](db/ch04_migration.sql)，知识索引读取 `knowledge_db` 中的真实文档，默认使用独立 `knowledge_ch04` 集合。`app.calibrate_ch04` 会调用配置的模型归一化标注问题并生成校准产物；换环境重新建库后需重新校准，不能直接把仓库中的既有运行快照视为通用结果。业务工具中的商品、订单、物流仍属于早期章节的演示实现。
+
+下面保留旧章节的来源展示、dense 检索及数据提取说明作历史参考；ch04 的 `citations` 事件前端适配仍见上述待办。
 
 打开 [聊天页](http://127.0.0.1:8000/)。例如询问“订单 1001 的物流到哪了”，等待气泡中的 `query_logistics` 徽章和流式回答。左侧“历史对话”显示 MySQL 中保存的会话，可点击恢复并继续聊天；手机上点击顶部“历史”。刷新页面恢复当前选中的会话；“新对话”开启空白会话，不删除旧记录。一次用户请求至多执行一个工具，不运行多轮 Agent Loop。
 
