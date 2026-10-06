@@ -2,6 +2,9 @@
 
 import asyncio
 import json
+from contextlib import aclosing, nullcontext
+from time import perf_counter
+from app.latency import TurnTiming
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Literal
@@ -23,7 +26,7 @@ from app.knowledge_types import KnowledgeFilters
 
 @dataclass(frozen=True)
 class ChatEvent:
-    kind: Literal['tool_status', 'sources', 'token', 'retrieval_status', 'citations', 'completed']
+    kind: Literal['tool_status', 'sources', 'token', 'retrieval_status', 'citations', 'timings', 'completed']
     data: dict
 
 
@@ -68,11 +71,22 @@ class ChatService:
         return await self._settled_write(self.repository.append_message,
             conversation_id, role, content, tool_calls=tool_calls, tool_call_id=tool_call_id)
 
-    async def _knowledge_answer(self, query, filters):
-        result = await asyncio.to_thread(self.rag_retrieval.retrieve, query, 'hybrid_rerank', filters)
-        prompt = select_prompt_evidence(query, result, self.settings)
-        answer = await self.rag_generator.generate(query, prompt, self.confidence_policy.assess(result))
-        return answer, result
+    async def _retrieve_knowledge(self, query, filters, timing):
+        with timing.measure('retrieval') if timing else nullcontext():
+            result = await asyncio.to_thread(self.rag_retrieval.retrieve, query, 'hybrid_rerank', filters)
+        if timing:
+            timing.timings.update({'retrieval.' + k: v for k, v in result.timings_ms.items()})
+            timing.candidates = len(result.candidates)
+        return result
+
+    async def _generate_knowledge(self, query, result, timing):
+        with timing.measure('generation') if timing else nullcontext():
+            prompt = select_prompt_evidence(query, result, self.settings)
+            return await self.rag_generator.generate(query, prompt, self.confidence_policy.assess(result))
+
+    async def _knowledge_answer(self, query, filters, timing=None):
+        result = await self._retrieve_knowledge(query, filters, timing)
+        return await self._generate_knowledge(query, result, timing), result
 
     @staticmethod
     def _tool_payload(keyword, answer, result):
@@ -91,15 +105,36 @@ class ChatService:
         answer, result = await self._knowledge_answer(query, filters)
         return self._tool_payload(keyword, answer, result)
 
-    async def _publish_knowledge(self, conversation_id, raw_question, answer):
-        message_id = await self._settled_write(self.repository.commit_knowledge_answer,
-                                              conversation_id, answer, raw_question)
+    async def _publish_knowledge(self, conversation_id, raw_question, answer, timing=None):
+        with timing.measure('persistence') if timing else nullcontext():
+            message_id = await self._settled_write(self.repository.commit_knowledge_answer,
+                                                  conversation_id, answer, raw_question)
         yield ChatEvent('citations', {'citations': answer.citations, 'message_id': message_id})
         for start in range(0, len(answer.answer), 40):
             yield ChatEvent('token', {'text': answer.answer[start:start + 40]})
         yield ChatEvent('completed', {'message_id': message_id})
 
     async def stream_turn(self, conversation_id: int, message: str, filters: KnowledgeFilters | None = None) -> AsyncIterator[ChatEvent]:
+        timing = TurnTiming()
+        outcome = 'cancelled'
+        try:
+            async with aclosing(self._stream_turn(conversation_id, message, filters, timing)) as turn:
+                async for event in turn:
+                    if event.kind == 'token' and timing.first_token_ms is None:
+                        timing.first_token_ms = (perf_counter() - timing.started) * 1000
+                    if event.kind == 'completed':
+                        outcome = 'complete'
+                        yield ChatEvent('timings', timing.payload(outcome))
+                    yield event
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            outcome = 'error'
+            raise
+        finally:
+            timing.log(outcome)
+
+    async def _stream_turn(self, conversation_id, message, filters, timing):
         # The HTTP composition root reserves the conversation before entering SSE.
         conversation = await asyncio.to_thread(self.repository.get_conversation, conversation_id)
         if conversation is None:
@@ -112,12 +147,16 @@ class ChatService:
 
         prepared_query = None
         if self.query_understanding is not None:
-            prepared_query = await self.query_understanding.prepare(message)
+            yield ChatEvent('retrieval_status', {'state': 'running', 'stage': 'understanding'})
+            with timing.measure('understanding'):
+                prepared_query = await self.query_understanding.prepare(message)
             if prepared_query.intent == 'knowledge':
-                yield ChatEvent('retrieval_status', {'state': 'running'})
-                answer, _ = await self._knowledge_answer(prepared_query, filters)
-                yield ChatEvent('retrieval_status', {'state': 'complete'})
-                async for event in self._publish_knowledge(conversation_id, message, answer):
+                yield ChatEvent('retrieval_status', {'state': 'running', 'stage': 'retrieval'})
+                result = await self._retrieve_knowledge(prepared_query, filters, timing)
+                yield ChatEvent('retrieval_status', {'state': 'running', 'stage': 'generation'})
+                answer = await self._generate_knowledge(prepared_query, result, timing)
+                yield ChatEvent('retrieval_status', {'state': 'complete', 'stage': 'complete'})
+                async for event in self._publish_knowledge(conversation_id, message, answer, timing):
                     yield event
                 return
             if prepared_query.intent == 'clarify':
@@ -162,7 +201,7 @@ class ChatService:
                 if index == 0:
                     if prepared_query is not None and public_name in ('query_faq', 'query_product'):
                         yield ChatEvent('retrieval_status', {'state': 'running'})
-                        controlled_answer, retrieval = await self._knowledge_answer(prepared_query, filters)
+                        controlled_answer, retrieval = await self._knowledge_answer(prepared_query, filters, timing)
                         payload = self._tool_payload(message, controlled_answer, retrieval)
                         result = ToolMessage(content=json.dumps(payload, ensure_ascii=False), tool_call_id=call['id'], status='success')
                         yield ChatEvent('retrieval_status', {'state': 'complete'})
@@ -182,7 +221,7 @@ class ChatService:
                             yield ChatEvent('sources', {'sources': sources})
 
         if controlled_answer is not None:
-            async for event in self._publish_knowledge(conversation_id, message, controlled_answer):
+            async for event in self._publish_knowledge(conversation_id, message, controlled_answer, timing):
                 yield event
             return
 
