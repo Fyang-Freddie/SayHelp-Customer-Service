@@ -272,7 +272,8 @@ def test_cancelled_generation_releases_reservation_without_invented_answer(sessi
 def test_model_service_forwards_nonempty_text_chunks_with_configured_model(monkeypatch):
     import app.model_service as module
     class FakeChatOpenAI:
-        def __init__(self, *, base_url, model, api_key):
+        def __init__(self, *, base_url, model, api_key, timeout, max_retries):
+            assert (timeout, max_retries) == (180, 1)
             assert (base_url, model, api_key) == ('https://example.invalid/v1', 'test-model', 'test-secret')
         async def astream(self, messages):
             yield AIMessageChunk(content='a')
