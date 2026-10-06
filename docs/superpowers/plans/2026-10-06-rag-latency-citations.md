@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-05-sayhelp-ch04-hybrid-rag-design.md`，以及用户本轮“先给我修改计划，然后再进行修改”和“8001，每一次都比较慢，尤其是无法查询到匹配信息时更慢”的补充。
 
-**状态：用户已批准实施；任务1–4验证及部署完成，正在同步GitHub。具体证据和返工见 dev-notes/ch04.md。**
+**状态：用户已批准实施；任务1–4完成，已部署8001并推送GitHub。具体证据和返工见 dev-notes/ch04.md。**
 
 ## Global Constraints
 
