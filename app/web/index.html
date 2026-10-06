@@ -566,7 +566,7 @@
           followLatest = true;
           for (const item of data.messages) {
             const view = addMessage(item.role, item.content);
-            if (item.role === "assistant") decorateAnswer(view, item.content, item.sources || []);
+            if (item.role === "assistant") decorateAnswer(view, item.content, item.citations?.length ? item.citations : (item.sources || []));
           }
           scrollToBottom(true);
           markActiveHistory();
@@ -577,33 +577,53 @@
         }
       }
 
+      function sourceDocumentUrl(source) {
+        const names = new Set(["after-sales-manual.md", "product-faq.md", "product-specs.md", "returns-policy.md"]);
+        const file = typeof source.source_file === "string" ? source.source_file.replace(/^knowledge_db\//, "") : "";
+        if (!names.has(file)) return null;
+        const expected = "/v1/knowledge/documents/" + encodeURIComponent(file);
+        if (source.source_url) {
+          try {
+            const url = new URL(source.source_url, location.origin);
+            if (url.origin !== location.origin || url.pathname !== expected || url.search || url.hash || url.username || url.password) return null;
+          } catch { return null; }
+        }
+        return expected;
+      }
+
       async function showSource(source) {
         const request = ++sourceRequest;
-        document.getElementById("sourceTitle").textContent = "来源 [" + source.n + "] · " + source.question;
+        document.getElementById("sourceTitle").textContent = "来源 [" + source.n + "] · " + (source.question || "知识片段");
         document.getElementById("sourcePath").textContent = source.section_path || source.category || "知识库问答";
-        document.getElementById("sourceExcerpt").textContent = source.answer;
+        document.getElementById("sourceExcerpt").textContent = source.answer || "此记录未保存来源原文。";
         const status = document.getElementById("sourceStatus");
         const full = document.getElementById("fullDocument");
         const original = document.getElementById("sourceDocument");
         full.hidden = true;
         original.replaceChildren();
-        status.textContent = source.source_file ? "正在读取完整文档…" : "这是该次检索保存的知识片段；旧记录未关联到可确认的文档文件。";
+        const documentUrl = sourceDocumentUrl(source);
+        status.textContent = documentUrl ? "正在读取完整文档…" : "这是该次检索保存的知识片段；旧记录未关联到可确认的文档文件。";
         if (!sourceDialog.open) sourceDialog.showModal();
-        if (!source.source_file) return;
+        if (!documentUrl) return;
         try {
-          const response = await fetch("/v1/knowledge/documents/" + encodeURIComponent(source.source_file));
+          const response = await fetch(documentUrl);
           if (!response.ok) throw new Error("完整文档暂时无法读取，上方知识片段仍可查看。");
           const documentData = await response.json();
           if (request !== sourceRequest) return;
-          const unchanged = documentData.sha256 === source.document_sha256;
-          status.textContent = unchanged ? source.source_file + " · 第 " + source.source_line + " 行（黄色定位）" : source.source_file + " · 原文已更新，下方为最新文档，上方保留当时知识片段。";
+          const digest = source.source_digest || source.document_sha256;
+          const unchanged = typeof digest === "string" && digest.length > 0 && documentData.sha256 === digest;
+          const startLine = source.source_start_line ?? source.source_line;
+          const endLine = source.source_end_line ?? startLine;
+          const linesCount = documentData.text.split("\n").length;
+          const hasRange = Number.isInteger(startLine) && Number.isInteger(endLine) && startLine > 0 && endLine >= startLine && endLine <= linesCount;
+          status.textContent = !unchanged ? source.source_file + " · 原文版本不同或无法核验，下方为最新文档，上方保留当时知识片段。" : hasRange ? source.source_file + " · 第 " + startLine + "–" + endLine + " 行（黄色定位）" : source.source_file + " · 已核验文档，旧记录缺少有效定位行号。";
           const lines = documentData.text.split("\n");
           let highlighted = null;
           lines.forEach((text, index) => {
             const line = document.createElement("span");
             line.className = "source-line";
             line.textContent = text;
-            if (unchanged && index + 1 === source.source_line) { line.classList.add("highlight"); highlighted = line; }
+            if (unchanged && hasRange && index + 1 >= startLine && index + 1 <= endLine) { line.classList.add("highlight"); highlighted ||= line; }
             original.append(line);
           });
           full.hidden = false;
@@ -614,6 +634,8 @@
       }
 
       function decorateAnswer(view, text, sources) {
+        if (!Array.isArray(sources) || !sources.length) return;
+        sources = sources.filter(source => source && Number.isInteger(source.n) && source.n > 0 && typeof source.answer === "string");
         if (!sources.length) return;
         view.bubble.replaceChildren();
         const byNumber = new Map(sources.map(source => [String(source.n), source]));
@@ -733,35 +755,21 @@
       function makeRenderer(bubble) {
         let pending = "";
         let frame = 0;
-        let waiting = [];
-        function paint() {
+        function flush() {
+          if (frame) cancelAnimationFrame(frame);
           frame = 0;
           if (pending) {
-            const amount = Math.max(1, Math.ceil(pending.length / 24));
-            bubble.textContent += pending.slice(0, amount);
-            pending = pending.slice(amount);
+            bubble.textContent += pending;
+            pending = "";
             scrollToBottom();
-          }
-          if (pending) {
-            frame = requestAnimationFrame(paint);
-          } else {
-            waiting.splice(0).forEach(resolve => resolve());
           }
         }
         return {
           append(text) {
             pending += text;
-            if (!frame) frame = requestAnimationFrame(paint);
+            if (!frame) frame = requestAnimationFrame(flush);
           },
-          async drain() {
-            if (document.hidden && pending) {
-              cancelAnimationFrame(frame);
-              frame = 0;
-              bubble.textContent += pending;
-              pending = "";
-            }
-            if (pending) await new Promise(resolve => waiting.push(resolve));
-          }
+          async drain() { flush(); }
         };
       }
 
@@ -834,8 +842,15 @@
                 trace.textContent = item.payload.state === "running" ? "◌ 正在调用 " + toolName : "✦ 已调用 " + toolName;
                 scrollToBottom();
               }
-            } else if (item.name === "sources") {
-              answerSources = item.payload.sources || [];
+            } else if (item.name === "retrieval_status") {
+              const labels = { understanding: "正在理解问题…", retrieval: "正在检索并核对知识…", generation: "正在校验答案与引用…", complete: "知识核对完成" };
+              trace.hidden = false;
+              trace.dataset.state = item.payload.state || "running";
+              trace.textContent = labels[item.payload.stage] || (item.payload.state === "complete" ? "知识核对完成" : "正在检索知识…");
+              scrollToBottom();
+            } else if (item.name === "citations" || item.name === "sources") {
+              const evidence = item.name === "citations" ? item.payload.citations : item.payload.sources;
+              answerSources = Array.isArray(evidence) ? evidence : [];
             } else if (item.name === "token") {
               if (!receivedToken) {
                 receivedToken = true;
@@ -846,6 +861,7 @@
               throw new Error("回复中断，请重试。");
             } else if (item.name === "done") {
               done = true;
+              if (!trace.hidden) { trace.dataset.state = "complete"; trace.textContent = "回答已完成"; }
             }
           }
           while (true) {
@@ -872,7 +888,10 @@
           if (!receivedToken) {
             bubble.textContent = errorText ? "暂时没能回复。" : "暂时没有收到文字回复。";
           }
-          if (errorText) addNotice(errorText);
+          if (errorText) {
+            if (!trace.hidden) { trace.dataset.state = "error"; trace.textContent = "处理已中断"; }
+            addNotice(errorText);
+          }
           setBusy(false);
           loadHistory();
           input.focus();

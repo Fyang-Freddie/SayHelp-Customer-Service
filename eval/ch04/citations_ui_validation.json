@@ -1,0 +1,86 @@
+{
+  "checks": [
+    {
+      "name": "等待期间显示实际理解阶段",
+      "passed": true
+    },
+    {
+      "name": "完整已验证正文及时渲染（无打字队列）",
+      "passed": true
+    },
+    {
+      "name": "新回答支持非连续编号1/3/10",
+      "passed": true
+    },
+    {
+      "name": "未知编号保留纯文本",
+      "passed": true
+    },
+    {
+      "name": "来源1原文快照及章节正确",
+      "passed": true
+    },
+    {
+      "name": "来源1高亮完整行范围",
+      "passed": true
+    },
+    {
+      "name": "来源3原文快照及章节正确",
+      "passed": true
+    },
+    {
+      "name": "来源3高亮完整行范围",
+      "passed": true
+    },
+    {
+      "name": "来源10原文快照及章节正确",
+      "passed": true
+    },
+    {
+      "name": "来源10高亮完整行范围",
+      "passed": true
+    },
+    {
+      "name": "文档路径使用白名单文件名",
+      "passed": true
+    },
+    {
+      "name": "原文作为文本安全展示",
+      "passed": true
+    },
+    {
+      "name": "history历史/版本定位兼容",
+      "passed": true
+    },
+    {
+      "name": "legacy历史/版本定位兼容",
+      "passed": true
+    },
+    {
+      "name": "changed历史/版本定位兼容",
+      "passed": true
+    },
+    {
+      "name": "文件缺失仍显示原文快照",
+      "passed": true
+    },
+    {
+      "name": "拒绝外站来源URL并保留快照",
+      "passed": true
+    },
+    {
+      "name": "窄屏来源弹窗可读且不横向越界",
+      "passed": true
+    },
+    {
+      "name": "中断响应不标记完成也不伪造可点击引用",
+      "passed": true
+    },
+    {
+      "name": "无JavaScript异常或外站请求",
+      "passed": true
+    }
+  ],
+  "render_ms": 9,
+  "scope": "Actual HTML in Edge with authored HTTP/SSE fixtures; no customer writes or model requests."
+}
