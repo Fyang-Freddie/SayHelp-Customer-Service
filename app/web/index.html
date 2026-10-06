@@ -32,8 +32,9 @@
     button { cursor: pointer; }
     .shell {
       width: min(1320px, calc(100% - 48px));
-      height: min(900px, calc(100vh - 48px));
-      min-height: 560px;
+      height: min(900px, calc(100dvh - 48px));
+      min-height: 0;
+      grid-template-rows: minmax(0, 1fr);
       margin: 24px auto;
       display: grid;
       grid-template-columns: 285px minmax(0, 1fr);
@@ -51,6 +52,8 @@
       background: linear-gradient(160deg, #f0f3fc, #e9eef8 68%, #eef2fa);
       border-right: 1px solid #e5eaf4;
     }
+    .sidebar { min-height: 0; overflow: hidden; }
+    .sidebar > * { flex-shrink: 0; }
     .brand { display: flex; align-items: center; gap: 12px; }
     .brand-mark, .agent-avatar, .welcome-icon {
       display: grid; place-items: center; flex: none;
@@ -82,7 +85,23 @@
     .side-card strong { display: block; margin-top: 12px; font-size: 13px; }
     .side-card p { margin: 8px 0 0; color: #8390a7; font-size: 12px; line-height: 1.7; }
     .side-foot { color: #9da8b9; font-size: 11px; padding-left: 4px; line-height: 1.6; }
-    .history-section { flex: 1; min-height: 80px; overflow-y: auto; margin-top: -15px; }
+    .history-section { flex: 1 1 0; min-height: 0; overflow-y: auto; overflow-x: hidden; margin-top: -15px; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: #a8b5d5 transparent; overscroll-behavior: contain; }
+    .history-section::-webkit-scrollbar { width: 7px; }
+    .history-section::-webkit-scrollbar-thumb { background: #a8b5d5; border-radius: 8px; }
+    .history-row { display: flex; align-items: center; min-width: 0; border-radius: 10px; }
+    .history-row:hover, .history-row:has([aria-current="true"]) { background: white; }
+    .history-row .history-item { flex: 1; min-width: 0; }
+    .history-dots { flex: none; width: 32px; height: 36px; border: 0; border-radius: 8px; background: transparent; color: #748098; font-size: 19px; letter-spacing: 1px; }
+    .history-dots:hover, .history-dots[aria-expanded="true"] { color: var(--blue-deep); background: #e8edff; }
+    .history-dots:disabled { opacity: .4; cursor: default; }
+    .history-pin { font-size: 10px; color: var(--blue); margin-right: 5px; }
+    .history-menu { position: fixed; z-index: 20; width: 142px; padding: 5px; background: white; border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 9px 28px rgba(27,39,65,.16); }
+    .history-menu[hidden] { display: none; }
+    .history-menu button { display: block; width: 100%; border: 0; border-radius: 7px; background: transparent; padding: 10px 13px; text-align: left; color: var(--ink); font-size: 12px; }
+    .history-menu button:hover, .history-menu button:focus-visible { background: #eef2ff; }
+    .history-menu .history-delete { color: #bd4356; }
+    .history-notice { color: var(--blue-deep); font-size: 12px; line-height: 1.6; padding: 0 8px; margin: 0 0 8px; }
+    button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
     .history-list { display: grid; gap: 7px; }
     .history-item { border: 0; border-radius: 10px; padding: 10px 12px; background: transparent; text-align: left; color: #53627c; width: 100%; }
     .history-item:hover, .history-item[aria-current="true"] { background: white; color: var(--blue-deep); }
@@ -234,6 +253,11 @@
       .welcome { padding: 0 7px 35px; }
       .jump-latest { right: 18px; bottom: 108px; }
     }
+    @media (max-height: 680px) {
+      .sidebar { gap: 18px; padding-top: 18px; padding-bottom: 18px; }
+      .side-card { display: none; }
+      .history-section { margin-top: 0; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
@@ -252,6 +276,7 @@
       </div>
       <nav class="history-section" aria-label="历史对话">
         <div class="side-title">历史对话</div>
+        <p class="history-notice" id="historyNotice" role="status" aria-live="polite" hidden></p>
         <div class="history-list" id="historyList"><span class="history-empty">正在加载历史…</span></div>
         <button class="history-more" id="historyMore" type="button" hidden>加载更多</button>
       </nav>
@@ -320,6 +345,20 @@
       const sourceDialog = document.getElementById("sourceDialog");
       let historyCursor = null;
       let historyLoading = false;
+      let historyRequest = 0;
+      let historyAbort = null;
+      const historySection = document.querySelector(".history-section");
+      const historyNotice = document.getElementById("historyNotice");
+      const historyMutating = new Set();
+      const historyMenu = document.createElement("div");
+      historyMenu.className = "history-menu";
+      historyMenu.id = "historyMenu";
+      historyMenu.setAttribute("role", "menu");
+      historyMenu.hidden = true;
+      document.body.append(historyMenu);
+      let menuItem = null;
+      let menuTrigger = null;
+      let menuTimer = null;
       let sourceRequest = 0;
       let conversationId = null;
       let busy = false;
@@ -340,37 +379,152 @@
       document.getElementById("sourceClose").addEventListener("click", () => sourceDialog.close());
       sourceDialog.addEventListener("close", () => { sourceRequest++; });
 
+      function historyStatus(message) {
+        historyNotice.textContent = message;
+        historyNotice.hidden = !message;
+      }
+      function closeHistoryMenu(restoreFocus = false) {
+        clearTimeout(menuTimer);
+        const trigger = menuTrigger;
+        if (trigger) trigger.setAttribute("aria-expanded", "false");
+        historyMenu.hidden = true;
+        menuTrigger = menuItem = null;
+        if (restoreFocus && trigger?.isConnected) trigger.focus();
+      }
+      function postponeMenuClose() {
+        clearTimeout(menuTimer);
+        menuTimer = setTimeout(() => closeHistoryMenu(), 220);
+      }
+      function showHistoryMenu(item, trigger, focus = false) {
+        if (trigger.disabled) return;
+        closeHistoryMenu();
+        menuItem = item;
+        menuTrigger = trigger;
+        trigger.setAttribute("aria-expanded", "true");
+        historyMenu.replaceChildren();
+        for (const [action, label] of [["pin", item.is_pinned ? "取消置顶" : "置顶"], ["delete", "删除"]]) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.setAttribute("role", "menuitem");
+          button.textContent = label;
+          if (action === "delete") button.className = "history-delete";
+          button.addEventListener("click", () => manageHistory(item, action));
+          historyMenu.append(button);
+        }
+        historyMenu.hidden = false;
+        const rect = trigger.getBoundingClientRect();
+        const top = rect.bottom + 4 + historyMenu.offsetHeight <= innerHeight - 8 ? rect.bottom + 4 : rect.top - historyMenu.offsetHeight - 4;
+        historyMenu.style.left = Math.max(8, Math.min(rect.right - 142, innerWidth - 150)) + "px";
+        historyMenu.style.top = Math.max(8, top) + "px";
+        if (focus) historyMenu.firstElementChild.focus();
+      }
+      historyMenu.addEventListener("mouseenter", () => clearTimeout(menuTimer));
+      historyMenu.addEventListener("mouseleave", postponeMenuClose);
+      historyMenu.addEventListener("focusout", event => {
+        if (!historyMenu.contains(event.relatedTarget) && event.relatedTarget !== menuTrigger) closeHistoryMenu();
+      });
+      historyMenu.addEventListener("keydown", event => {
+        const buttons = [...historyMenu.querySelectorAll("button")];
+        if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+          event.preventDefault();
+          const current = buttons.indexOf(document.activeElement);
+          const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : (current + (event.key === "ArrowDown" ? 1 : -1) + buttons.length) % buttons.length;
+          buttons[next].focus();
+        }
+      });
+      document.addEventListener("keydown", event => { if (event.key === "Escape") closeHistoryMenu(true); });
+      document.addEventListener("pointerdown", event => {
+        if (!historyMenu.contains(event.target) && !menuTrigger?.contains(event.target)) closeHistoryMenu();
+      });
+      historySection.addEventListener("scroll", () => closeHistoryMenu(), {passive: true});
+      window.addEventListener("resize", () => closeHistoryMenu());
+
       function markActiveHistory() {
         historyList.querySelectorAll("[data-conversation]").forEach(button => {
           button.setAttribute("aria-current", String(button.dataset.conversation === conversationId));
-          button.disabled = busy;
+          button.disabled = busy || historyMutating.has(button.dataset.conversation);
+        });
+        historyList.querySelectorAll("[data-manage]").forEach(button => {
+          button.disabled = historyMutating.has(button.dataset.manage) || (busy && button.dataset.manage === conversationId);
         });
       }
-
+      function historyRow(item) {
+        const row = document.createElement("div");
+        row.className = "history-row";
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "history-item";
+        button.dataset.conversation = item.id;
+        const title = document.createElement("span");
+        title.className = "history-title";
+        if (item.is_pinned) {
+          const badge = document.createElement("span");
+          badge.className = "history-pin";
+          badge.textContent = "置顶";
+          title.append(badge);
+        }
+        title.append(document.createTextNode(item.title));
+        button.title = item.title;
+        const date = document.createElement("span");
+        date.className = "history-date";
+        date.textContent = item.updated_at.replace("T", " ").slice(0, 16);
+        button.append(title, date);
+        button.addEventListener("click", () => { if (!busy && !historyMutating.has(item.id)) openConversation(item.id); });
+        const more = document.createElement("button");
+        more.type = "button";
+        more.className = "history-dots";
+        more.textContent = "...";
+        more.dataset.manage = item.id;
+        more.setAttribute("aria-label", "管理对话：" + item.title);
+        more.setAttribute("aria-haspopup", "menu");
+        more.setAttribute("aria-controls", "historyMenu");
+        more.setAttribute("aria-expanded", "false");
+        more.addEventListener("mouseenter", () => showHistoryMenu(item, more));
+        more.addEventListener("mouseleave", postponeMenuClose);
+        more.addEventListener("click", event => showHistoryMenu(item, more, event.detail === 0));
+        more.addEventListener("keydown", event => {
+          if (event.key === "ArrowDown") { event.preventDefault(); showHistoryMenu(item, more, true); }
+        });
+        row.append(button, more);
+        return row;
+      }
+      async function manageHistory(item, action) {
+        closeHistoryMenu();
+        if (historyMutating.has(item.id) || (busy && item.id === conversationId)) return;
+        if (action === "delete" && !window.confirm("删除对话「" + item.title + "」？删除后将从历史列表移除，无法继续此对话。")) return;
+        historyMutating.add(item.id);
+        markActiveHistory();
+        historyStatus("正在更新…");
+        try {
+          const path = "/v1/conversations/" + encodeURIComponent(item.id);
+          const response = await fetch(path + (action === "pin" ? "/pin" : ""), action === "pin" ? {
+            method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({is_pinned: !item.is_pinned})
+          } : {method: "DELETE"});
+          if (!response.ok) throw new Error(response.status === 409 ? "该对话正在回复中，请回复结束后再操作。" : response.status === 404 ? "这段历史对话已不存在，请刷新列表。" : "操作失败，记录未更新，请稍后重试。");
+          if (action === "delete" && conversationId === item.id) resetConversation(false);
+          historyStatus(action === "delete" ? "已删除对话" : item.is_pinned ? "已取消置顶" : "已置顶");
+          await loadHistory();
+        } catch (error) { historyStatus(error.message); }
+        finally { historyMutating.delete(item.id); markActiveHistory(); }
+      }
       async function loadHistory(append = false) {
-        if (historyLoading) return [];
+        if (append && (historyLoading || !historyCursor)) return [];
+        historyAbort?.abort();
+        historyAbort = new AbortController();
+        const requestId = ++historyRequest;
         historyLoading = true;
         historyMore.disabled = true;
         try {
           const query = append && historyCursor ? "?before=" + encodeURIComponent(historyCursor) : "";
-          const response = await fetch("/v1/conversations" + query);
+          const response = await fetch("/v1/conversations" + query, {signal: historyAbort.signal});
           if (!response.ok) throw new Error("历史暂时无法加载，请稍后重试。");
           const data = await response.json();
-          if (!append) historyList.replaceChildren();
+          if (requestId !== historyRequest) return [];
+          closeHistoryMenu();
+          if (!append) { historyList.replaceChildren(); historySection.scrollTop = 0; }
+          const existing = new Set([...historyList.querySelectorAll("[data-conversation]")].map(button => button.dataset.conversation));
           for (const item of data.conversations) {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "history-item";
-            button.dataset.conversation = item.id;
-            const title = document.createElement("span");
-            title.className = "history-title";
-            title.textContent = item.title;
-            const date = document.createElement("span");
-            date.className = "history-date";
-            date.textContent = item.updated_at.replace("T", " ").slice(0, 16);
-            button.append(title, date);
-            button.addEventListener("click", () => { if (!busy) openConversation(item.id); });
-            historyList.append(button);
+            if (!existing.has(item.id)) { historyList.append(historyRow(item)); existing.add(item.id); }
           }
           if (!historyList.children.length) {
             const empty = document.createElement("span");
@@ -383,11 +537,10 @@
           markActiveHistory();
           return data.conversations;
         } catch (error) {
-          if (!append) historyList.textContent = error.message;
+          if (error.name !== "AbortError" && requestId === historyRequest) historyStatus(error.message);
           return [];
         } finally {
-          historyLoading = false;
-          historyMore.disabled = false;
+          if (requestId === historyRequest) { historyLoading = false; historyMore.disabled = false; }
         }
       }
       historyMore.addEventListener("click", () => loadHistory(true));
@@ -736,8 +889,8 @@
           sendMessage(input.value);
         }
       });
-      newChatButtons.forEach(button => button.addEventListener("click", () => {
-        if (busy) return;
+      function resetConversation(focus = true) {
+        closeHistoryMenu();
         conversationId = null;
         rememberConversation(null);
         toggleHistory(false);
@@ -749,8 +902,9 @@
         input.value = "";
         input.style.height = "auto";
         sendButton.disabled = true;
-        input.focus();
-      }));
+        if (focus) input.focus();
+      }
+      newChatButtons.forEach(button => button.addEventListener("click", () => { if (!busy) resetConversation(); }));
       document.querySelectorAll("[data-prompt]").forEach(button => {
         button.addEventListener("click", () => sendMessage(button.dataset.prompt));
       });

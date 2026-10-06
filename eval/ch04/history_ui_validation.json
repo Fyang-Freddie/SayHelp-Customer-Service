@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-06",
+  "browser": "Edge via Playwright 1.62.1",
+  "storage": "disposable MySQL",
+  "model": "local fake; no external API",
+  "checks": [
+    {
+      "case": "bounded_scroll_region",
+      "client": 287,
+      "scroll": 1890,
+      "bottom": 506.03125,
+      "shellBottom": 776
+    },
+    {
+      "case": "mouse_wheel",
+      "scrollTop": 1200
+    },
+    {
+      "case": "pagination",
+      "unique": 65
+    },
+    {
+      "case": "hover_pin_from_oldest",
+      "keepsActive": "65"
+    },
+    {
+      "case": "pin_persists_refresh"
+    },
+    {
+      "case": "keyboard_menu_and_escape"
+    },
+    {
+      "case": "unpin_restores_order"
+    },
+    {
+      "case": "cancel_delete_keeps_record"
+    },
+    {
+      "case": "delete_other_keeps_active",
+      "deleted": "作者界面验收对话 64"
+    },
+    {
+      "case": "failed_operation_keeps_row"
+    },
+    {
+      "case": "delete_active_resets_and_refreshes"
+    },
+    {
+      "case": "mobile_tap_pin"
+    },
+    {
+      "case": "small_screen_scroll",
+      "client": 282,
+      "scroll": 1917,
+      "bottom": 448.8125
+    },
+    {
+      "case": "active_generation_controls"
+    },
+    {
+      "case": "javascript_errors",
+      "count": 0
+    }
+  ]
+}
