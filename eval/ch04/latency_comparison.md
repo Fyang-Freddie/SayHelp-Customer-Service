@@ -45,3 +45,7 @@ node scripts/validate_ch04_citations.cjs
 ```
 
 第二条默认只重放标注改写并调用本地模型；显式添加 --include-generation 才调用配置的远程模型。浏览器脚本需Playwright及Edge，可用PLAYWRIGHT_MODULE指定现有安装路径。
+
+## 最终回归
+
+完整pytest：497 passed / 1 skipped（442.34秒）。唯一跳过为需空Milvus集合的旧恢复测试。真实MySQL/独立Milvus集合/缓存模型均参与验证；25项Edge界面检查通过，另以真实历史回答只读点击来源验证原文及高亮。
