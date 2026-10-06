@@ -128,3 +128,12 @@ def test_read_current_corpus_accepts_completed_new_version_with_retained_old_bui
     ch04_index.build_index(sessions,BuildEmbedder(),store,current)
     assert set(old.chunks)-set(current.chunks)
     assert ch04_ingest.read_current_corpus(sessions,manifest,store.collection_name)==current
+
+
+def test_empty_retrieval_never_invokes_reranker(sessions,corpus):
+    ingest,manifest,_=corpus;snapshot=ingest.ingest_corpus(sessions,manifest)
+    store=Store(snapshot);store.chunks=[]
+    class MustNotRun:
+        def rerank(self,*args,**kwargs): raise AssertionError('Empty retrieval must bypass inference')
+    result=api().RagRetrieval(sessions,Embedder(),store,MustNotRun(),snapshot).retrieve(PreparedQuery('问题','问题','问题'),'hybrid_rerank')
+    assert result.ranked==[] and result.candidates==[] and result.stage_hits['reranker']==[]

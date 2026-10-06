@@ -9,8 +9,15 @@ from app.knowledge_types import RetrievalResult,RankedChunk,StageHit,KnowledgeFi
 class IndexStaleError(RuntimeError): pass
 
 class RagRetrieval:
-    def __init__(self,session_factory,embedder,store,reranker,corpus):
+    def __init__(self,session_factory,embedder,store,reranker,corpus,*,diagnostics=True):
+        self.diagnostics=diagnostics
         self.session_factory=session_factory;self.embedder=embedder;self.store=store;self.reranker=reranker;self.corpus=corpus
+    def warmup(self):
+        """Load both local models before accepting the first customer request."""
+        self.embedder.encode(['知识查询'])
+        if self.corpus.chunks:
+            self.reranker.rerank('知识查询',[next(iter(self.corpus.chunks.values()))],limit=1)
+
     def retrieve(self,query,strategy,filters=None):
         if strategy not in {'dense','bm25','hybrid','hybrid_rerank'}: raise ValueError('Invalid retrieval strategy')
         filters=filters if filters is not None else KnowledgeFilters()
@@ -28,7 +35,7 @@ class RagRetrieval:
         timings['index_verification']=(perf_counter()-before)*1000
         if strategy!='bm25':
             before=perf_counter();vector=self.embedder.encode([query.search_text])[0];timings['embedding']=(perf_counter()-before)*1000
-        stored=self.store.retrieve(query,vector,strategy,filters)
+        stored=self.store.retrieve(query,vector,strategy,filters,**({} if self.diagnostics else {'diagnostics':False}))
         timings.update(stored.timings_ms)
         hits=stored.hits
         ids=[h.chunk_id for h in hits]
@@ -48,7 +55,7 @@ class RagRetrieval:
             candidates.append(RankedChunk(c,hit.rank,hit.score))
         ranked=candidates[:10];stages=dict(stored.stage_hits)
         if strategy=='hybrid_rerank':
-            before=perf_counter();ranked=self.reranker.rerank(query.standard_question,[i.chunk for i in candidates],limit=10)
+            before=perf_counter();ranked=self.reranker.rerank(query.standard_question,[i.chunk for i in candidates],limit=10) if candidates else []
             timings['reranker']=(perf_counter()-before)*1000
             stages['reranker']=[StageHit(i.chunk.id,i.rank,i.score,'reranker') for i in ranked]
         timings['retrieval_total']=(perf_counter()-started)*1000

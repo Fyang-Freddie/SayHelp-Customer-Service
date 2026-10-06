@@ -14,7 +14,9 @@ class RerankInputTooLongError(ValueError):
 
 
 class BgeReranker:
-    def __init__(self,cache_dir=None,*,model=None):
+    def __init__(self,cache_dir=None,*,model=None,batch_size=4):
+        if type(batch_size) is not int or not 1<=batch_size<=64: raise ValueError('Rerank batch size must be within [1,64]')
+        self.batch_size=batch_size
         self.cache_dir=cache_dir
         self._model=model
         self._lock=Lock()
@@ -46,7 +48,7 @@ class BgeReranker:
             for chunk,ids in zip(chunks,tokens,strict=True):
                 if len(ids)>maximum: raise RerankInputTooLongError(chunk,len(ids),maximum)
             try:
-                scores=model.predict(pairs,batch_size=8,activation_fn=torch.nn.Identity(),convert_to_numpy=True,show_progress_bar=False)
+                scores=model.predict(pairs,batch_size=self.batch_size,activation_fn=torch.nn.Identity(),convert_to_numpy=True,show_progress_bar=False)
             except Exception:
                 raise RuntimeError('重排推理暂时不可用，请稍后重试。') from None
             if len(scores)!=len(chunks): raise ValueError('Rerank score count differs from candidate count')

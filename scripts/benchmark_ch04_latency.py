@@ -37,7 +37,7 @@ async def measure(args):
         artifact=json.loads(Path(settings.knowledge_confidence_path).read_text(encoding='utf-8'))
         prepared={r['eval_id']:r['prepared_query'] for r in artifact['strategies']['hybrid_rerank']['samples']}
         policy=ConfidencePolicy.load(settings.knowledge_confidence_path,fingerprints(corpus,settings,ROOT/'eval/ch04/calibration.json'),settings.knowledge_confidence_overrides)
-        retrieval=RagRetrieval(sf,BgeM3Embedder(settings.bge_cache_dir),store,BgeReranker(settings.bge_cache_dir),corpus)
+        retrieval=RagRetrieval(sf,BgeM3Embedder(settings.bge_cache_dir),store,BgeReranker(settings.bge_cache_dir,batch_size=args.batch_size),corpus,diagnostics=args.diagnostics)
         if args.include_generation:
             from app.model_service import ModelService
             from app.query_understanding import QueryUnderstanding
@@ -67,7 +67,7 @@ async def measure(args):
                 rows.append(row)
                 print(json.dumps({k:row[k] for k in ('eval_id','cold','outcome','total_ms')},ensure_ascii=False),flush=True)
                 args.output.parent.mkdir(parents=True,exist_ok=True)
-                report={'mode':'live_model' if args.include_generation else 'local_prepared_replay','rows':rows,'limitations':['Read-only pipeline timing excludes HTTP, browser and persistence.','First case includes local model loading; other cases reuse model objects.','Four authored calibration cases are a diagnostic sample, not a full quality evaluation.'],'fingerprints':fingerprints(corpus,settings,ROOT/'eval/ch04/calibration.json')}
+                report={'mode':'live_model' if args.include_generation else 'local_prepared_replay','rows':rows,'batch_size':args.batch_size,'diagnostics':args.diagnostics,'limitations':['Read-only pipeline timing excludes HTTP, browser and persistence.','First case includes local model loading; other cases reuse model objects.','Four authored calibration cases are a diagnostic sample, not a full quality evaluation.'],'fingerprints':fingerprints(corpus,settings,ROOT/'eval/ch04/calibration.json')}
                 args.output.write_text(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False)+'\n',encoding='utf-8')
         return rows
     finally:
@@ -77,6 +77,8 @@ async def measure(args):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--include-generation',action='store_true')
+    parser.add_argument('--batch-size',type=int,default=4)
+    parser.add_argument('--diagnostics',action='store_true')
     parser.add_argument('--repeats',type=int,default=1)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()

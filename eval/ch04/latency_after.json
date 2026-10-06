@@ -1,0 +1,312 @@
+{
+  "mode": "live_model",
+  "rows": [
+    {
+      "eval_id": "K01",
+      "answerable": true,
+      "repeat": 0,
+      "cold": true,
+      "understanding_ms": 2094.348100014031,
+      "prepared_query": {
+        "raw_question": "运输破损最迟签收后多久需要联系平台？",
+        "standard_question": "运输破损最迟签收后多久需要联系平台？",
+        "search_text": "运输破损最迟签收后多久需要联系平台？\n运输破损\n签收后联系平台\n物流破损报备\n破损售后时限\n签收后多久反馈\n运输损坏处理时限\n联系平台时限\n破损处理时效",
+        "synonyms": [
+          "运输破损",
+          "签收后联系平台",
+          "物流破损报备",
+          "破损售后时限",
+          "签收后多久反馈",
+          "运输损坏处理时限",
+          "联系平台时限",
+          "破损处理时效"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "timings_ms": {
+        "index_verification": 760.3904000134207,
+        "embedding": 10783.775899995817,
+        "rrf_ms": 13.283800013596192,
+        "reranker": 6813.101500010816,
+        "retrieval_total": 18375.68560001091
+      },
+      "candidates": 9,
+      "ranked_ids": [
+        51,
+        50,
+        45,
+        46,
+        47,
+        49,
+        48,
+        53,
+        52
+      ],
+      "scores": [
+        4.974752426147461,
+        -4.771208763122559,
+        -4.978948593139648,
+        -6.596200942993164,
+        -6.809995651245117,
+        -7.196471691131592,
+        -7.76541805267334,
+        -8.55695629119873,
+        -10.07563304901123
+      ],
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=4.9747524, threshold=1.502292; 通过校准门槛"
+      },
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "generation_ms": 2121.906599990325,
+      "useful": true,
+      "answer": "商品运输途中破损的，请在签收后48小时内联系客服，并提供开箱视频与照片；核实后可免费补发或退款，相关运费由平台承担[1]。",
+      "outcome": "complete",
+      "total_ms": 22602.10449999431
+    },
+    {
+      "eval_id": "K03",
+      "answerable": true,
+      "repeat": 0,
+      "cold": false,
+      "understanding_ms": 1957.4149000109173,
+      "prepared_query": {
+        "raw_question": "MH-W20水泵能拆洗吗，平时建议多久清洗？",
+        "standard_question": "MH-W20水泵能拆洗吗？平时建议多久清洗一次？",
+        "search_text": "MH-W20水泵能拆洗吗？平时建议多久清洗一次？\nMH-W20水泵能拆洗吗，平时建议多久清洗？\nMH-W20\nMH-W20拆洗\n水泵拆洗\n水泵清洗\n拆开清洗\n清洗周期\n清洗频率\n维护清洗\n保养清洗",
+        "synonyms": [
+          "MH-W20拆洗",
+          "水泵拆洗",
+          "水泵清洗",
+          "拆开清洗",
+          "清洗周期",
+          "清洗频率",
+          "维护清洗",
+          "保养清洗"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [
+          "MH-W20"
+        ],
+        "preserved_numbers": [
+          "20"
+        ],
+        "preserved_negations": []
+      },
+      "timings_ms": {
+        "index_verification": 90.65480000572279,
+        "embedding": 813.318700005766,
+        "rrf_ms": 30.77589999884367,
+        "reranker": 3661.0376000171527,
+        "retrieval_total": 4635.797700000694
+      },
+      "candidates": 20,
+      "ranked_ids": [
+        36,
+        37,
+        38,
+        41,
+        14,
+        33,
+        35,
+        16,
+        17,
+        11
+      ],
+      "scores": [
+        6.385988235473633,
+        0.5419974327087402,
+        -1.7875136137008667,
+        -4.431789398193359,
+        -5.317230701446533,
+        -6.153749465942383,
+        -6.242067813873291,
+        -7.323902130126953,
+        -7.801755905151367,
+        -7.880664348602295
+      ],
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=6.3859882, threshold=1.502292; 通过校准门槛"
+      },
+      "recall_at_10": 1.0,
+      "mrr": 1.0,
+      "generation_ms": 1453.7976999999955,
+      "useful": true,
+      "answer": "MH-W20 的水泵可拆卸，建议每周清洗一次[1]。",
+      "outcome": "complete",
+      "total_ms": 8048.831199994311
+    },
+    {
+      "eval_id": "K07",
+      "answerable": false,
+      "repeat": 0,
+      "cold": false,
+      "understanding_ms": 1679.8598999739625,
+      "prepared_query": {
+        "raw_question": "平台是否有咖啡机蒸汽锅炉清洁手册？",
+        "standard_question": "平台是否提供咖啡机蒸汽锅炉清洁手册？",
+        "search_text": "平台是否提供咖啡机蒸汽锅炉清洁手册？\n平台是否有咖啡机蒸汽锅炉清洁手册？\n清洁手册\n清洗手册\n清洁指南\n清洗说明书\n保养手册\n清洁说明\n除垢手册\n维护手册",
+        "synonyms": [
+          "清洁手册",
+          "清洗手册",
+          "清洁指南",
+          "清洗说明书",
+          "保养手册",
+          "清洁说明",
+          "除垢手册",
+          "维护手册"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [],
+        "preserved_numbers": [],
+        "preserved_negations": []
+      },
+      "timings_ms": {
+        "index_verification": 121.61319999722764,
+        "embedding": 131.28390000201762,
+        "rrf_ms": 19.902699976228178,
+        "reranker": 5517.211700003827,
+        "retrieval_total": 5797.5303000130225
+      },
+      "candidates": 43,
+      "ranked_ids": [
+        17,
+        32,
+        16,
+        14,
+        18,
+        20,
+        12,
+        46,
+        49,
+        11
+      ],
+      "scores": [
+        -6.248663902282715,
+        -6.854741096496582,
+        -7.2543487548828125,
+        -8.070961952209473,
+        -8.406208038330078,
+        -8.460762977600098,
+        -8.53166675567627,
+        -8.664511680603027,
+        -8.73487663269043,
+        -8.773260116577148
+      ],
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-6.2486639, threshold=1.502292; 检索证据置信度低"
+      },
+      "recall_at_10": null,
+      "mrr": null,
+      "generation_ms": 0.01990000600926578,
+      "useful": false,
+      "answer": "现有知识库证据不足，无法确认这个问题。请补充具体型号或条件，或联系人工客服核实。",
+      "outcome": "complete",
+      "total_ms": 7479.290199989919
+    },
+    {
+      "eval_id": "K08",
+      "answerable": false,
+      "repeat": 0,
+      "cold": false,
+      "understanding_ms": 2070.2410000085365,
+      "prepared_query": {
+        "raw_question": "MH-JET999的最大飞行速度是多少？",
+        "standard_question": "MH-JET999的最大飞行速度是多少？",
+        "search_text": "MH-JET999的最大飞行速度是多少？\nMH-JET999\nMH-JET999最高飞行速度\nMH-JET999最大速度\nMH-JET999飞行速度\nMH-JET999极速\nMH-JET999速度参数\nMH-JET999最快速度",
+        "synonyms": [
+          "MH-JET999最高飞行速度",
+          "MH-JET999最大速度",
+          "MH-JET999飞行速度",
+          "MH-JET999极速",
+          "MH-JET999速度参数",
+          "MH-JET999最快速度"
+        ],
+        "intent": "knowledge",
+        "clarification": null,
+        "preserved_models": [
+          "MH-JET999"
+        ],
+        "preserved_numbers": [
+          "999"
+        ],
+        "preserved_negations": []
+      },
+      "timings_ms": {
+        "index_verification": 51.13420000998303,
+        "embedding": 122.03940001199953,
+        "rrf_ms": 15.698000002885237,
+        "reranker": 5346.921099990141,
+        "retrieval_total": 5541.714199993294
+      },
+      "candidates": 43,
+      "ranked_ids": [
+        44,
+        39,
+        43,
+        35,
+        33,
+        42,
+        14,
+        34,
+        13,
+        12
+      ],
+      "scores": [
+        -6.339262962341309,
+        -6.370163917541504,
+        -6.942601680755615,
+        -7.015666961669922,
+        -7.414000511169434,
+        -7.431056976318359,
+        -7.594993591308594,
+        -7.922046661376953,
+        -8.232213020324707,
+        -8.251733779907227
+      ],
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-6.339263, threshold=1.502292; 检索证据置信度低"
+      },
+      "recall_at_10": null,
+      "mrr": null,
+      "generation_ms": 0.016300007700920105,
+      "useful": false,
+      "answer": "现有知识库证据不足，无法确认这个问题。请补充具体型号或条件，或联系人工客服核实。",
+      "outcome": "complete",
+      "total_ms": 7613.293300004443
+    }
+  ],
+  "batch_size": 4,
+  "diagnostics": false,
+  "limitations": [
+    "Read-only pipeline timing excludes HTTP, browser and persistence.",
+    "First case includes local model loading; other cases reuse model objects.",
+    "Four authored calibration cases are a diagnostic sample, not a full quality evaluation."
+  ],
+  "fingerprints": {
+    "corpus_digest": "2ec492cefd17dac204b8ed00a4149a366e15117c2583db7026c06de3f75f175a",
+    "calibration_digest": "a2e1f1736048ca727e166781bf8d539d68b4210b67bcea13299da2e4f31e4c0c",
+    "embedding_model": "BAAI/bge-m3",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "query_model": "deepseek-v4-flash",
+    "prompt_digest": "39a8ad550981ad5335f40472d5a54b504a57477f96631128470244caef61571a",
+    "context_token_budget": 4096,
+    "response_token_reserve": 512,
+    "token_counter": "langchain approximate chars_per_token=1.0",
+    "dense_k": 50,
+    "bm25_k": 50,
+    "rrf_k": 60,
+    "generation_k": 10
+  }
+}

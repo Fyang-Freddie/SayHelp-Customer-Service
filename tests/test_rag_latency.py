@@ -54,3 +54,53 @@ def test_cancellation_records_incomplete_stage(sessions,corpus,caplog):
     with caplog.at_level(logging.INFO,logger='app.latency'): asyncio.run(run())
     payload=json.loads(next(r.message for r in caplog.records if r.name=='app.latency'))
     assert payload['outcome']=='cancelled' and payload['failed_stage']=='understanding'
+
+
+def test_concurrent_turns_keep_stage_measurements_separate(sessions,corpus):
+    chat,repo,cid,model,query,retrieval=service(sessions,corpus)
+    other=repo.create_conversation('guest')
+    original=query.prepare
+    async def prepare(raw):
+        if raw=='slow':await asyncio.sleep(.06)
+        return await original(raw)
+    query.prepare=prepare
+    async def run():
+        async def drain(id_,raw):return [e async for e in chat.stream_turn(id_,raw)]
+        return await asyncio.gather(drain(cid,'slow'),drain(other,'fast'))
+    slow,fast=asyncio.run(run())
+    a=next(e.data for e in slow if e.kind=='timings')
+    b=next(e.data for e in fast if e.kind=='timings')
+    assert a['timings_ms']['understanding']>=50
+    assert a['timings_ms']['understanding']>b['timings_ms']['understanding']
+    assert a is not b and a['outcome']==b['outcome']=='complete'
+
+
+@pytest.mark.parametrize('fails',[False,True])
+def test_owned_pipeline_warms_before_startup_and_closes_on_failure(monkeypatch,fails):
+    import app.main as main
+    from types import SimpleNamespace
+    from test_rag_chat import settings
+    calls=[]
+    class Store:
+        def __init__(self,**kwargs):pass
+        def close(self):calls.append('close')
+    class Retrieval:
+        def __init__(self,*args,**kwargs):assert kwargs['diagnostics'] is False
+        def warmup(self):
+            calls.append('warmup')
+            if fails:raise RuntimeError('unavailable')
+    monkeypatch.setattr(main,'read_current_corpus',lambda *a:object())
+    monkeypatch.setattr(main,'fingerprints',lambda *a:{})
+    monkeypatch.setattr(main.ConfidencePolicy,'load',lambda *a:object())
+    monkeypatch.setattr(main,'HybridMilvusStore',Store)
+    monkeypatch.setattr(main,'RagRetrieval',Retrieval)
+    app=main.create_app(settings(),model_service=object(),session_factory=object())
+    async def run():
+        async with app.router.lifespan_context(app):
+            assert calls==['warmup']
+            calls.append('ready')
+    if fails:
+        with pytest.raises(RuntimeError):asyncio.run(run())
+        assert calls==['warmup','close']
+    else:
+        asyncio.run(run());assert calls==['warmup','ready','close']

@@ -1,4 +1,5 @@
 """Customer service streaming HTTP API with persistent conversation storage."""
+import asyncio
 from collections.abc import AsyncIterator, Iterator
 from contextlib import aclosing, asynccontextmanager
 from pathlib import Path
@@ -61,7 +62,7 @@ def create_app(
             fingerprints(corpus, settings, ROOT / 'eval/ch04/calibration.json'), settings.knowledge_confidence_overrides)
         owned_store = HybridMilvusStore(uri=settings.milvus_uri, collection_name=settings.knowledge_collection)
         rag_retrieval = RagRetrieval(session_factory, BgeM3Embedder(cache_dir=settings.bge_cache_dir),
-                                    owned_store, BgeReranker(cache_dir=settings.bge_cache_dir), corpus)
+                                    owned_store, BgeReranker(cache_dir=settings.bge_cache_dir), corpus, diagnostics=False)
         query_understanding = QueryUnderstanding(model_service)
         rag_generator = RagGenerator(model_service)
     service = ChatService(repository, model_service, settings, knowledge_search,
@@ -73,6 +74,8 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         try:
+            if owned_store is not None:
+                await asyncio.to_thread(rag_retrieval.warmup)
             yield
         finally:
             try:

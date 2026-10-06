@@ -120,7 +120,7 @@ class HybridMilvusStore(MilvusKnowledgeStore):
         for start in range(0,len(ids),1000):
             self.client.delete(self.collection_name,ids=ids[start:start+1000])
 
-    def retrieve(self,query:PreparedQuery,vector,strategy,filters):
+    def retrieve(self,query:PreparedQuery,vector,strategy,filters,*,diagnostics=True):
         from pymilvus import AnnSearchRequest,RRFRanker
         if strategy not in {'dense','bm25','hybrid','hybrid_rerank'}:
             raise ValueError('Unknown retrieval strategy')
@@ -141,7 +141,8 @@ class HybridMilvusStore(MilvusKnowledgeStore):
                 id_=_id(hit['id']); score=float(hit['distance'])
                 if id_ in seen or not math.isfinite(score): raise ValueError('Milvus returned invalid hit')
                 seen.add(id_); hits.append(StageHit(id_,rank,score,stage))
-                entities[id_]={'id':id_,**dict(hit.get('entity',{}))}
+                # Diagnostic calls must not replace the native fused evidence snapshot.
+                entities.setdefault(id_,{'id':id_,**dict(hit.get('entity',{}))})
             stages[stage]=hits
             return hits
         if strategy in {'hybrid','hybrid_rerank'}:
@@ -149,7 +150,7 @@ class HybridMilvusStore(MilvusKnowledgeStore):
             fused=parse(self.client.hybrid_search(collection_name=self.collection_name,reqs=requests,ranker=RRFRanker(k=60),limit=50,output_fields=_OUTPUT,consistency_level='Strong'),'rrf')
             timings['rrf_ms']=(perf_counter()-start)*1000
         else: fused=None
-        for request in requests:
+        for request in requests if fused is None or diagnostics else []:
             stage='dense' if request.anns_field=='vector' else 'bm25'
             start=perf_counter()
             hits=parse(self.client.search(collection_name=self.collection_name,data=request.data,anns_field=request.anns_field,search_params=request.param,limit=50,filter=expr,filter_params=params,output_fields=_OUTPUT,consistency_level='Strong'),stage)

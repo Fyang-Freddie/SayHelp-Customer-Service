@@ -201,3 +201,20 @@ def test_root_preamble_may_have_empty_legacy_category():
     metadata={'category':'','product_category':'商品','content_type':'manual','source_digest':'a'*64}
     assert store.upsert(32,vector(),'商品规格手册\n以下是规格概览。',metadata)==32
     assert spy.calls[-1][1]['data'][0]['category']==''
+
+
+def test_online_hybrid_avoids_diagnostic_round_trips_and_keeps_fused_entities():
+    spy=Spy();store=store_class()('unused',client=spy)
+    query=PreparedQuery('型号','型号','型号')
+    result=store.retrieve(query,vector(),'hybrid_rerank',KnowledgeFilters(),diagnostics=False)
+    assert [name for name,_ in spy.calls]==['hybrid']
+    assert set(result.stage_hits)=={'rrf'}
+    assert result.entities[1]['text']=='native RRF'
+    assert result.hits[0].chunk_id==1 and result.hits[0].score==.03
+
+
+def test_diagnostics_never_overwrite_authoritative_fused_hit_payload():
+    spy=Spy();store=store_class()('unused',client=spy)
+    result=store.retrieve(PreparedQuery('x','x','x'),vector(),'hybrid',KnowledgeFilters())
+    assert result.entities[1]['text']=='native RRF'
+    assert set(result.stage_hits)=={'rrf','dense','bm25'}

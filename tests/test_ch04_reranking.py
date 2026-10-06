@@ -42,7 +42,7 @@ def test_all_fifty_candidates_are_scored_then_top_ten_stably_ranked():
     assert [r.rank for r in ranked]==list(range(1,11))
     pairs,kwargs=model.calls[0]
     assert pairs==[('原问题',index_text(c)) for c in candidates]
-    assert kwargs['batch_size']==8 and isinstance(kwargs['activation_fn'],torch.nn.Identity)
+    assert kwargs['batch_size']==4 and isinstance(kwargs['activation_fn'],torch.nn.Identity)
     assert kwargs['convert_to_numpy'] is True
 
 
@@ -104,3 +104,15 @@ def test_real_fixed_model_returns_ten_and_exact_model_over_nearby_variants():
     assert 'MH-LP50' in ranked[0].chunk.question
     assert '不含 App' in ranked[0].chunk.answer
     assert api().MODEL_ID=='BAAI/bge-reranker-v2-m3'
+
+
+def test_configurable_batch_scores_all_candidates_without_changing_mapping():
+    model=Model(scores=[2.,9.,1.])
+    ranked=api().BgeReranker(model=model,batch_size=4).rerank('问题',[chunk(1),chunk(2),chunk(3)])
+    assert [r.chunk.id for r in ranked]==[2,1,3]
+    assert model.calls[0][1]['batch_size']==4
+
+
+@pytest.mark.parametrize('batch',[0,-1,True,1.5,65])
+def test_invalid_batch_size_is_rejected_before_inference(batch):
+    with pytest.raises(ValueError):api().BgeReranker(model=Model(),batch_size=batch)

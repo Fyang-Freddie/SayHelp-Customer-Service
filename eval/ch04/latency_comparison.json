@@ -1,0 +1,36 @@
+{
+  "local_summary": {
+    "全部": {
+      "n": 12,
+      "before_ms": 4561.047649985994,
+      "after_ms": 3689.77489999088,
+      "reduction_percent": 19.10246980203747
+    },
+    "可回答": {
+      "n": 9,
+      "before_ms": 4348.668599996017,
+      "after_ms": 3595.2262000064366,
+      "reduction_percent": 17.32581783744732
+    },
+    "无答案": {
+      "n": 3,
+      "before_ms": 6261.978499998804,
+      "after_ms": 5390.964399994118,
+      "reduction_percent": 13.909567080194417
+    }
+  },
+  "unchanged_rankings": 12,
+  "max_score_delta": 1.8596649169921875e-05,
+  "sources": [
+    "latency_before.json",
+    "latency_after.json",
+    "latency_local_comparison.json",
+    "citations_ui_validation.json"
+  ],
+  "limitations": [
+    "small authored sample",
+    "pipeline timing excludes HTTP/browser/persistence",
+    "cold baseline probe overlap",
+    "remote rewrites and network can vary"
+  ]
+}
