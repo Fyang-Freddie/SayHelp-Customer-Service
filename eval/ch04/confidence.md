@@ -8,7 +8,7 @@ Native hybrid timing includes separately labelled dense/BM25 diagnostic calls.
 
 | strategy | threshold | positives | negatives | false accept | false reject |
 |---|---:|---:|---:|---:|---:|
-| dense | 0.66525036 | 8 | 4 | 0 | 0 |
-| bm25 | 45.290894 | 9 | 3 | 0 | 0 |
+| dense | 0.66634983 | 8 | 4 | 0 | 0 |
+| bm25 | 46.979824 | 9 | 3 | 0 | 0 |
 | hybrid | 0.032786883 | 9 | 3 | 0 | 9 |
 | hybrid_rerank | 2.1604438 | 9 | 3 | 0 | 0 |

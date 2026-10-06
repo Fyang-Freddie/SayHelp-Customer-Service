@@ -122,10 +122,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** `RagRetrieval.retrieve(query: PreparedQuery, strategy: RetrievalStrategy, filters: KnowledgeFilters) -> RetrievalResult`（同步，在线以 to_thread 调用）；`select_prompt_evidence(query, result, settings) -> PromptEvidence`；`ConfidencePolicy.assess(result) -> ConfidenceDecision(sufficient, reason)`；CLI `python -m app.calibrate_ch04 --dataset eval/ch04/calibration.json --output eval/ch04/confidence.json`。
 
-- [ ] **Step 1 — RED:** 四策略相同 PreparedQuery/filters；pure BM25 embedder zero calls；hybrid_rerank 必须将融合50交给 Task 5 返回10；MySQL hydration 保持名次且核验 text/metadata/digest，stale 行不作为证据。验证 10 条的 relevance_order 为 `[1,3,5,7,9,10,8,6,4,2]`，最终位置 n=1..10；budget 先剔除低相关完整 chunk，再重新排列编号；无完整条目能放下时证据不足。
-- [ ] **Step 2 — 实现:** 水合权威 MySQL 行并对比 Milvus text/过滤字段/source_digest 和当前清单；不匹配须报告索引陈旧，不能当正常低分。retrieval 返回阶段 rank/score，最多50候选、所有策略生成阶段最多10条。prompt 预算计入 system、完整问题/证据 JSON、reserve；不夹带历史知识事实。
-- [ ] **Step 3 — 校准样例验证:** 真 Milvus + 真 embedder/reranker，仅用独立12题为每策略本身分数尺度选择 top-1 门槛，dense取dense、bm25取bm25、hybrid取rrf、hybrid_rerank取reranker。候选阈值为校准观测分数和相邻中点，加全部接受/全部拒绝边界；正例需answerable且预算后证据完整覆盖gold，其他为负例。优先最少负例接受，再最少正例误拒，同分取更保守门槛。保存模型/语料/校准集 digest、逐样本分数与 false accept/false reject，报告小校准集局限；提供显式覆盖配置并记载。置信 artifact 缺失或指纹不符阻止正式切换，不用随意0.55/概率解释。
-- [ ] **Step 4 — GREEN/提交:** 两测试文件通过；annotated calibration 输出可复查实值，首尾 Prompt 用 MH-LP50/例外政策样例验证，提交 `feat: unify retrieval strategies and calibrate evidence confidence`。
+- [x] **Step 1 — RED:** 四策略相同 PreparedQuery/filters；pure BM25 embedder zero calls；hybrid_rerank 必须将融合50交给 Task 5 返回10；MySQL hydration 保持名次且核验 text/metadata/digest，stale 行不作为证据。验证 10 条的 relevance_order 为 `[1,3,5,7,9,10,8,6,4,2]`，最终位置 n=1..10；budget 先剔除低相关完整 chunk，再重新排列编号；无完整条目能放下时证据不足。
+- [x] **Step 2 — 实现:** 水合权威 MySQL 行并对比 Milvus text/过滤字段/source_digest 和当前清单；不匹配须报告索引陈旧，不能当正常低分。retrieval 返回阶段 rank/score，最多50候选、所有策略生成阶段最多10条。prompt 预算计入 system、完整问题/证据 JSON、reserve；不夹带历史知识事实。
+- [x] **Step 3 — 校准样例验证:** 真 Milvus + 真 embedder/reranker，仅用独立12题为每策略本身分数尺度选择 top-1 门槛，dense取dense、bm25取bm25、hybrid取rrf、hybrid_rerank取reranker。候选阈值为校准观测分数和相邻中点，加全部接受/全部拒绝边界；正例需answerable且预算后证据完整覆盖gold，其他为负例。优先最少负例接受，再最少正例误拒，同分取更保守门槛。保存模型/语料/校准集 digest、逐样本分数与 false accept/false reject，报告小校准集局限；提供显式覆盖配置并记载。置信 artifact 缺失或指纹不符阻止正式切换，不用随意0.55/概率解释。
+- [x] **Step 4 — GREEN/提交:** 两测试文件通过；annotated calibration 输出可复查实值，首尾 Prompt 用 MH-LP50/例外政策样例验证，提交 `feat: unify retrieval strategies and calibrate evidence confidence`。
 
 ### Task 7：生成 useful 自评、负面知识与引用门控
 

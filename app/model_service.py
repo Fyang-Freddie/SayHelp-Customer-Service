@@ -14,10 +14,13 @@ from app.schemas import AfterSalesExtraction
 
 class ModelService:
     def __init__(self, settings: Settings) -> None:
+        self._response_token_reserve = settings.response_token_reserve
         self._model = ChatOpenAI(
             base_url=settings.chat_base_url,
             model=settings.chat_model,
             api_key=settings.chat_api_key,
+            timeout=180,
+            max_retries=1,
         )
 
     async def choose_tool(self, messages: list[BaseMessage], tools: list[BaseTool]) -> AIMessage:
@@ -70,3 +73,25 @@ class ModelService:
             return QueryDecision.model_validate(json.loads(raw,parse_constant=reject_constant,object_pairs_hook=unique_keys))
         except (ValueError,TypeError):
             raise ValueError('Query understanding returned invalid structured JSON') from None
+
+
+    async def generate_knowledge(self, messages):
+        from app.rag_generation import GenerationDecision,GenerationFormatError
+        structured=self._model.with_structured_output(GenerationDecision,method='json_mode',include_raw=True,
+            temperature=0,max_tokens=self._response_token_reserve)
+        # Transport failures propagate, distinct from schema/parser failure.
+        result=await structured.ainvoke(messages)
+        try:
+            if result['parsing_error'] is not None: raise ValueError()
+            raw=result['raw'].content
+            if not isinstance(raw,str) or len(raw)>16000: raise ValueError()
+            def reject_constant(value): raise ValueError()
+            def unique_keys(items):
+                payload={}
+                for key,value in items:
+                    if key in payload: raise ValueError()
+                    payload[key]=value
+                return payload
+            return GenerationDecision.model_validate(json.loads(raw,parse_constant=reject_constant,object_pairs_hook=unique_keys))
+        except (ValueError,TypeError,KeyError,AttributeError):
+            raise GenerationFormatError('Knowledge generation returned invalid structured JSON') from None
