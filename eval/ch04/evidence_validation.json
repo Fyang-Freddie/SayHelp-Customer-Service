@@ -1,0 +1,289 @@
+{
+  "corpus_digest": "2ec492cefd17dac204b8ed00a4149a366e15117c2583db7026c06de3f75f175a",
+  "samples": [
+    {
+      "query": "MH-LP50能用App吗？",
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=2.768806, threshold=2.1604438; 通过校准门槛"
+      },
+      "relevance_order": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        10,
+        8,
+        6,
+        4,
+        2
+      ],
+      "prompt_tokens": 2885,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "34",
+          "section_path": "商品规格手册 / 智能猫砂盆 Lite(型号 MH-LP50)",
+          "question": "智能猫砂盆 Lite(型号 MH-LP50)",
+          "answer": "- 型号:MH-LP50\n- 适用猫咪体重:1.5kg 至 6kg\n- 猫砂容量:6L\n- 核心功能:自动感应清理、物理除臭盖板;不含 App 联网功能\n- 与 Pro 差异:Lite 无 App 远程监控与健康记录,价格更低,适合单猫家庭",
+          "source_file": "knowledge_db/product-specs.md",
+          "source_start_line": 16,
+          "source_end_line": 20,
+          "source_digest": "2653b12c566f4a84c403d947c8077bb837bb9ef3b5bceb9bd54d4b8e48f8764b",
+          "source_url": "/v1/knowledge/documents/product-specs.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "35",
+          "section_path": "商品规格手册 / 智能猫砂盆 Max(型号 MH-LP200)",
+          "question": "智能猫砂盆 Max(型号 MH-LP200)",
+          "answer": "- 型号:MH-LP200\n- 适用猫咪体重:2kg 至 12kg,适合大型猫与多猫家庭\n- 猫砂容量:12L,废砂盒容量约 10 天(单猫)\n- 核心功能:超大滚筒、双重称重防夹、活性炭除臭、App 多猫健康档案\n- 供电:220V 市电\n- 清理提示:多猫家庭建议每 3 至 5 天倾倒一次废砂盒",
+          "source_file": "knowledge_db/product-specs.md",
+          "source_start_line": 24,
+          "source_end_line": 29,
+          "source_digest": "2653b12c566f4a84c403d947c8077bb837bb9ef3b5bceb9bd54d4b8e48f8764b",
+          "source_url": "/v1/knowledge/documents/product-specs.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "14",
+          "section_path": "售后手册 / 常见故障自查",
+          "question": "常见故障自查",
+          "answer": "- 饮水机不出水:检查水位是否低于最低线、水泵是否卡阻,断电清洗水泵后重试。\n- 猫砂盆报错:清空废砂盒并检查滚筒是否卡砂,重启设备;仍报错联系售后。\n- 喂食器卡粮:检查粮食颗粒直径是否超 12mm、粮桶是否受潮结块,清理出粮口后重试。\n- 摄像头离线:确认 Wi-Fi 为 2.4G 频段、信号良好,重启设备或在 App 内重新配网。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 30,
+          "source_end_line": 33,
+          "source_digest": "48c1250f119356ca2a6a728498b9ce75b5fa4177c713925fa06f8ceff7d98eda",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "43",
+          "section_path": "商品规格手册 / 自动喂食器 摄像头版(型号 MH-FD30)",
+          "question": "自动喂食器 摄像头版(型号 MH-FD30)",
+          "answer": "- 型号:MH-FD30\n- 粮桶容量:6L\n- 核心功能:1080P 摄像头、双向语音、App 远程手动投喂与定时投喂\n- 供电:市电供电 + 内置应急电池\n- 说明:摄像头版支持视频回看,需连接 2.4G Wi-Fi",
+          "source_file": "knowledge_db/product-specs.md",
+          "source_start_line": 89,
+          "source_end_line": 93,
+          "source_digest": "2653b12c566f4a84c403d947c8077bb837bb9ef3b5bceb9bd54d4b8e48f8764b",
+          "source_url": "/v1/knowledge/documents/product-specs.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "44",
+          "section_path": "商品规格手册 / 全景看护摄像头(型号 MH-CAM1)",
+          "question": "全景看护摄像头(型号 MH-CAM1)",
+          "answer": "- 型号:MH-CAM1\n- 画质:2K 分辨率,355° 水平旋转、90° 俯仰\n- 核心功能:移动侦测报警、夜视、双向语音、逗猫激光\n- 存储:支持最大 128G TF 卡或云存储\n- 供电:Type-C 供电,需连接 2.4G Wi-Fi",
+          "source_file": "knowledge_db/product-specs.md",
+          "source_start_line": 97,
+          "source_end_line": 101,
+          "source_digest": "2653b12c566f4a84c403d947c8077bb837bb9ef3b5bceb9bd54d4b8e48f8764b",
+          "source_url": "/v1/knowledge/documents/product-specs.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "24",
+          "section_path": "商品与购物 FAQ / 支持哪些支付方式",
+          "question": "支持哪些支付方式",
+          "answer": "下单支持支付宝、微信支付与主流银行储蓄卡/信用卡在线支付。暂不支持线下汇款,支付遇到问题可重试或更换支付方式。",
+          "source_file": "knowledge_db/product-faq.md",
+          "source_start_line": 29,
+          "source_end_line": 29,
+          "source_digest": "d3bcbacd6311213b5e6bb9e4382a7e8a70c3d597c0b799b29e3463d8a60461de",
+          "source_url": "/v1/knowledge/documents/product-faq.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "38",
+          "section_path": "商品规格手册 / 自动饮水机 Pro 不锈钢(型号 MH-W60)",
+          "question": "自动饮水机 Pro 不锈钢(型号 MH-W60)",
+          "answer": "- 型号:MH-W60\n- 水箱容量:6L,304 不锈钢表面盘\n- 过滤:双滤芯并联,建议每 4 周更换一次滤芯\n- 核心功能:双泵冗余、无线水位提醒推送 App、缺水断电保护\n- 清洗:不锈钢面盘可高温消毒,建议每周清洗一次",
+          "source_file": "knowledge_db/product-specs.md",
+          "source_start_line": 49,
+          "source_end_line": 53,
+          "source_digest": "2653b12c566f4a84c403d947c8077bb837bb9ef3b5bceb9bd54d4b8e48f8764b",
+          "source_url": "/v1/knowledge/documents/product-specs.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "42",
+          "section_path": "商品规格手册 / 自动喂食器 基础版(型号 MH-FD10)",
+          "question": "自动喂食器 基础版(型号 MH-FD10)",
+          "answer": "- 型号:MH-FD10\n- 粮桶容量:4L\n- 核心功能:定时定量投喂,每日最多 6 餐,语音呼唤进食\n- 供电:市电供电 + 4 节 5 号电池断电应急\n- 说明:基础版不含摄像头与 App 远程投喂",
+          "source_file": "knowledge_db/product-specs.md",
+          "source_start_line": 81,
+          "source_end_line": 85,
+          "source_digest": "2653b12c566f4a84c403d947c8077bb837bb9ef3b5bceb9bd54d4b8e48f8764b",
+          "source_url": "/v1/knowledge/documents/product-specs.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "13",
+          "section_path": "售后手册 / 设备安装与激活",
+          "question": "设备安装与激活",
+          "answer": "智能设备首次使用需下载「喵喵优选」App,按说明书扫码添加设备并连接 2.4G Wi-Fi 完成激活;猫爬架等非联网商品按随附图解自行组装。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 26,
+          "source_end_line": 26,
+          "source_digest": "48c1250f119356ca2a6a728498b9ce75b5fa4177c713925fa06f8ceff7d98eda",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "33",
+          "section_path": "商品规格手册 / 智能猫砂盆 Pro(型号 MH-LP100)",
+          "question": "智能猫砂盆 Pro(型号 MH-LP100)",
+          "answer": "- 型号:MH-LP100\n- 适用猫咪体重:1.5kg 至 8kg\n- 猫砂容量:9L,废砂盒容量约 7 天(单猫)\n- 核心功能:自动感应清理、活性炭除臭、App 远程监控与健康记录\n- 供电:220V 市电,断电后配置自动保存\n- 清理提示:废砂盒满时 App 推送提醒,建议每 5 至 7 天倾倒一次",
+          "source_file": "knowledge_db/product-specs.md",
+          "source_start_line": 7,
+          "source_end_line": 12,
+          "source_digest": "2653b12c566f4a84c403d947c8077bb837bb9ef3b5bceb9bd54d4b8e48f8764b",
+          "source_url": "/v1/knowledge/documents/product-specs.md"
+        }
+      ]
+    },
+    {
+      "query": "非质量问题换货往返运费谁承担？",
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=6.2998676, threshold=2.1604438; 通过校准门槛"
+      },
+      "relevance_order": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        10,
+        8,
+        6,
+        4,
+        2
+      ],
+      "prompt_tokens": 2009,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "48",
+          "section_path": "退货退款政策 / 换货政策 / 换货运费",
+          "question": "换货运费",
+          "answer": "非质量问题的换货,往返运费由买家承担;因质量问题或发错货的换货,往返运费由平台承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 21,
+          "source_end_line": 21,
+          "source_digest": "cd99d5dd3f043936196d61fcc04d7411aa8eda2c31c76a6342d8ec69d9b19508",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "51",
+          "section_path": "退货退款政策 / 运输破损处理",
+          "question": "运输破损处理",
+          "answer": "商品运输途中破损的,请在签收后 48 小时内联系客服并提供开箱视频与照片,核实后可免费补发或退款,相关运费由平台承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 33,
+          "source_end_line": 33,
+          "source_digest": "cd99d5dd3f043936196d61fcc04d7411aa8eda2c31c76a6342d8ec69d9b19508",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "17",
+          "section_path": "售后手册 / 会员专属售后权益",
+          "question": "会员专属售后权益",
+          "answer": "金卡会员享优先客服接入与上门取件退换货;银卡会员享退换货运费权益 1 次/月。具体权益以会员中心页面标注为准。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 45,
+          "source_end_line": 45,
+          "source_digest": "48c1250f119356ca2a6a728498b9ce75b5fa4177c713925fa06f8ceff7d98eda",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "22",
+          "section_path": "商品与购物 FAQ / 运费怎么算",
+          "question": "运费怎么算",
+          "answer": "单笔订单满 99 元包邮,未满收取 10 元运费,偏远地区运费另计。邮费即运费,按此规则收取。",
+          "source_file": "knowledge_db/product-faq.md",
+          "source_start_line": 21,
+          "source_end_line": 21,
+          "source_digest": "d3bcbacd6311213b5e6bb9e4382a7e8a70c3d597c0b799b29e3463d8a60461de",
+          "source_url": "/v1/knowledge/documents/product-faq.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "20",
+          "section_path": "商品与购物 FAQ / 换货流程怎么走",
+          "question": "换货流程怎么走",
+          "answer": "收到商品 7 天内可申请换货,联系客服登记后将商品寄回,平台核验无误后补发新品。",
+          "source_file": "knowledge_db/product-faq.md",
+          "source_start_line": 13,
+          "source_end_line": 13,
+          "source_digest": "d3bcbacd6311213b5e6bb9e4382a7e8a70c3d597c0b799b29e3463d8a60461de",
+          "source_url": "/v1/knowledge/documents/product-faq.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "31",
+          "section_path": "商品与购物 FAQ / 会员运费权益",
+          "question": "会员运费权益",
+          "answer": "金卡会员每月享 3 次免运费权益,银卡会员享 1 次;权益不与偏远地区附加运费冲抵,当月未用完不结转。",
+          "source_file": "knowledge_db/product-faq.md",
+          "source_start_line": 57,
+          "source_end_line": 57,
+          "source_digest": "d3bcbacd6311213b5e6bb9e4382a7e8a70c3d597c0b799b29e3463d8a60461de",
+          "source_url": "/v1/knowledge/documents/product-faq.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "27",
+          "section_path": "商品与购物 FAQ / 配送范围与偏远地区",
+          "question": "配送范围与偏远地区",
+          "answer": "全国大部分地区支持配送,新疆、西藏、内蒙古等偏远地区运费另计且时效顺延;港澳台及海外暂不支持自营配送。",
+          "source_file": "knowledge_db/product-faq.md",
+          "source_start_line": 41,
+          "source_end_line": 41,
+          "source_digest": "d3bcbacd6311213b5e6bb9e4382a7e8a70c3d597c0b799b29e3463d8a60461de",
+          "source_url": "/v1/knowledge/documents/product-faq.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "52",
+          "section_path": "退货退款政策 / 不支持退货的商品",
+          "question": "不支持退货的商品",
+          "answer": "定制类、生鲜类、已拆封的猫砂等消耗品,以及标注「不支持无理由退货」的商品,非质量问题不支持退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 37,
+          "source_end_line": 37,
+          "source_digest": "cd99d5dd3f043936196d61fcc04d7411aa8eda2c31c76a6342d8ec69d9b19508",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "50",
+          "section_path": "退货退款政策 / 质量问题与保修",
+          "question": "质量问题与保修",
+          "answer": "电子类商品自签收起保修 12 个月,保修期内非人为损坏可申请免费维修或换货;人为损坏、超保商品维修可能收取工本费。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 29,
+          "source_end_line": 29,
+          "source_digest": "cd99d5dd3f043936196d61fcc04d7411aa8eda2c31c76a6342d8ec69d9b19508",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "49",
+          "section_path": "退货退款政策 / 退换货运费承担",
+          "question": "退换货运费承担",
+          "answer": "无理由退货的退回运费由买家承担;因商品质量问题、发错货、少发漏发导致的退换货,运费由平台承担。运费承担以平台售后规则最终判定为准。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 25,
+          "source_end_line": 25,
+          "source_digest": "cd99d5dd3f043936196d61fcc04d7411aa8eda2c31c76a6342d8ec69d9b19508",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ]
+    }
+  ]
+}
