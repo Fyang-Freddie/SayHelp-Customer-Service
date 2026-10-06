@@ -1,5 +1,5 @@
 {
-  "base_url": "http://127.0.0.1:8767/",
+  "base_url": "http://127.0.0.1:8001/",
   "read_only": true,
   "citation_buttons": 4,
   "excerpt_present": true,
