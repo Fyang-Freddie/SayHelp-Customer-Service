@@ -1,0 +1,9 @@
+{
+  "base_url": "http://127.0.0.1:8767/",
+  "read_only": true,
+  "citation_buttons": 4,
+  "excerpt_present": true,
+  "section_path_present": true,
+  "highlighted_lines": 1,
+  "javascript_errors": 0
+}
