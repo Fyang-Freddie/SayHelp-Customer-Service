@@ -77,10 +77,30 @@
       "passed": true
     },
     {
+      "name": "历史列表滚轮仍可浏览旧记录",
+      "passed": true
+    },
+    {
+      "name": "历史置顶仍可操作并排序",
+      "passed": true
+    },
+    {
+      "name": "取消置顶仍可操作",
+      "passed": true
+    },
+    {
+      "name": "删除确认取消不移除记录",
+      "passed": true
+    },
+    {
+      "name": "确认删除刷新历史列表",
+      "passed": true
+    },
+    {
       "name": "无JavaScript异常或外站请求",
       "passed": true
     }
   ],
-  "render_ms": 9,
+  "render_ms": 6,
   "scope": "Actual HTML in Edge with authored HTTP/SSE fixtures; no customer writes or model requests."
 }

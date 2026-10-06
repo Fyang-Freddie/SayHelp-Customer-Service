@@ -404,6 +404,9 @@ def test_app_lifespan_closes_owned_milvus_client(monkeypatch, sessions, initiali
         stores.append(store)
         return store
     monkeypatch.setattr('app.main.HybridMilvusStore', factory)
+    # This test owns client cleanup, not local model inference; startup warmup
+    # success/failure is covered separately in test_rag_latency.
+    monkeypatch.setattr('app.main.RagRetrieval.warmup', lambda self: None)
     monkeypatch.setattr('app.main.read_current_corpus', lambda *args: SimpleNamespace(corpus_digest='fixture'))
     monkeypatch.setattr('app.main.ConfidencePolicy.load', lambda *args: SimpleNamespace(assess=lambda r: None))
     app = create_app(settings(), FakeModel(), sessions)

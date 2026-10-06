@@ -10,12 +10,19 @@ const check=(name,value)=>{assert.ok(value,name);checks.push(name)};
 const text='# 文档\n第一段原文\n第二段原文\n末尾原文';
 const evidence=[1,3,10].map(n=>({n,chunk_id:String(n),question:'证据'+n,answer:'原文快照'+n+'<script>安全文本</script>',section_path:'手册 / 章节'+n,source_file:'knowledge_db/product-faq.md',source_url:'/v1/knowledge/documents/product-faq.md',source_start_line:2,source_end_line:3,source_digest:'same'}));
 let mode='current', documentCalls=[], foreignCalls=[], readyAt=0;
+let historyItems=Array.from({length:60},(_,i)=>({id:String(500+i),title:'历史样例'+i,is_pinned:false,updated_at:'2026-10-06T12:00:00'}));
 const body='按规则收取[1]，会员权益[3]，配送范围[10]，不存在[99]。'+ '已校验文字。'.repeat(120);
 const event=(name,data)=>'event: '+name+'\ndata: '+JSON.stringify(data)+'\n\n';
 const server=http.createServer((req,res)=>{
  const url=new URL(req.url,'http://localhost');
  if(url.pathname==='/'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync(path.join(__dirname,'../app/web/index.html')));return;}
- if(url.pathname==='/v1/conversations'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({conversations:mode==='current'||mode==='interrupted'?[]:[{id:'101',title:'验收会话',is_pinned:false,updated_at:'2026-10-06T12:00:00'}],next_cursor:null}));return;}
+ if(url.pathname==='/v1/conversations'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({conversations:mode==='history_many'?historyItems:mode==='current'||mode==='interrupted'?[]:[{id:'101',title:'验收会话',is_pinned:false,updated_at:'2026-10-06T12:00:00'}],next_cursor:null}));return;}
+ if(mode==='history_many' && req.method==='PATCH'){
+  const id=url.pathname.split('/')[3];let raw='';req.on('data',c=>raw+=c);req.on('end',()=>{const item=historyItems.find(i=>i.id===id);item.is_pinned=JSON.parse(raw).is_pinned;historyItems.sort((a,b)=>Number(b.is_pinned)-Number(a.is_pinned));res.setHeader('Content-Type','application/json');res.end(JSON.stringify(item))});return;
+ }
+ if(mode==='history_many' && req.method==='DELETE'){
+  const id=url.pathname.split('/')[3];historyItems=historyItems.filter(i=>i.id!==id);res.statusCode=204;res.end();return;
+ }
  if(url.pathname.endsWith('/messages')){
   let citations=structuredClone(evidence);
   if(mode==='unsafe')citations[0].source_url='https://example.invalid/steal';
@@ -77,6 +84,19 @@ const server=http.createServer((req,res)=>{
   check('窄屏来源弹窗可读且不横向越界',await page.locator('#sourceDialog').evaluate(e=>e.getBoundingClientRect().width<=innerWidth));await page.keyboard.press('Escape');
   mode='interrupted';await page.locator('#newChatTop').click();await page.locator('#messageInput').fill('中断测试');await page.locator('#sendButton').click();await page.getByText('连接提前中断，请重试。',{exact:true}).waitFor();
   check('中断响应不标记完成也不伪造可点击引用',await page.locator('.citation').count()===0);
+  mode='history_many';await page.setViewportSize({width:1280,height:850});await page.reload();await page.locator('.history-row').last().waitFor();
+  const history=page.locator('.history-section');await history.hover();await page.mouse.wheel(0,2000);
+  await page.waitForFunction(()=>document.querySelector('.history-section').scrollTop>0);
+  check('历史列表滚轮仍可浏览旧记录',await history.evaluate(e=>e.scrollTop>0));
+  const last=page.locator('.history-dots').last();await last.scrollIntoViewIfNeeded();await last.hover();
+  await page.getByRole('menuitem',{name:'置顶',exact:true}).click();await page.getByText('已置顶',{exact:true}).waitFor();
+  check('历史置顶仍可操作并排序',await page.locator('.history-pin').count()===1 && (await page.locator('.history-title').first().textContent()).includes('历史样例59'));
+  await page.locator('.history-dots').first().hover();await page.getByRole('menuitem',{name:'取消置顶',exact:true}).click();await page.getByText('已取消置顶',{exact:true}).waitFor();
+  check('取消置顶仍可操作',await page.locator('.history-pin').count()===0);
+  page.once('dialog',d=>d.dismiss());await page.locator('.history-dots').first().hover();await page.getByRole('menuitem',{name:'删除',exact:true}).click();
+  check('删除确认取消不移除记录',historyItems.length===60);
+  page.once('dialog',d=>d.accept());await page.locator('.history-dots').first().hover();await page.getByRole('menuitem',{name:'删除',exact:true}).click();await page.getByText('已删除对话',{exact:true}).waitFor();
+  check('确认删除刷新历史列表',historyItems.length===59 && await page.locator('.history-row').count()===59);
   check('无JavaScript异常或外站请求',errors.length===0&&foreignCalls.length===0);
   const output={checks:checks.map(name=>({name,passed:true})),render_ms:renderMs,scope:'Actual HTML in Edge with authored HTTP/SSE fixtures; no customer writes or model requests.'};
   fs.writeFileSync(path.join(__dirname,'../eval/ch04/citations_ui_validation.json'),JSON.stringify(output,null,2)+'\n');

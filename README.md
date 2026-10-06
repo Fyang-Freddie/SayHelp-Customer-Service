@@ -2,7 +2,7 @@
 
 `main` 已整合 ch01–ch04 各功能分支当前已有的代码。知识问答默认使用 Milvus 原生 BM25 与 dense 混合检索、RRF 融合、bge-reranker-v2-m3 重排和证据门控；业务工具、会话和消息保存在 MySQL。历史列表支持滚动、置顶/取消置顶和逻辑删除。
 
-**ch04 仍在开发中。** 已合并代码不表示整章验收完成：真实模型演示、完整四策略评估、编造个案台账流程，以及引用/满意度前端收尾仍以[实施计划](docs/superpowers/plans/2026-10-05-sayhelp-ch04-hybrid-rag.md)的未完成项为准。开发和验证记录见 [dev-notes/ch04.md](dev-notes/ch04.md)。
+**ch04 仍在开发中。** 已合并代码不表示整章验收完成：真实模型演示、完整四策略评估、编造个案台账流程，以及满意度前端收尾仍以[实施计划](docs/superpowers/plans/2026-10-05-sayhelp-ch04-hybrid-rag.md)的未完成项为准。开发和验证记录见 [dev-notes/ch04.md](dev-notes/ch04.md)。
 
 ## 启动
 
@@ -30,13 +30,13 @@ python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --w
 
 `app.init_ch04_db` 验证并补齐已有业务表及 [ch04 迁移](db/ch04_migration.sql)，知识索引读取 `knowledge_db` 中的真实文档，默认使用独立 `knowledge_ch04` 集合。`app.calibrate_ch04` 会调用配置的模型归一化标注问题并生成校准产物；换环境重新建库后需重新校准，不能直接把仓库中的既有运行快照视为通用结果。业务工具中的商品、订单、物流仍属于早期章节的演示实现。
 
-下面保留旧章节的来源展示、dense 检索及数据提取说明作历史参考；ch04 的 `citations` 事件前端适配仍见上述待办。
+下面保留旧章节的 dense 检索及数据提取说明作历史参考；当前聊天页已兼容 ch04 的 `citations` 和旧 `sources` 事件。
 
 打开 [聊天页](http://127.0.0.1:8000/)。例如询问“订单 1001 的物流到哪了”，等待气泡中的 `query_logistics` 徽章和流式回答。左侧“历史对话”显示 MySQL 中保存的会话，可点击恢复并继续聊天；手机上点击顶部“历史”。刷新页面恢复当前选中的会话；“新对话”开启空白会话，不删除旧记录。一次用户请求至多执行一个工具，不运行多轮 Agent Loop。
 
-知识库回答下方提供“来源原文”按钮，回答中的合法 `[n]` 也可点击。弹窗直接显示这次检索保存的知识片段；片段与 `knowledge_db/*.md` 的内容唯一精确对应时，同时显示完整 Markdown 文档、章节路径并高亮所在行。旧记录没有可靠文档对应关系时，只展示当时保存的片段并说明未关联文件，不猜原文路径。
+知识库回答下方提供“来源原文”按钮，回答中的合法 `[n]` 也可点击。弹窗直接显示这次检索保存的知识片段；ch04 记录通过来源文件、摘要及行范围显示完整 Markdown 文档、章节路径并高亮引用范围；原文更新后仍保留当次证据快照，并提示版本差异。旧记录没有可靠文档对应关系时，只展示当时保存的片段并说明未关联文件，不猜原文路径。
 
-历史与原文接口：`GET /v1/conversations?limit=30&before=不透明游标`、`GET /v1/conversations/{id}/messages`、`GET /v1/knowledge/documents/{filename}`。会话/消息 ID 使用十进制字符串；历史不会显示工具调用参数和模型内部草稿。来源通过新增 `sources` SSE 事件传给页面，原有 FAQ 工具契约不变。文档读取仅允许知识目录内的顶层 Markdown 文件。
+历史与原文接口：`GET /v1/conversations?limit=30&before=不透明游标`、`GET /v1/conversations/{id}/messages`、`GET /v1/knowledge/documents/{filename}`。会话/消息 ID 使用十进制字符串；历史不会显示工具调用参数和模型内部草稿。来源通过 `citations` SSE 事件传给页面，兼容旧 `sources`；`retrieval_status` 展示处理阶段，`timings` 提供不含原文的阶段耗时。文档读取仅允许知识目录内的顶层 Markdown 文件。
 
 验证本次界面修复（需 `.env` 中配置专用 `TEST_DATABASE_URL`）：
 
@@ -45,6 +45,30 @@ python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --w
 ```
 
 启动命令仍使用上方 `uvicorn` 命令；已经运行的旧服务需要重启后刷新页面才会提供新历史接口。2026-10-05 最终完整回归 **257 passed, 1 skipped**（真实 MySQL、缓存 BGE-M3；要求空临时 Milvus 的旧恢复测试未对现有知识库运行）。前端另以隔离浏览器验证历史恢复和桌面/手机来源展示；过程见 `dev-notes/ch04.md`。本次是历史/原文界面修复，第 4 章完整混合检索设计仍见设计草案。
+
+## ch04 本轮修复演示与耗时复现
+
+本机使用的页面为 [8001聊天页](http://127.0.0.1:8001/)。在根目录启动（端口已有服务时先停止旧进程，不要叠加启动）：
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001 --workers 1
+```
+
+等待 `Application startup complete`，再刷新页面。启动阶段会预热两个本地模型，第一次启动可能需要读取/下载模型；不调用远程聊天模型。在线检索保留两路 Top-50 和重排 Top-10，减少诊断请求并采用本机实测较快的重排批次。
+
+- 询问“运费怎么算？”或“MH-LP50是否有App远程监控和健康记录？”，点击回答中的 `[n]` 查看原文及章节路径；打开历史消息也可点击。
+- 询问“支持火星配送吗？”，应得到明确拒答；真实聊天的 useful=false 会按原有规则写低置信度池。
+- [耗时对比报告](eval/ch04/latency_comparison.md)：12道固定输入热检索中位数4.56→3.69秒；该样本不代表所有问题，远程模型与机器负载仍影响实际等待。
+
+```powershell
+# 只读本地模型及Milvus，不调用远程模型，不写聊天记录
+.\.venv\Scripts\python.exe scripts/compare_ch04_retrieval.py --output eval/ch04/latency_local_rerun.json
+.\.venv\Scripts\python.exe scripts/benchmark_ch04_latency.py --output eval/ch04/latency_replay.json
+# Edge + Playwright：自编HTTP/SSE夹具，不操作真实会话
+node scripts/validate_ch04_citations.cjs
+```
+
+只有给 benchmark 脚本显式添加 `--include-generation` 才会把4道标注测试题及对应证据发送给配置的模型服务。`PLAYWRIGHT_MODULE` 可指定已安装的 Playwright 模块路径。完整过程见 [ch04记录](dev-notes/ch04.md)。
 
 ## 三条验收样例
 

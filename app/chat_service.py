@@ -124,7 +124,8 @@ class ChatService:
                         timing.first_token_ms = (perf_counter() - timing.started) * 1000
                     if event.kind == 'completed':
                         outcome = 'complete'
-                        yield ChatEvent('timings', timing.payload(outcome))
+                        if self.query_understanding is not None:
+                            yield ChatEvent('timings', timing.payload(outcome))
                     yield event
         except asyncio.CancelledError:
             raise

@@ -9,7 +9,6 @@ import asyncio
 from dataclasses import asdict
 import json
 from pathlib import Path
-import statistics
 import sys
 from time import perf_counter
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -52,16 +51,17 @@ async def measure(args):
                     row['understanding_ms']=(perf_counter()-start)*1000
                     row['prepared_query']=asdict(query)
                     if query.intent!='knowledge':
-                        row.update(outcome=query.intent,total_ms=(perf_counter()-start)*1000);rows.append(row);continue
-                    result=await asyncio.to_thread(retrieval.retrieve,query,'hybrid_rerank',item.case.filters)
-                    prompt=select_prompt_evidence(query,result,settings)
-                    row.update(timings_ms=result.timings_ms,candidates=len(result.candidates),ranked_ids=[r.chunk.id for r in result.ranked],scores=[r.score for r in result.ranked],confidence=asdict(policy.assess(result)))
-                    row['recall_at_10']=len(set(item.gold_ids)&{r.chunk.id for r in result.ranked})/len(item.gold_ids) if item.gold_ids else None
-                    row['mrr']=next((1/r.rank for r in result.ranked if r.chunk.id in item.gold_ids),0) if item.gold_ids else None
-                    if args.include_generation:
-                        before=perf_counter();answer=await generator.generate(query,prompt,policy.assess(result))
-                        row.update(generation_ms=(perf_counter()-before)*1000,useful=answer.useful,answer=answer.answer)
-                    row.update(outcome='complete',total_ms=(perf_counter()-start)*1000)
+                        row.update(outcome=query.intent,total_ms=(perf_counter()-start)*1000)
+                    else:
+                        result=await asyncio.to_thread(retrieval.retrieve,query,'hybrid_rerank',item.case.filters)
+                        prompt=select_prompt_evidence(query,result,settings)
+                        row.update(timings_ms=result.timings_ms,candidates=len(result.candidates),ranked_ids=[r.chunk.id for r in result.ranked],scores=[r.score for r in result.ranked],confidence=asdict(policy.assess(result)))
+                        row['recall_at_10']=len(set(item.gold_ids)&{r.chunk.id for r in result.ranked})/len(item.gold_ids) if item.gold_ids else None
+                        row['mrr']=next((1/r.rank for r in result.ranked if r.chunk.id in item.gold_ids),0) if item.gold_ids else None
+                        if args.include_generation:
+                            before=perf_counter();answer=await generator.generate(query,prompt,policy.assess(result))
+                            row.update(generation_ms=(perf_counter()-before)*1000,useful=answer.useful,answer=answer.answer)
+                        row.update(outcome='complete',total_ms=(perf_counter()-start)*1000)
                 except Exception as error:
                     row.update(outcome='error',error_type=type(error).__name__,total_ms=(perf_counter()-start)*1000)
                 rows.append(row)
