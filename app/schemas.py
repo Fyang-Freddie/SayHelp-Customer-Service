@@ -1,5 +1,6 @@
 """HTTP request and after-sales extraction schemas."""
 from typing import Annotated, Literal
+from app.knowledge_types import KnowledgeFilters
 from pydantic import AfterValidator, BaseModel, StringConstraints
 
 NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -21,6 +22,7 @@ ConversationId = Annotated[
 class ChatRequest(BaseModel):
     message: NonEmptyText
     conversation_id: ConversationId | None = None
+    filters: KnowledgeFilters | None = None
 
 
 class ExtractRequest(BaseModel):

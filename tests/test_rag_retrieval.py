@@ -25,7 +25,10 @@ class Store:
     def __init__(self,snapshot):
         self.chunks=sorted(snapshot.chunks.values(),key=lambda c:(c.content_type!='manual',c.id))[:50]
         self.entities={c.id:{'id':c.id,'text':index_text(c),**index_metadata(c)} for c in self.chunks}
+        self.all_entities={c.id:{'id':c.id,'text':index_text(c),**index_metadata(c)} for c in snapshot.chunks.values()}
         self.calls=[]
+    def read_entities(self,ids=None):
+        return {**self.all_entities,**self.entities}
     def retrieve(self,query,vector,strategy,filters):
         self.calls.append((query,vector,strategy,filters))
         stage='rrf' if strategy in {'hybrid','hybrid_rerank'} else strategy

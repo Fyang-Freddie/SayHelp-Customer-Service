@@ -53,12 +53,14 @@ def execute(executor, name, args):
 def test_registry_and_pydantic_schemas():
     tools = build_tools(FakeRepository(), 123, knowledge_search=FakeKnowledgeSearch())
     expected = {'query_order': {'order_id'}, 'query_product': {'product_query'},
-                'query_logistics': {'order_id'}, 'query_faq': {'keyword'},
+                'query_logistics': {'order_id'}, 'query_faq': {'keyword', 'filters'},
                 'create_ticket': {'description', 'ticket_type'}}
     assert set(tools) == set(expected)
     for name, fields in expected.items():
         assert isinstance(tools[name], BaseTool)
         assert set(tools[name].args_schema.model_fields) == fields
+    assert tools['query_faq'].args_schema.model_validate({'keyword': '退货'}).filters is None
+    assert tools['query_faq'].args_schema.model_validate({'keyword': '退货', 'filters': {'product_category': '猫砂盆'}}).filters.product_category == '猫砂盆'
     schema = tools['create_ticket'].args_schema.model_json_schema()
     assert schema['properties']['ticket_type']['enum'] == ['售后', '投诉', '咨询']
     with pytest.raises(ValidationError):

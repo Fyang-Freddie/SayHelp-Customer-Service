@@ -63,7 +63,8 @@ def test_stream_emits_decimal_session_chunks_and_persists_final(sessions):
     cid = events[0][1]['conversation_id']
     assert isinstance(cid, str) and cid.isascii() and cid.isdecimal()
     assert events[1:3] == [('token', {'text': '你'}), ('token', {'text': '好'})]
-    assert events[-1] == ('done', {'conversation_id': cid})
+    assert events[-1][0] == 'done' and events[-1][1]['conversation_id'] == cid
+    assert events[-1][1]['message_id'] == str(Repository(sessions).load_messages(int(cid))[-1].id)
     repo = Repository(sessions)
     assert [(r.role, r.content) for r in repo.load_messages(int(cid))] == [('user', '你好'), ('assistant', '你好')]
     assert repo.get_conversation(int(cid)).user_id.startswith('guest-')
@@ -392,17 +393,19 @@ def test_faq_adds_sources_without_changing_tool_contract(sessions):
 def test_app_lifespan_closes_owned_milvus_client(monkeypatch, sessions, initialize):
     from types import SimpleNamespace
     import sys
-    from app.vector_store import MilvusKnowledgeStore
+    from app.hybrid_store import HybridMilvusStore
     closed, constructed, stores = [], [], []
     class Client:
         def __init__(self, **kwargs): constructed.append(self)
         def close(self): closed.append(self)
     monkeypatch.setitem(sys.modules, 'pymilvus', SimpleNamespace(MilvusClient=Client))
     def factory(**kwargs):
-        store = MilvusKnowledgeStore(**kwargs)
+        store = HybridMilvusStore(**kwargs)
         stores.append(store)
         return store
-    monkeypatch.setattr('app.main.MilvusKnowledgeStore', factory)
+    monkeypatch.setattr('app.main.HybridMilvusStore', factory)
+    monkeypatch.setattr('app.main.read_current_corpus', lambda *args: SimpleNamespace(corpus_digest='fixture'))
+    monkeypatch.setattr('app.main.ConfidencePolicy.load', lambda *args: SimpleNamespace(assess=lambda r: None))
     app = create_app(settings(), FakeModel(), sessions)
     assert len(stores) == 1 and constructed == []
     async def lifecycle():
@@ -420,7 +423,7 @@ def test_app_lifespan_does_not_close_injected_search(monkeypatch, sessions):
     class CallerSearch(FakeKnowledgeSearch):
         def close(self):
             raise AssertionError('Injected search remains caller owned')
-    monkeypatch.setattr('app.main.MilvusKnowledgeStore', lambda **kwargs: pytest.fail('Injected search must bypass client creation'))
+    monkeypatch.setattr('app.main.HybridMilvusStore', lambda **kwargs: pytest.fail('Injected search must bypass client creation'))
     app = create_app(settings(), FakeModel(), sessions, CallerSearch())
     async def lifecycle():
         async with app.router.lifespan_context(app):

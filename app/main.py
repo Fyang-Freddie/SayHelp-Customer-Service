@@ -18,7 +18,13 @@ from app.chat_views import public_messages, read_document
 from app.config import Settings
 from app.embedding import BgeM3Embedder
 from app.knowledge_search import KnowledgeSearch
-from app.vector_store import MilvusKnowledgeStore
+from app.hybrid_store import HybridMilvusStore
+from app.ch04_ingest import ROOT, DOCUMENTS, read_current_corpus
+from app.reranking import BgeReranker
+from app.rag_retrieval import RagRetrieval
+from app.rag_generation import RagGenerator
+from app.query_understanding import QueryUnderstanding
+from app.evaluation.calibration import ConfidencePolicy, fingerprints
 from app.db import make_session_factory
 from app.history import InputBudgetExceeded, prepare_context
 from app.model_service import ModelService
@@ -26,7 +32,7 @@ from app.prompts import render_service_system_prompt
 from app.repository import Repository
 from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest
 
-PreparedChat = tuple[int, str]
+PreparedChat = tuple[int, str, object]
 
 
 def create_app(
@@ -34,6 +40,7 @@ def create_app(
     model_service: ModelService | None = None,
     session_factory: sessionmaker[Session] | None = None,
     knowledge_search: KnowledgeSearch | None = None,
+    *, query_understanding=None, rag_retrieval=None, rag_generator=None, confidence_policy=None,
 ) -> FastAPI:
     settings = settings if settings is not None else Settings.from_env()
     owns_engine = session_factory is None
@@ -44,14 +51,22 @@ def create_app(
     model_service = model_service if model_service is not None else ModelService(settings)
     repository = Repository(session_factory)
     owned_store = None
-    if knowledge_search is None:
-        owned_store = MilvusKnowledgeStore(uri=settings.milvus_uri)
-        # Shared across turns; BGE weights and the Milvus client remain lazy.
-        knowledge_search = KnowledgeSearch(
-            session_factory, BgeM3Embedder(cache_dir=settings.bge_cache_dir),
-            owned_store,
-            min_score=settings.knowledge_min_score)
-    service = ChatService(repository, model_service, settings, knowledge_search)
+    pipeline = (query_understanding, rag_retrieval, rag_generator, confidence_policy)
+    if any(item is not None for item in pipeline) and any(item is None for item in pipeline):
+        raise ValueError('Inject all four evidence pipeline dependencies together')
+    if knowledge_search is None and all(item is None for item in pipeline):
+        # Exact SQL provenance and calibration are checked before accepting chats.
+        corpus = read_current_corpus(session_factory, ROOT / 'eval/ch04/corpus.json', settings.knowledge_collection)
+        confidence_policy = ConfidencePolicy.load(settings.knowledge_confidence_path,
+            fingerprints(corpus, settings, ROOT / 'eval/ch04/calibration.json'), settings.knowledge_confidence_overrides)
+        owned_store = HybridMilvusStore(uri=settings.milvus_uri, collection_name=settings.knowledge_collection)
+        rag_retrieval = RagRetrieval(session_factory, BgeM3Embedder(cache_dir=settings.bge_cache_dir),
+                                    owned_store, BgeReranker(cache_dir=settings.bge_cache_dir), corpus)
+        query_understanding = QueryUnderstanding(model_service)
+        rag_generator = RagGenerator(model_service)
+    service = ChatService(repository, model_service, settings, knowledge_search,
+        query_understanding=query_understanding, rag_retrieval=rag_retrieval,
+        rag_generator=rag_generator, confidence_policy=confidence_policy)
     active: set[int] = set()
     reservation_lock = RLock()
 
@@ -94,6 +109,8 @@ def create_app(
     @app.get('/v1/knowledge/documents/{filename}')
     def knowledge_document(filename: str) -> dict:
         try:
+            if 'knowledge_db/' + filename not in DOCUMENTS:
+                raise FileNotFoundError('Knowledge document not found')
             return read_document(filename)
         except (OSError, UnicodeError):
             raise HTTPException(status_code=404, detail='Knowledge document not found') from None
@@ -118,7 +135,7 @@ def create_app(
                 active.add(conversation_id)
                 reserved = True
             prepare_context(repository.load_messages(conversation_id), system, current, settings)
-            yield conversation_id, request.message
+            yield conversation_id, request.message, request.filters
         except InputBudgetExceeded:
             raise HTTPException(status_code=413, detail='Message exceeds input budget') from None
         except SQLAlchemyError:
@@ -134,17 +151,21 @@ def create_app(
     async def stream_chat(
         prepared: Annotated[PreparedChat, Depends(prepare_chat, scope='request')],
     ) -> AsyncIterator[ServerSentEvent]:
-        conversation_id, message = prepared
+        conversation_id, message, filters = prepared
+        message_id = None
         wire_id = str(conversation_id)
         yield ServerSentEvent(event='session', data={'conversation_id': wire_id})
         try:
-            async with aclosing(service.stream_turn(conversation_id, message)) as turn:
+            async with aclosing(service.stream_turn(conversation_id, message, filters)) as turn:
                 async for event in turn:
-                    yield ServerSentEvent(event=event.kind, data=event.data)
+                    if event.kind == 'completed':
+                        message_id = event.data['message_id']
+                    else:
+                        yield ServerSentEvent(event=event.kind, data=event.data)
         except Exception:
             yield ServerSentEvent(event='error', data={'message': 'Upstream chat failed'})
             return
-        yield ServerSentEvent(event='done', data={'conversation_id': wire_id})
+        yield ServerSentEvent(event='done', data={'conversation_id': wire_id, 'message_id': message_id})
 
     @app.post('/v1/aftersales/extract')
     async def extract_after_sales(request: ExtractRequest) -> AfterSalesExtraction:

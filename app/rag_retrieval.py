@@ -17,6 +17,15 @@ class RagRetrieval:
         try: verify_source_versions(self.corpus)
         except (OSError,RuntimeError): raise IndexStaleError('Corpus source changed; rebuild index') from None
         timings={};started=perf_counter();vector=None
+        before=perf_counter()
+        entities=self.store.read_entities()
+        if set(entities)!=set(self.corpus.chunks):
+            raise IndexStaleError('Indexed corpus missing or contains stale IDs; rebuild index')
+        for id_,chunk in self.corpus.chunks.items():
+            entity=entities[id_]
+            if entity.get('id')!=id_ or entity.get('text')!=index_text(chunk) or any(entity.get(k)!=v for k,v in index_metadata(chunk).items()):
+                raise IndexStaleError('Indexed corpus text or metadata changed; rebuild index')
+        timings['index_verification']=(perf_counter()-before)*1000
         if strategy!='bm25':
             before=perf_counter();vector=self.embedder.encode([query.search_text])[0];timings['embedding']=(perf_counter()-before)*1000
         stored=self.store.retrieve(query,vector,strategy,filters)

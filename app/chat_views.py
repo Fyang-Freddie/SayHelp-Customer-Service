@@ -76,7 +76,10 @@ def public_messages(rows) -> list[dict]:
                 sources = sources_from_tool(row.content)
             continue
         if row.role in ('user', 'assistant') and row.content:
+            snapshot = getattr(row, 'citations', None)
+            evidence = snapshot if snapshot is not None else sources
             result.append({'id': str(row.id), 'role': row.role, 'content': row.content,
                            'created_at': row.created_at.isoformat(),
-                           'sources': sources if row.role == 'assistant' else []})
+                           'sources': evidence if row.role == 'assistant' else [],
+                           'citations': snapshot if row.role == 'assistant' and snapshot is not None else []})
     return result

@@ -3,9 +3,11 @@
 from uuid import uuid4
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker, undefer
 
 from app.db import Conversation, Faq, Message, Ticket
+from app.ch04_db import LowConfidenceQuestion
+from app.knowledge_types import KnowledgeAnswer
 
 
 class Repository:
@@ -25,14 +27,31 @@ class Repository:
 
     def append_message(self, id: int, role: str, content: str | None,
                        tool_calls: list[dict] | None = None,
-                       tool_call_id: str | None = None) -> None:
+                       tool_call_id: str | None = None) -> str:
         with self.session_factory.begin() as session:
-            session.add(Message(conversation_id=id, role=role, content=content,
-                                tool_calls=tool_calls, tool_call_id=tool_call_id))
+            row = Message(conversation_id=id, role=role, content=content,
+                          tool_calls=tool_calls, tool_call_id=tool_call_id)
+            session.add(row)
+            session.flush()
+            message_id = str(row.id)
+        return message_id
+
+    def commit_knowledge_answer(self, conversation_id: int, answer: KnowledgeAnswer, raw_question: str) -> str:
+        if (answer.useful and answer.pool_source is not None) or (not answer.useful and answer.pool_source not in ('retrieval_low_conf', 'self_check')):
+            raise ValueError('Inconsistent knowledge answer and pool source')
+        with self.session_factory.begin() as session:
+            row = Message(conversation_id=conversation_id, role='assistant', content=answer.answer, citations=answer.citations)
+            session.add(row)
+            if not answer.useful:
+                session.add(LowConfidenceQuestion(conversation_id=conversation_id, raw_question=raw_question,
+                            source=answer.pool_source, reason=answer.reason))
+            session.flush()
+            message_id = str(row.id)
+        return message_id
 
     def load_messages(self, id: int) -> list[Message]:
         with self.session_factory() as session:
-            return list(session.scalars(select(Message).where(Message.conversation_id == id).order_by(Message.id)))
+            return list(session.scalars(select(Message).options(undefer(Message.citations)).where(Message.conversation_id == id).order_by(Message.id)))
 
     def list_conversations(self, *, limit: int = 30, before: int | None = None) -> dict:
         first_question = (select(Message.content).where(Message.conversation_id == Conversation.id,

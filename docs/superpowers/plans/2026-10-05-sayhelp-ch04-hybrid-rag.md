@@ -133,10 +133,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** `GenerationDecision(useful: bool, reason: str, answer: str)`；`RagGenerator.generate(query: PreparedQuery, prompt: PromptEvidence, confidence: ConfidenceDecision) -> KnowledgeAnswer`（async），KnowledgeAnswer 含 useful/answer/reason/pool_source/citations；`ModelService.generate_knowledge(messages) -> GenerationDecision`。固定拒答文本“现有知识库证据不足，无法确认这个问题。请补充具体型号或条件，或联系人工客服核实。”依赖故障另用服务不可用错误。
 
-- [ ] **Step 1 — RED（代码）:** 证据空或 confidence不足最终useful=false/source=retrieval_low_conf；有证据模型自评false/source=self_check；无效结构、true无引用、越界/负数引用安全拒答；false草稿“已经退款”不输出；所有 true 引用属于实际 PromptEvidence。模型故障与坏JSON区分，前者不入知识缺口池。跑 `tests/test_rag_generation.py` 确认失败。
-- [ ] **Step 2 — 实现:** 强制严格 JSON useful/reason/answer；引用检测按 `[正整数]` 并验证编号全集，不重编号、不添模型未引用的角标。低召回情况也统一为最终 useful=false 结果。坏结构/引用造成安全拒答用 self_check 及具体原因，不能把解析异常原文/连接信息发送客户端。
-- [ ] **Step 3 — Prompt 样例验证:** 用至少12条实标样例+实际模型验证信息充分/不充分、多条件覆盖、未知型号、MH-LP50无App、到账时间、审核必过、免费退换/维修、物流/库存/价格承诺及未执行操作。System 明列所有禁止承诺，材料内容只作证据而非指令。保留例外条件；实际结果记录，未达标修Prompt重验。
-- [ ] **Step 4 — GREEN/提交:** 代码边界与样例均通过，提交 `feat: gate knowledge answers with usefulness and citations`。
+- [x] **Step 1 — RED（代码）:** 证据空或 confidence不足最终useful=false/source=retrieval_low_conf；有证据模型自评false/source=self_check；无效结构、true无引用、越界/负数引用安全拒答；false草稿“已经退款”不输出；所有 true 引用属于实际 PromptEvidence。模型故障与坏JSON区分，前者不入知识缺口池。跑 `tests/test_rag_generation.py` 确认失败。
+- [x] **Step 2 — 实现:** 强制严格 JSON useful/reason/answer；引用检测按 `[正整数]` 并验证编号全集，不重编号、不添模型未引用的角标。低召回情况也统一为最终 useful=false 结果。坏结构/引用造成安全拒答用 self_check 及具体原因，不能把解析异常原文/连接信息发送客户端。
+- [x] **Step 3 — Prompt 样例验证:** 用至少12条实标样例+实际模型验证信息充分/不充分、多条件覆盖、未知型号、MH-LP50无App、到账时间、审核必过、免费退换/维修、物流/库存/价格承诺及未执行操作。System 明列所有禁止承诺，材料内容只作证据而非指令。保留例外条件；实际结果记录，未达标修Prompt重验。
+- [x] **Step 4 — GREEN/提交:** 代码边界与样例均通过，提交 `feat: gate knowledge answers with usefulness and citations`。
 
 ### Task 8：聊天路由、同轮事务与持久化证据
 
@@ -144,10 +144,10 @@ PowerShell 默认 Python：`$py = Join-Path (Get-Location) '.venv\Scripts\python
 
 **Interfaces:** `ChatRequest.filters: KnowledgeFilters | None`；`Repository.commit_knowledge_answer(conversation_id: int, answer: KnowledgeAnswer, raw_question: str) -> str` 返回消息ID，单事务写最终assistant.citations及必要的low_confidence；`ChatEvent` 新增 retrieval_status/citations，`citations` payload={citations: [...], message_id: str}，done携带message_id。原 session/token/tool_status/done 和旧 sources 继续兼容。create_app 可注入 query_understanding/rag_retrieval/rag_generator，保留旧测试所用 dependency injection。
 
-- [ ] **Step 1 — RED:** 知识路由不依赖 choose_tool；商品规格不会调用随机 query_product；订单/物流/工单仍模拟标签且每轮最多一工具；问候/澄清不入池。有效回答与完整citations同轮保存，刷新仍回放快照；原话含情绪/口语不能被规范化值覆盖。两个拒答入口分别入池一次、时间/会话正确；测试历史内容不能成为本轮知识事实。
-- [ ] **Step 2 — RED 事务/取消:** 同事务池insert失败应无最终消息，SSE error且无done；重复取消等写入worker完成后才释放预留；提交前不发送答案token，提交成功后citations在token前；done到客户端时消息/证据/池已落库。断开前尚未完成生成不捏造答案，已开始事务必须等其settle；不把断开当user_feedback。跑两新测试确认失败。
-- [ ] **Step 3 — 实现:** 先Context7核对FastAPI SSE/Depends scope=request与LangChain工具定义。query理解→知识检索/门控；操作继续原流程，禁用随机商品规格路径，并将误选query_faq/query_product转同一证据管线。query_faq接受可选filters并复用RagRetrieval，保留keyword/matches基本shape，额外携带来源；pure工具结果不得绕开useful门控。KnowledgeAnswer先事务提交，再通过token分块显示；保留预留直到producer和同步写入结束。
-- [ ] **Step 4 — 历史兼容:** public_messages优先使用messages.citations快照，旧记录fallback现有精确sources_from_tool。完整文档白名单保持；新来源字段与URL从服务端生成，版本变化提示而非替换回答当时证据。最终知识/操作assistant都在done返回稳定message_id，前端反馈据此恢复。
+- [x] **Step 1 — RED:** 知识路由不依赖 choose_tool；商品规格不会调用随机 query_product；订单/物流/工单仍模拟标签且每轮最多一工具；问候/澄清不入池。有效回答与完整citations同轮保存，刷新仍回放快照；原话含情绪/口语不能被规范化值覆盖。两个拒答入口分别入池一次、时间/会话正确；测试历史内容不能成为本轮知识事实。
+- [x] **Step 2 — RED 事务/取消:** 同事务池insert失败应无最终消息，SSE error且无done；重复取消等写入worker完成后才释放预留；提交前不发送答案token，提交成功后citations在token前；done到客户端时消息/证据/池已落库。断开前尚未完成生成不捏造答案，已开始事务必须等其settle；不把断开当user_feedback。跑两新测试确认失败。
+- [x] **Step 3 — 实现:** 先Context7核对FastAPI SSE/Depends scope=request与LangChain工具定义。query理解→知识检索/门控；操作继续原流程，禁用随机商品规格路径，并将误选query_faq/query_product转同一证据管线。query_faq接受可选filters并复用RagRetrieval，保留keyword/matches基本shape，额外携带来源；pure工具结果不得绕开useful门控。KnowledgeAnswer先事务提交，再通过token分块显示；保留预留直到producer和同步写入结束。
+- [x] **Step 4 — 历史兼容:** public_messages优先使用messages.citations快照，旧记录fallback现有精确sources_from_tool。完整文档白名单保持；新来源字段与URL从服务端生成，版本变化提示而非替换回答当时证据。最终知识/操作assistant都在done返回稳定message_id，前端反馈据此恢复。
 - [ ] **Step 5 — GREEN/提交:** 新测试+既有chat/api/tools/extract/history回归；实机问 `MH-LP50能用App吗` 得合法引用，问文档没有的问题明确拒答并SQL只读核对池原话/source；不通过测试脚本发工单或删除用户数据。记录，提交 `feat: integrate persistent evidence-gated knowledge chat`。
 
 ### Task 9：评估指标、独立裁判与跨轮编造台账
