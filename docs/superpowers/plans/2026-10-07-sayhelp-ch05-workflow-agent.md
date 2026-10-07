@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-07-sayhelp-ch05-workflow-agent-design.md`（2026-10-07 用户回复“同意”批准）。
 
-**Status:** 计划已编写，待用户审阅并选择执行方式；本文件没有授权开始实现。
+**Status:** 用户已选择 Subagent-driven 执行；任务 1 已评审通过，任务 2 从 2026-10-08 中断现场恢复。完成状态以本计划勾选和 SDD ledger 为准。
 
 ## Global Constraints
 
@@ -74,13 +74,13 @@
 - `run_bare_agent(messages: list, *, model: AgentModel, tools: dict, limits: AgentLimits, usage: Usage, emit: Emit) -> AgentResult`（async）。`AgentLimits` 默认 model_calls=6、tool_calls=6、turn_tokens=12000，工具超时继续复用现有 ToolExecutor 默认 8 秒/只读最多两次尝试。
 - `agent_step(state: WorkflowState, *, model, tools, limits, emit) -> dict`、`execute_calls(state: WorkflowState, *, tools, limits, emit) -> dict`、`stream_answer(state: WorkflowState, *, model, limits, emit) -> dict`（async）：裸循环和后续子图复用这些步骤。
 
-- [ ] 使用 Context7 核对 ChatOpenAI 的 bind_tools/usage 参数；新增离线适配测试模拟分片和使用量，真实模型能力探针留到任务 9 受控演示。
-- [ ] 写 `test_order_then_logistics_feeds_each_result`：脚本模型依次查订单、查物流、无工具终止；断言业务工具次数 2、第二次选择能看到订单结果、第三次能看到物流结果、最后调用 stream_reply 并逐片 emit token。最终流不绑定工具，选择阶段的 draft 不进入正文；另测先正文后工具调用只作为内部选择结果。
-- [ ] 写 `test_budget_reserves_final_generation`、`test_repeated_failures_stop`、`test_invalid_or_duplicate_ids_stop_before_execution`、`test_denies_ticket_even_if_model_requests_it`；断言 model_calls<=6、tool_calls<=6、估算/实测分开，累计含传入分类 usage，预算不足不再请求模型。ToolExecutor 内部重试也占实际执行计数；扩展可观察执行次数回调，不隐瞒重试成本。
-- [ ] Run `python -m pytest tests/test_agent_runtime.py -q`，先看到目标行为失败，记录 RED 原因。
-- [ ] 实现最小循环。Agent 无业务工具调用时结束决策循环，使用现有上下文进行一次无工具绑定的真实流式答复（计入 6 次上限）。裸演示清楚展示这个终止生成步骤，不将其称为免费调用。控制信号 `suggest_actions` 只更新建议，补匹配 ToolMessage，不做数据库写入、不计业务工具；单次控制建议后继续循环，重复控制建议受模型步数限制。
-- [ ] 缺信息时允许直接终止并追问，输入消息/工具结果保持配对；最终输出使用已有模拟数据与证据限制。演示 CLI：`python -m app.bare_agent --message "先查订单 1001 的订单状态，再查物流"`，通过已有配置构建工具，不启动业务写操作。
-- [ ] Run `python -m pytest tests/test_agent_runtime.py tests/test_tools.py tests/test_config_prompts.py -q`；通过后记录任务 1 结果并提交 `feat: add bounded bare agent loop`。工单旧语义尚未拆除时不启用线上 Agent 入口。
+- [x] 使用 Context7 核对 ChatOpenAI 的 bind_tools/usage 参数；新增离线适配测试模拟分片和使用量，真实模型能力探针留到任务 9 受控演示。
+- [x] 写 `test_order_then_logistics_feeds_each_result`：脚本模型依次查订单、查物流、无工具终止；断言业务工具次数 2、第二次选择能看到订单结果、第三次能看到物流结果、最后调用 stream_reply 并逐片 emit token。最终流不绑定工具，选择阶段的 draft 不进入正文；另测先正文后工具调用只作为内部选择结果。
+- [x] 写 `test_budget_reserves_final_generation`、`test_repeated_failures_stop`、`test_invalid_or_duplicate_ids_stop_before_execution`、`test_denies_ticket_even_if_model_requests_it`；断言 model_calls<=6、tool_calls<=6、估算/实测分开，累计含传入分类 usage，预算不足不再请求模型。ToolExecutor 内部重试也占实际执行计数；扩展可观察执行次数回调，不隐瞒重试成本。
+- [x] Run `python -m pytest tests/test_agent_runtime.py -q`，先看到目标行为失败，记录 RED 原因。
+- [x] 实现最小循环。Agent 无业务工具调用时结束决策循环，使用现有上下文进行一次无工具绑定的真实流式答复（计入 6 次上限）。裸演示清楚展示这个终止生成步骤，不将其称为免费调用。控制信号 `suggest_actions` 只更新建议，补匹配 ToolMessage，不做数据库写入、不计业务工具；单次控制建议后继续循环，重复控制建议受模型步数限制。
+- [x] 缺信息时允许直接终止并追问，输入消息/工具结果保持配对；最终输出使用已有模拟数据与证据限制。演示 CLI：`python -m app.bare_agent --message "先查订单 1001 的订单状态，再查物流"`，通过已有配置构建工具，不启动业务写操作。
+- [x] Run `python -m pytest tests/test_agent_runtime.py tests/test_tools.py tests/test_config_prompts.py -q`；通过后记录任务 1 结果并提交 `feat: add bounded bare agent loop`。工单旧语义尚未拆除时不启用线上 Agent 入口。
 
 ## Task 2: 七类 JSON 意图识别与固定路由
 
@@ -88,11 +88,11 @@
 
 **Interfaces:** `IntentDecision(intent: Literal['物流','订单','商品咨询','退款退货','售后','投诉','闲聊'])` 严格结构；`ModelService.classify_intent(text: str) -> AIMessage`（async，单次模型请求，包含原始 JSON 与 usage）；`classify_intent(text: str, *, model: ModelService) -> tuple[IntentDecision, Usage]`（async，校验上一接口输出）；`route_intent(intent: str) -> Literal['knowledge','business','complaint','chitchat']`；`resolve_reference(text: str) -> str` 原样返回。
 
-- [ ] 写固定路由与 JSON 解析失败测试：七类逐项映射、额外字段/非枚举/重复键/无效 JSON 被拒绝、透传不改数字/否定。Run `python -m pytest tests/test_intent.py -q` 观察 RED。
-- [ ] 实现解析及固定映射，分类只请求一次，不调用旧 QueryUnderstanding；失败作为显式分类错误，不默认为业务类。
-- [ ] 编写至少 35 条标注样例（每类至少 5 条），覆盖退款与泛售后、订单号与物流、明确投诉、问候；另设 7 条边界样例单列报告。标签先写，之后才能运行模型。
-- [ ] 纯 prompt 部分按用户要求运行评估代替 TDD：`python scripts/evaluate_ch05.py --suite intent --output eval/ch05/intent_results.json`。验收核心 35 条至少 33 条正确，物流验收句/投诉/纯问候/退款强制路径样例必须全部正确；每条保存预期、预测、调用次数、是否成功，不写原始推理。
-- [ ] 失败时按误判原因修改 prompt 后复测，保留首轮报告；达到标准后 Run `python -m pytest tests/test_intent.py -q`，即时记录并提交 `feat: add seven-intent deterministic routing`。真实评估依赖不可用则明确阻塞，不用 mock 结果顶替。
+- [x] 写固定路由与 JSON 解析失败测试：七类逐项映射、额外字段/非枚举/重复键/无效 JSON 被拒绝、透传不改数字/否定。Run `python -m pytest tests/test_intent.py -q` 观察 RED。
+- [x] 实现解析及固定映射，分类只请求一次，不调用旧 QueryUnderstanding；失败作为显式分类错误，不默认为业务类。
+- [x] 编写至少 35 条标注样例（每类至少 5 条），覆盖退款与泛售后、订单号与物流、明确投诉、问候；另设 7 条边界样例单列报告。标签先写，之后才能运行模型。
+- [x] 纯 prompt 部分按用户要求运行评估代替 TDD：`python scripts/evaluate_ch05.py --suite intent --output eval/ch05/intent_results.json`。验收核心 35 条至少 33 条正确，物流验收句/投诉/纯问候/退款强制路径样例必须全部正确；每条保存预期、预测、调用次数、是否成功，不写原始推理。
+- [x] 失败时按误判原因修改 prompt 后复测，保留首轮报告；达到标准后 Run `python -m pytest tests/test_intent.py -q`，即时记录并提交 `feat: add seven-intent deterministic routing`。真实评估依赖不可用则明确阻塞，不用 mock 结果顶替。
 
 ## Task 3: 复用 RAG 的前置闸与弱证据记录
 
