@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-07-sayhelp-ch05-workflow-agent-design.md`（2026-10-07 用户回复“同意”批准）。
 
-**Status:** 用户已选择 Subagent-driven 执行；任务 1–3 已评审通过，继续任务 4。完成状态以本计划勾选和 SDD ledger 为准。
+**Status:** 用户已选择 Subagent-driven 执行；任务 1–4 已评审通过，继续任务 5。完成状态以本计划勾选和 SDD ledger 为准。
 
 ## Global Constraints
 
@@ -114,11 +114,11 @@
 - `WorkflowRepository.append_message_once(conversation_id: int, turn_id: str, position: int, role: str, content: str | None, *, tool_calls=None, tool_call_id=None) -> str`；`commit_reply(conversation_id: int, turn_id: str, position: int, answer: str, citations: list, suggestions: list[ActionSuggestion]) -> tuple[str, list[dict]]`；`load_actions(conversation_id: int) -> dict[str, list[dict]]`；`set_turn_status(turn_id: str, status: str) -> None`。
 - 原 `Repository.create_ticket` 增加仅服务端可传的 keyword-only `request_key: str | None = None`；`build_tools` 增加 `ticket_request_key: str | None = None` 闭包参数，保持模型可见 TicketInput 不变。工具仍是原 create_ticket。
 
-- [ ] 写独立 MySQL 测试：历史位置重复写返回同一个消息 ID；同一位置不同载荷报冲突；reply 与建议同事务；同一 request_key 重复/并发确认返回同一 ticket_no，改载荷冲突。断言创建工单后 conversation.status 仍为原状态，不出现“已转人工”成功文案。
-- [ ] Run `python -m pytest tests/test_ch05_db.py tests/test_workflow_repository.py tests/test_tools.py -q` 观察 RED。
-- [ ] 实现明确可重跑的新增表初始化 `python -m app.init_ch05_db`，先检查现有 ch04 schema；部分/错误 schema 报错，不丢表重建。工单去重记录与 tickets 插入在同一 MySQL 事务完成，唯一冲突后按数据库提交结果读取，不把失败事务继续当可用会话。description、ticket_type 同 request_key 的摘要必须一致。
-- [ ] 原 Repository 方法移除 conversation.status='已转人工'；原工具成功文案改为“已创建工单，等待处理”。测试夹具的函数签名按可选参数兼容，不篡改工具业务。
-- [ ] 写故障注入：消息已写后再次调用不重复，数据库失败无半条建议，已删除会话拒绝写入。Run 上述测试加 `tests/test_db.py tests/test_ch04_db.py`；核对新初始化与旧 DDL 测试均可共存，记录并提交 `feat: persist idempotent workflow messages and tickets`。
+- [x] 写独立 MySQL 测试：历史位置重复写返回同一个消息 ID；同一位置不同载荷报冲突；reply 与建议同事务；同一 request_key 重复/并发确认返回同一 ticket_no，改载荷冲突。断言创建工单后 conversation.status 仍为原状态，不出现“已转人工”成功文案。
+- [x] Run `python -m pytest tests/test_ch05_db.py tests/test_workflow_repository.py tests/test_tools.py -q` 观察 RED。
+- [x] 实现明确可重跑的新增表初始化 `python -m app.init_ch05_db`，先检查现有 ch04 schema；部分/错误 schema 报错，不丢表重建。工单去重记录与 tickets 插入在同一 MySQL 事务完成，唯一冲突后按数据库提交结果读取，不把失败事务继续当可用会话。description、ticket_type 同 request_key 的摘要必须一致。
+- [x] 原 Repository 方法移除 conversation.status='已转人工'；原工具成功文案改为“已创建工单，等待处理”。测试夹具的函数签名按可选参数兼容，不篡改工具业务。
+- [x] 写故障注入：消息已写后再次调用不重复，数据库失败无半条建议，已删除会话拒绝写入。Run 上述测试加 `tests/test_db.py tests/test_ch04_db.py`；核对新初始化与旧 DDL 测试均可共存，记录并提交 `feat: persist idempotent workflow messages and tickets`。
 
 ## Task 5: StateGraph 固定骨架、Agent 子图与 SQLite
 
