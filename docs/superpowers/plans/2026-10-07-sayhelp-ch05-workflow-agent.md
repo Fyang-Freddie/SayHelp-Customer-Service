@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-07-sayhelp-ch05-workflow-agent-design.md`（2026-10-07 用户回复“同意”批准）。
 
-**Status:** 用户已选择 Subagent-driven 执行；任务 1–4 已评审通过，继续任务 5。完成状态以本计划勾选和 SDD ledger 为准。
+**Status:** 用户已选择 Subagent-driven 执行；任务 1–5 已评审通过，继续任务 6。完成状态以本计划勾选和 SDD ledger 为准。
 
 ## Global Constraints
 
@@ -126,12 +126,12 @@
 
 **Interfaces:** `build_workflow(*, model: AgentModel, classifier, knowledge_gate: KnowledgeGate, tools_factory, limits: AgentLimits, log: WorkflowLog, checkpointer) -> CompiledStateGraph`；classifier 为 `Callable[[str], Awaitable[tuple[IntentDecision, Usage]]]`，tools_factory 为 `Callable[[int], dict]`，只能产出任务 1 的允许工具。Agent 子图复用任务 1 三个步骤。父图中显式 `resolve_reference -> classify_intent -> route`，知识 `retrieve -> confidence_gate -> agent/fallback`，其余按固定表，所有正常结束路径汇合 `log_turn`。
 
-- [ ] Context7 定向确认 SQLite `from_conn_string`、生命周期及父图/子图 API；安装前 dry-run 固定依赖解析结果，记录版本。安装到隔离虚拟环境，用 `inspect.signature` 核对文档并做最小临时文件检查点探针；不使用 v3/beta 接口。本地签名不符先纠正规划中的调用形式，语义变更须回报用户。
-- [ ] 写路径测试：七类分别断言 node trace、模型/检索/工具调用次数，弱证据 agent_calls=0、闲聊仅分类一次、投诉返回两个建议。Run `python -m pytest tests/test_workflow_graph.py -q` 观察 RED。
-- [ ] 实现 State 与子图，子图 `.compile()` 继承父 checkpointer，不自建 MemorySaver；工具执行和模型节点独立。轮次开始显式清空 evidence/citations/suggestions/budgets；步数上限与递归保险分别生效，工具错误不能导致无穷循环。
-- [ ] 写真实 SQLite 临时文件测试：关闭 saver 后重新创建图，用同 thread_id 恢复完成消息；另一 thread_id 无历史；父/子图 checkpoint 实际存在；新的普通聊天不继承上一轮投诉建议。Run `python -m pytest tests/test_workflow_checkpoint.py -q`，观察失败再实现生命周期适配。
-- [ ] 配置 `WORKFLOW_CHECKPOINT_PATH=.runtime/ch05/checkpoints.sqlite`、`AGENT_MAX_MODEL_CALLS=6`、`AGENT_MAX_TOOL_CALLS=6`、`AGENT_TURN_TOKEN_BUDGET=12000`；忽略整个 `.runtime/`。对数字正数与预算关系验证，不加入其他数据库。
-- [ ] Run `python -m pytest tests/test_workflow_graph.py tests/test_workflow_checkpoint.py tests/test_agent_runtime.py -q` 和 `python -m pip check`，记录并提交 `feat: orchestrate customer service with persistent LangGraph`。
+- [x] Context7 定向确认 SQLite `from_conn_string`、生命周期及父图/子图 API；安装前 dry-run 固定依赖解析结果，记录版本。安装到隔离虚拟环境，用 `inspect.signature` 核对文档并做最小临时文件检查点探针；不使用 v3/beta 接口。本地签名不符先纠正规划中的调用形式，语义变更须回报用户。
+- [x] 写路径测试：七类分别断言 node trace、模型/检索/工具调用次数，弱证据 agent_calls=0、闲聊仅分类一次、投诉返回两个建议。Run `python -m pytest tests/test_workflow_graph.py -q` 观察 RED。
+- [x] 实现 State 与子图，子图 `.compile()` 继承父 checkpointer，不自建 MemorySaver；工具执行和模型节点独立。轮次开始显式清空 evidence/citations/suggestions/budgets；步数上限与递归保险分别生效，工具错误不能导致无穷循环。
+- [x] 写真实 SQLite 临时文件测试：关闭 saver 后重新创建图，用同 thread_id 恢复完成消息；另一 thread_id 无历史；父/子图 checkpoint 实际存在；新的普通聊天不继承上一轮投诉建议。Run `python -m pytest tests/test_workflow_checkpoint.py -q`，观察失败再实现生命周期适配。
+- [x] 配置 `WORKFLOW_CHECKPOINT_PATH=.runtime/ch05/checkpoints.sqlite`、`AGENT_MAX_MODEL_CALLS=6`、`AGENT_MAX_TOOL_CALLS=6`、`AGENT_TURN_TOKEN_BUDGET=12000`；忽略整个 `.runtime/`。对数字正数与预算关系验证，不加入其他数据库。
+- [x] Run `python -m pytest tests/test_workflow_graph.py tests/test_workflow_checkpoint.py tests/test_agent_runtime.py -q` 和 `python -m pip check`，记录并提交 `feat: orchestrate customer service with persistent LangGraph`。
 
 ## Task 6: 接入聊天 SSE、历史与取消恢复
 
