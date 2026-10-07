@@ -3,7 +3,7 @@
 from collections.abc import AsyncIterator
 import json
 
-from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 
@@ -22,6 +22,18 @@ class ModelService:
             timeout=180,
             max_retries=1,
         )
+
+    async def select(self, messages: list, tools: list, *, max_tokens: int) -> AIMessage:
+        """Chapter 5 internal selection, with a per-request output budget."""
+        selection = await self._model.bind_tools(tools).ainvoke(messages, max_tokens=max_tokens)
+        if not isinstance(selection, AIMessage):
+            raise TypeError("Tool selection must return an AIMessage")
+        return selection
+
+    async def stream_reply(self, messages: list, *, max_tokens: int) -> AsyncIterator[AIMessageChunk]:
+        """Unbound terminal generation retaining provider usage chunks."""
+        async for chunk in self._model.astream(messages, max_tokens=max_tokens, stream_usage=True):
+            yield chunk
 
     async def choose_tool(self, messages: list[BaseMessage], tools: list[BaseTool]) -> AIMessage:
         """Make one async selection request, leaving the final model unbound."""

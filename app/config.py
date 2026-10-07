@@ -16,6 +16,9 @@ class Settings:
     chat_model: str
     chat_api_key: str = field(repr=False)
     database_url: str | None = field(default=None, repr=False)
+    agent_model_calls: int = 6
+    agent_tool_calls: int = 6
+    agent_turn_tokens: int = 12000
     context_token_budget: int = 4096
     response_token_reserve: int = 512
     max_conversations: int = 100
@@ -52,6 +55,12 @@ class Settings:
                 raise ValueError(f"{name} must be a positive integer")
             return result
 
+        def bounded_calls(name: str) -> int:
+            count = positive_int(name, 6)
+            if count > 6:
+                raise ValueError(f'{name} must be at most 6')
+            return count
+
         def minimum_score() -> float:
             try:
                 result = float(value('KNOWLEDGE_MIN_SCORE') or '0.55')
@@ -81,6 +90,9 @@ class Settings:
             chat_base_url=base_url,
             chat_model=model,
             chat_api_key=api_key,
+            agent_model_calls=bounded_calls('AGENT_MODEL_CALLS'),
+            agent_tool_calls=bounded_calls('AGENT_TOOL_CALLS'),
+            agent_turn_tokens=positive_int('AGENT_TURN_TOKENS', 12000),
             context_token_budget=budget,
             response_token_reserve=reserve,
             max_conversations=positive_int("MAX_CONVERSATIONS", 100),
