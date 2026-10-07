@@ -311,3 +311,22 @@ def test_oversized_tool_results_preserve_final_stream_and_message_pairing(sizes)
     assert 120 + count_tokens_approximately(model.finals[0]) + 512 <= 12000
     assert result.usage.total <= 12000
     assert len([e for e in events if e[0] == 'tool_attempt']) == result.tool_calls
+
+
+def test_minimum_paired_error_batch_must_fit_before_selection_is_appended():
+    attempts = []
+    @tool('query_faq')
+    async def faq(keyword: str) -> dict:
+        """Read FAQ evidence."""
+        attempts.append(keyword)
+        return {'answer': 'e' * 60000, 'useful': True}
+    calls = [{'name': 'query_faq', 'id': f'c{n}', 'args': {'keyword': 'x'}} for n in range(20)]
+    selected = AIMessage(content='', tool_calls=calls)
+    model = ScriptModel([selected], [AIMessageChunk(content='需要缩小查询范围，请补充问题。')])
+    result, _ = scenario(model, {'query_faq': faq}, usage=Usage(estimated=10220))
+    assert len(model.finals) == 1 and result.answer == '需要缩小查询范围，请补充问题。'
+    assert result.model_calls == 2 and result.tool_calls == 0 and attempts == []
+    assert result.stop_reason == 'tool_result_budget'
+    assert not any(isinstance(m, AIMessage) and m.tool_calls for m in model.finals[0])
+    assert not any(isinstance(m, ToolMessage) for m in model.finals[0])
+    assert result.usage.total <= 12000

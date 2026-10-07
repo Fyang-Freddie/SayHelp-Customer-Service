@@ -109,6 +109,11 @@ async def agent_step(state: WorkflowState, *, model: AgentModel, tools: dict,
         return {**update, 'status': 'answer', 'stop_reason': 'complete'}
     # Discard text accompanying tool requests too: only structured calls are fed back.
     selected = AIMessage(content='', tool_calls=selected.tool_calls)
+    # Establish the complete fallback batch invariant before adding any pending
+    # calls to history. Every result admission below preserves this same bound.
+    minimum_results = [_result_budget_error(c) for c in selected.tool_calls]
+    if not _fits_final(messages + [selected] + minimum_results, Usage(**update['usage']), limits):
+        return {**update, 'status': 'answer', 'stop_reason': 'tool_result_budget'}
     return {**update, 'messages': [selected], 'status': 'tools'}
 
 
@@ -146,6 +151,10 @@ def _failure_streak(messages, call):
             break
         count += max(1, m.additional_kwargs.get('execution_attempts', 0))
     return count
+
+
+def _fits_final(messages, usage: Usage, limits: AgentLimits):
+    return usage.total + _estimate(messages) + limits.response_tokens <= limits.turn_tokens
 
 
 def _result_budget_error(call, *, attempts=0):
@@ -200,9 +209,11 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
         # pending call. A generated read can otherwise consume the allowance
         # reserved for the final input, even though its execution cost is paid.
         pending = [_result_budget_error(c) for c in selected.tool_calls[index + 1:]]
-        final_input = _estimate(messages + results + [result] + pending)
-        if _usage(state).total + final_input + limits.response_tokens > limits.turn_tokens:
+        if not _fits_final(messages + results + [result] + pending, _usage(state), limits):
             result = _result_budget_error(call, attempts=result.additional_kwargs.get('execution_attempts', 0))
+            # This exact replacement was reserved at admission (or in the
+            # preceding iteration), so the complete paired fallback must fit.
+            assert _fits_final(messages + results + [result] + pending, _usage(state), limits)
             reason = 'tool_result_budget'
             await emit('tool_result_rejected', {'name': call['name'], 'tool_call_id': call['id'],
                                                'reason': reason})
