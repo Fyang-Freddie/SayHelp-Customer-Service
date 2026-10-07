@@ -23,7 +23,7 @@ class FakeRepository:
     def find_faq(self, *args, **kwargs):
         raise AssertionError('Online tools must never use SQL keyword lookup')
 
-    def create_ticket(self, conversation_id, description, ticket_type):
+    def create_ticket(self, conversation_id, description, ticket_type, *, request_key=None):
         self.tickets.append((conversation_id, description, ticket_type))
         return 'T-demo'
 
@@ -104,11 +104,13 @@ def test_ticket_uses_captured_conversation_and_persists(sessions):
     cid = repo.create_conversation('guest-tool')
     result = execute(ToolExecutor(build_tools(repo, cid, knowledge_search=FakeKnowledgeSearch(repo))), 'create_ticket',
                      {'description': '商品破损', 'ticket_type': '售后'})
-    number = json.loads(result.content)['ticket_no']
+    payload = json.loads(result.content)
+    number = payload['ticket_no']
     with sessions() as session:
         ticket = session.get(Ticket, number)
         assert (ticket.conversation_id, ticket.description, ticket.ticket_type) == (cid, '商品破损', '售后')
-    assert repo.get_conversation(cid).status == '已转人工'
+    assert repo.get_conversation(cid).status == '进行中'
+    assert payload['message'] == '已创建工单，等待处理'
 
 
 @pytest.mark.parametrize('name,args', [('missing', {}), ('query_order', {}),
@@ -157,7 +159,7 @@ def test_ticket_timeout_inserts_once_even_when_worker_finishes_later(sessions):
     cid = repo.create_conversation('guest-slow-ticket')
     attempts = []
     class SlowRepository:
-        def create_ticket(self, conversation_id, description, ticket_type):
+        def create_ticket(self, conversation_id, description, ticket_type, *, request_key=None):
             attempts.append(conversation_id)
             time.sleep(0.08)
             return repo.create_ticket(conversation_id, description, ticket_type)
@@ -193,3 +195,26 @@ def test_faq_timeout_keeps_result_contract_through_executor():
     assert set(payload) == {'keyword', 'matches', 'message'}
     assert payload['keyword'] == '邮费' and payload['matches'] == []
     assert '暂时不可用' in payload['message']
+
+
+
+def test_ticket_server_request_key_is_hidden_and_deduplicates(database_url):
+    from app.init_ch05_db import initialize_ch05_database
+    from app.init_ch04_db import initialize_ch04_database
+    from app.db import make_session_factory
+    initialize_ch04_database(database_url)
+    initialize_ch05_database(database_url)
+    factory = make_session_factory(database_url)
+    try:
+        repo = Repository(factory)
+        cid = repo.create_conversation('server-key')
+        tools = build_tools(repo, cid, knowledge_search=FakeKnowledgeSearch(), ticket_request_key='server-only')
+        assert set(tools['create_ticket'].args_schema.model_fields) == {'description', 'ticket_type'}
+        args = {'description': '破损', 'ticket_type': '售后'}
+        first = tools['create_ticket'].invoke(args)
+        second = tools['create_ticket'].invoke(args)
+        assert first['ticket_no'] == second['ticket_no']
+        assert first['message'] == '已创建工单，等待处理'
+        assert repo.get_conversation(cid).status == '进行中'
+    finally:
+        factory.kw['bind'].dispose()

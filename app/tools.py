@@ -36,7 +36,7 @@ class TicketInput(ToolInput):
     ticket_type: Literal['售后', '投诉', '咨询']
 
 
-def build_tools(repository: Repository, conversation_id: int, knowledge_search: KnowledgeSearch | None, *, knowledge_answer=None) -> dict[str, BaseTool]:
+def build_tools(repository: Repository, conversation_id: int, knowledge_search: KnowledgeSearch | None, *, knowledge_answer=None, ticket_request_key: str | None = None) -> dict[str, BaseTool]:
     """Capture the active conversation; the model cannot supply its identity."""
     @tool(args_schema=OrderInput)
     def query_order(order_id: str) -> dict:
@@ -75,8 +75,8 @@ def build_tools(repository: Repository, conversation_id: int, knowledge_search: 
     @tool(args_schema=TicketInput)
     def create_ticket(description: str, ticket_type: Literal['售后', '投诉', '咨询']) -> dict:
         """为当前会话创建售后、投诉或咨询人工工单。仅表示待人工处理，不表示问题已解决。"""
-        number = repository.create_ticket(conversation_id, description, ticket_type)
-        return {'ticket_no': number, 'status': '待处理', 'message': '已创建工单并转人工，等待处理'}
+        number = repository.create_ticket(conversation_id, description, ticket_type, request_key=ticket_request_key)
+        return {'ticket_no': number, 'status': '待处理', 'message': '已创建工单，等待处理'}
 
     if knowledge_answer is not None:
         @tool('query_faq', args_schema=FaqInput)

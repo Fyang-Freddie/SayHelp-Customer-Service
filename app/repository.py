@@ -1,9 +1,14 @@
 """Short database transactions for conversations, literal FAQ search, and tickets."""
 
 from uuid import uuid4
+from hashlib import sha256
+import json
 
 from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.orm import Session, sessionmaker, undefer
+from sqlalchemy.exc import IntegrityError
+
+from app.ch05_db import WorkflowTicketRequest
 
 from app.db import Conversation, Faq, Message, Ticket
 from app.ch04_db import LowConfidenceQuestion
@@ -124,15 +129,56 @@ class Repository:
             statement = select(Faq).where(Faq.question.contains(keyword, autoescape=True)).order_by(Faq.id).limit(limit)
             return list(session.scalars(statement))
 
-    def create_ticket(self, conversation_id: int, description: str, ticket_type: str) -> str:
+    def create_ticket(self, conversation_id: int, description: str, ticket_type: str, *,
+                      request_key: str | None = None) -> str:
         if ticket_type not in ('售后', '投诉', '咨询'):
             raise ValueError('Unsupported ticket type')
-        number = 'T' + uuid4().hex[:31]
-        with self.session_factory.begin() as session:
-            conversation = session.get(Conversation, conversation_id)
+        if request_key is not None and (not isinstance(request_key, str) or not request_key.strip() or len(request_key) > 128):
+            raise ValueError('Invalid ticket request key')
+        payload = json.dumps([conversation_id, description, ticket_type], ensure_ascii=False, separators=(',', ':'))
+        digest = sha256(payload.encode('utf-8')).hexdigest()
+
+        def active_conversation(session):
+            conversation = session.get(Conversation, conversation_id, options=[undefer('*')], with_for_update=True)
             if conversation is None:
                 raise ValueError('Conversation does not exist')
-            session.add(Ticket(ticket_no=number, conversation_id=conversation_id,
-                               description=description, ticket_type=ticket_type))
-            conversation.status = '已转人工'
-        return number
+            if conversation.deleted_at is not None:
+                raise KeyError('Conversation not found')
+
+        def original_ticket(session):
+            existing = session.get(WorkflowTicketRequest, request_key)
+            if existing is not None:
+                if existing.conversation_id != conversation_id or existing.payload_digest != digest:
+                    raise ValueError('Ticket request payload conflict')
+                return existing.ticket_no
+            return None
+
+        try:
+            with self.session_factory.begin() as session:
+                # Same lock as deletion/history: a stale confirmation cannot write
+                # to a conversation deleted before this transaction acquired it.
+                active_conversation(session)
+                if request_key is not None:
+                    original = original_ticket(session)
+                    if original is not None:
+                        return original
+                number = 'T' + uuid4().hex[:31]
+                session.add(Ticket(ticket_no=number, conversation_id=conversation_id,
+                                   description=description, ticket_type=ticket_type))
+                session.flush()
+                if request_key is not None:
+                    session.add(WorkflowTicketRequest(request_key=request_key, conversation_id=conversation_id,
+                                                      payload_digest=digest, ticket_no=number))
+                    session.flush()
+            return number
+        except IntegrityError as error:
+            if request_key is None or getattr(error.orig, 'args', (None,))[0] != 1062:
+                raise
+            # Unique-key arbitration has completed at the DB. The failed session
+            # is closed/rolled back; a fresh transaction reads the committed winner.
+            with self.session_factory.begin() as session:
+                active_conversation(session)
+                original = original_ticket(session)
+                if original is None:
+                    raise error
+                return original
