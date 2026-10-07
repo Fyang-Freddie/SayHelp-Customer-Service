@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-07-sayhelp-ch05-workflow-agent-design.md`（2026-10-07 用户回复“同意”批准）。
 
-**Status:** 用户已选择 Subagent-driven 执行；任务 1 已评审通过，任务 2 从 2026-10-08 中断现场恢复。完成状态以本计划勾选和 SDD ledger 为准。
+**Status:** 用户已选择 Subagent-driven 执行；任务 1–3 已评审通过，继续任务 4。完成状态以本计划勾选和 SDD ledger 为准。
 
 ## Global Constraints
 
@@ -100,10 +100,10 @@
 
 **Interfaces:** `KnowledgeGate.prepare(question: str, filters: KnowledgeFilters | None) -> dict`（async，返回 evidence/citations/confidence/stop_reason）；构造依赖为现有 RagRetrieval、ConfidencePolicy、Settings。`WorkflowLog.write(event: str, payload: dict) -> None` 写 `.runtime/ch05/events.jsonl`；弱证据原问题写独立 `low-confidence.jsonl`，不写现有低置信度数据库表。
 
-- [ ] 写测试断言实际调用 retrieve 的 strategy='hybrid_rerank'，PreparedQuery 原样问题，闸分数边界/空证据/索引过期/异常都不放行；通过时证据与引用完整，日志区分 weak_evidence 和 retrieval_error；原问题记录失败不得宣称成功记录。
-- [ ] Run `python -m pytest tests/test_workflow_knowledge.py -q`，观察 RED，再实现薄适配器与安全字段日志，不修改检索器算法。
-- [ ] 编写至少 12 条知识标注题（6 可回答、6 无足够证据），执行 `python scripts/evaluate_ch05.py --suite knowledge --output eval/ch05/knowledge_results.json`。固定校准集和独立验收集，不用验收集调阈值；任何弱证据误放行先解决，拒答率单列，不以全部拒答充当通过。
-- [ ] 若原查询预处理的校准不适用，将本章阈值及查询方式指纹保存 `eval/ch05/confidence.json`，用独立校准样例确定后再跑验收；不覆盖 ch04 未提交产物。Run `python -m pytest tests/test_workflow_knowledge.py tests/test_rag_retrieval.py tests/test_rag_evidence.py -q`，记录并提交 `feat: gate workflow knowledge before agent output`。
+- [x] 写测试断言实际调用 retrieve 的 strategy='hybrid_rerank'，PreparedQuery 原样问题，闸分数边界/空证据/索引过期/异常都不放行；通过时证据与引用完整，日志区分 weak_evidence 和 retrieval_error；原问题记录失败不得宣称成功记录。
+- [x] Run `python -m pytest tests/test_workflow_knowledge.py -q`，观察 RED，再实现薄适配器与安全字段日志，不修改检索器算法。
+- [x] 编写至少 12 条知识标注题（6 可回答、6 无足够证据），执行 `python scripts/evaluate_ch05.py --suite knowledge --output eval/ch05/knowledge_results.json`。固定校准集和独立验收集，不用验收集调阈值；任何弱证据误放行先解决，拒答率单列，不以全部拒答充当通过。
+- [x] 若原查询预处理的校准不适用，将本章阈值及查询方式指纹保存 `eval/ch05/confidence.json`，用独立校准样例确定后再跑验收；不覆盖 ch04 未提交产物。Run `python -m pytest tests/test_workflow_knowledge.py tests/test_rag_retrieval.py tests/test_rag_evidence.py -q`，记录并提交 `feat: gate workflow knowledge before agent output`。
 
 ## Task 4: 幂等历史、动作与工单持久化
 
