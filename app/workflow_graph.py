@@ -106,7 +106,7 @@ def build_workflow(*, model: AgentModel,
             tools=tools_factory(state['conversation_id']), limits=limits, emit=_emit)
 
     async def tools_node(state: WorkflowState):
-        return await execute_calls(state, tools=tools_factory(state['conversation_id']), limits=limits, emit=_emit)
+        return await execute_calls(_agent_context(state), tools=tools_factory(state['conversation_id']), limits=limits, emit=_emit)
 
     async def answer_node(state: WorkflowState):
         return await stream_answer(_agent_context(state), model=model, limits=limits, emit=_emit)

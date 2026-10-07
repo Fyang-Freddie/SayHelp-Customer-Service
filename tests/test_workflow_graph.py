@@ -217,3 +217,45 @@ def test_graph_tool_budget_and_failed_read_stop_before_another_selection(tmp_pat
     assert len(model.selected)==len(model.finals)==1 and result['model_calls']==2
     assert result['stop_reason']==reason and result['answer']=='有依据的回答'
     assert trace==['resolve_reference','classify_intent','route','agent_step','execute_calls','stream_answer','agent','log_turn']
+
+
+def test_knowledge_tool_admission_reserves_full_ephemeral_evidence_and_final_answer(tmp_path):
+    from langchain_core.messages.utils import count_tokens_approximately
+    api = importlib.import_module('app.workflow_graph')
+    limits = AgentLimits()
+    attempts = []
+    evidence = 'E' * 10000
+    class Gate:
+        async def prepare(self, question, filters):
+            return {'evidence':[{'content':evidence}], 'citations':[{'chunk_id':'1'}],
+                'confidence':{'sufficient':True}}
+    @tool
+    async def query_order(order_id: str) -> str:
+        """Read a large permitted order result."""
+        attempts.append(order_id)
+        return 'R' * 40000
+    async def classify(question):
+        return IntentDecision(intent='商品咨询'),Usage(input_tokens=7,output_tokens=3)
+    decision = AIMessage(content='',tool_calls=[{'name':'query_order','id':'read-1','args':{'order_id':'1'}}],
+        usage_metadata={'input_tokens':10,'output_tokens':10,'total_tokens':20})
+    model = Model([decision])
+    graph = api.build_workflow(model=model,classifier=classify,knowledge_gate=Gate(),
+        tools_factory=lambda cid:{'query_order':query_order},limits=limits,
+        log=WorkflowLog(tmp_path/'log'),checkpointer=None)
+    result,trace,events = asyncio.run(collect(graph,turn('question','reserve')))
+    assert result['status']=='done'
+    assert result['answer']=='有依据的回答' and len(model.finals)==1
+    assert result['stop_reason']=='tool_result_budget'
+    assert result['model_calls']==2 and result['tool_calls']==1 and attempts==['1']
+    results=[m for m in result['messages'] if isinstance(m,ToolMessage)]
+    assert len(results)==1 and results[0].tool_call_id=='read-1'
+    assert results[0].status=='error' and '未采用' in results[0].content
+    assert len(results[0].content)<100 and results[0].additional_kwargs['execution_attempts']==1
+    assert not any(isinstance(m,SystemMessage) for m in result['messages'])
+    assert not any('R'*40000 in str(m.content) for m in result['messages'])
+    final_evidence=[m for m in model.finals[0] if isinstance(m,SystemMessage)]
+    assert len(final_evidence)==1 and evidence in final_evidence[0].content
+    assert evidence in model.selected[0][0].content
+    assert 30+count_tokens_approximately(model.finals[0])+limits.response_tokens<=limits.turn_tokens
+    assert Usage(**result['usage']).total<=limits.turn_tokens
+    assert any(e['event']=='tool_result_rejected' for e in events)
