@@ -16,6 +16,7 @@ class Settings:
     chat_model: str
     chat_api_key: str = field(repr=False)
     database_url: str | None = field(default=None, repr=False)
+    workflow_checkpoint_path: str = ".runtime/ch05/checkpoints.sqlite"
     agent_model_calls: int = 6
     agent_tool_calls: int = 6
     agent_turn_tokens: int = 12000
@@ -55,6 +56,10 @@ class Settings:
                 raise ValueError(f"{name} must be a positive integer")
             return result
 
+        def agent_name(public: str, legacy: str) -> str:
+            # Public Chapter 5 names override the earlier demonstration aliases.
+            return public if value(public) is not None else legacy
+
         def bounded_calls(name: str) -> int:
             count = positive_int(name, 6)
             if count > 6:
@@ -86,13 +91,22 @@ class Settings:
         if reserve >= budget:
             raise ValueError("RESPONSE_TOKEN_RESERVE must be below CONTEXT_TOKEN_BUDGET")
 
+        token_name = agent_name('AGENT_TURN_TOKEN_BUDGET', 'AGENT_TURN_TOKENS')
+        turn_tokens = positive_int(token_name, 12000)
+        if turn_tokens <= reserve:
+            raise ValueError(f'{token_name} must exceed RESPONSE_TOKEN_RESERVE')
+        checkpoint_path = value('WORKFLOW_CHECKPOINT_PATH') or '.runtime/ch05/checkpoints.sqlite'
+        if not checkpoint_path.strip():
+            raise ValueError('WORKFLOW_CHECKPOINT_PATH must be nonempty')
+
         return cls(
             chat_base_url=base_url,
             chat_model=model,
             chat_api_key=api_key,
-            agent_model_calls=bounded_calls('AGENT_MODEL_CALLS'),
-            agent_tool_calls=bounded_calls('AGENT_TOOL_CALLS'),
-            agent_turn_tokens=positive_int('AGENT_TURN_TOKENS', 12000),
+            workflow_checkpoint_path=checkpoint_path,
+            agent_model_calls=bounded_calls(agent_name('AGENT_MAX_MODEL_CALLS', 'AGENT_MODEL_CALLS')),
+            agent_tool_calls=bounded_calls(agent_name('AGENT_MAX_TOOL_CALLS', 'AGENT_TOOL_CALLS')),
+            agent_turn_tokens=turn_tokens,
             context_token_budget=budget,
             response_token_reserve=reserve,
             max_conversations=positive_int("MAX_CONVERSATIONS", 100),

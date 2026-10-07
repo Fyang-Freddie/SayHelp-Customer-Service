@@ -1,7 +1,9 @@
-"""Serializable chapter 5 turn state and dependency-free shared contracts."""
+"""Serializable chapter 5 turn state and shared runtime contracts."""
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import asdict, dataclass
-from typing import Literal, Protocol, TypedDict
+from typing import Annotated, Literal, Protocol, TypedDict
+
+from langgraph.graph.message import add_messages
 
 from langchain_core.messages import AIMessage, AIMessageChunk, BaseMessage
 
@@ -55,7 +57,7 @@ class AgentResult:
 class WorkflowState(TypedDict, total=False):
     conversation_id: int
     turn_id: str
-    messages: list[BaseMessage]
+    messages: Annotated[list[BaseMessage], add_messages]
     raw_question: str
     resolved_question: str
     intent: str
@@ -72,3 +74,5 @@ class WorkflowState(TypedDict, total=False):
     status: str
     stop_reason: str
     message_id: str
+    low_confidence_recorded: bool
+    logging_error: bool

@@ -4,7 +4,8 @@ import json
 from pathlib import Path
 from threading import Lock
 
-_SAFE_FIELDS = frozenset({'stop_reason', 'score', 'threshold', 'error_type', 'evidence_count'})
+_SAFE_FIELDS = frozenset({'stop_reason', 'score', 'threshold', 'error_type', 'evidence_count',
+    'intent', 'status', 'model_calls', 'tool_calls'})
 
 
 class WorkflowLog:
@@ -18,7 +19,7 @@ class WorkflowLog:
             stream.write(json.dumps(row, ensure_ascii=False, allow_nan=False) + '\n')
 
     def write(self, event: str, payload: dict) -> None:
-        if event not in {'weak_evidence', 'retrieval_error', 'knowledge_ready'}:
+        if event not in {'weak_evidence', 'retrieval_error', 'knowledge_ready', 'turn_finished'}:
             raise ValueError('Unknown workflow knowledge event')
         safe = {key: value for key, value in payload.items() if key in _SAFE_FIELDS}
         timestamp = datetime.now(timezone.utc).isoformat()
