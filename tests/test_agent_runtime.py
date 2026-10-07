@@ -276,3 +276,38 @@ def test_repeated_validation_failures_stop_even_without_actual_execution():
     assert attempts == [] and result.tool_calls == 0
     assert len(model.selections) == 2
     assert result.stop_reason == 'repeated_tool_failure'
+
+
+@pytest.mark.parametrize('sizes', [[60000], [24000, 24000, 24000]])
+def test_oversized_tool_results_preserve_final_stream_and_message_pairing(sizes):
+    from langchain_core.messages.utils import count_tokens_approximately
+    attempts = []
+    @tool('query_faq')
+    async def faq(keyword: str) -> dict:
+        """Read FAQ evidence."""
+        attempts.append(keyword)
+        return {'answer': 'e' * sizes[int(keyword)], 'useful': True}
+    calls = [{'name': 'query_faq', 'id': f'faq-{n}', 'args': {'keyword': str(n)}} for n in range(len(sizes))]
+    selected = AIMessage(content='', tool_calls=calls,
+        usage_metadata={'input_tokens': 100, 'output_tokens': 20, 'total_tokens': 120})
+    model = ScriptModel([selected], [AIMessageChunk(content='结果过大，需要核实。')])
+    result, events = scenario(model, {'query_faq': faq})
+    assert len(model.finals) == 1 and result.answer == '结果过大，需要核实。'
+    assert result.model_calls == 2
+    # The rejected generated result still cost an execution. Remaining batch
+    # calls get matching errors without performing avoidable business work.
+    assert result.tool_calls == (1 if len(sizes) == 1 else 2)
+    assert len(attempts) == result.tool_calls
+    results = [m for m in model.finals[0] if isinstance(m, ToolMessage)]
+    assert [m.tool_call_id for m in results] == [f'faq-{n}' for n in range(len(sizes))]
+    rejected = results[0 if len(sizes) == 1 else 1]
+    assert rejected.status == 'error' and '未采用' in rejected.content
+    assert len(rejected.content) < 100 and 'eeee' not in rejected.content
+    assert rejected.additional_kwargs['execution_attempts'] == 1
+    if len(sizes) > 1:
+        assert results[0].status == 'success' and 'e' * 24000 in results[0].content
+        assert results[-1].status == 'error'
+    assert result.stop_reason == 'tool_result_budget'
+    assert 120 + count_tokens_approximately(model.finals[0]) + 512 <= 12000
+    assert result.usage.total <= 12000
+    assert len([e for e in events if e[0] == 'tool_attempt']) == result.tool_calls

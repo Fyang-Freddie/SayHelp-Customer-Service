@@ -148,6 +148,12 @@ def _failure_streak(messages, call):
     return count
 
 
+def _result_budget_error(call, *, attempts=0):
+    return ToolMessage(content='本轮剩余输入预算不足，工具结果未采用，请核实。',
+                       tool_call_id=call['id'], name=call['name'], status='error',
+                       additional_kwargs={'execution_attempts': attempts})
+
+
 async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimits, emit: Emit) -> dict:
     """Execute permitted reads serially; retries spend the same business budget."""
     messages = state['messages']
@@ -165,7 +171,7 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
     # Validate the whole batch before the first side effect.
     denied = any(c['name'] not in READ_TOOLS | {'suggest_actions'} or
                  (c['name'] in READ_TOOLS and c['name'] not in tools) for c in selected.tool_calls)
-    for call in selected.tool_calls:
+    for index, call in enumerate(selected.tool_calls):
         if denied or reason:
             result = ToolMessage(content='本轮工具执行已停止，需要核实。', tool_call_id=call['id'], name=call['name'], status='error')
             reason = reason or 'denied_tool'
@@ -190,6 +196,16 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
                 reason = 'repeated_tool_failure'
             elif count >= limits.tool_calls:
                 reason = 'tool_budget'
+        # Admission includes prior results and short paired results for every
+        # pending call. A generated read can otherwise consume the allowance
+        # reserved for the final input, even though its execution cost is paid.
+        pending = [_result_budget_error(c) for c in selected.tool_calls[index + 1:]]
+        final_input = _estimate(messages + results + [result] + pending)
+        if _usage(state).total + final_input + limits.response_tokens > limits.turn_tokens:
+            result = _result_budget_error(call, attempts=result.additional_kwargs.get('execution_attempts', 0))
+            reason = 'tool_result_budget'
+            await emit('tool_result_rejected', {'name': call['name'], 'tool_call_id': call['id'],
+                                               'reason': reason})
         results.append(result)
     return {'messages': results, 'tool_calls': count, 'suggestions': suggestions,
             'status': 'answer' if reason else 'select', **({'stop_reason': reason} if reason else {})}
