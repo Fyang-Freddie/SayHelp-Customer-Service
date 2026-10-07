@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "fingerprints": {
+    "corpus_digest": "2ec492cefd17dac204b8ed00a4149a366e15117c2583db7026c06de3f75f175a",
+    "calibration_digest": "cb607f3da8a7e5600d65fcf431b1be4935851030df7428226c1ce75de7c55ad3",
+    "embedding_model": "BAAI/bge-m3",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "query_model": "none",
+    "prompt_digest": "39a8ad550981ad5335f40472d5a54b504a57477f96631128470244caef61571a",
+    "context_token_budget": 4096,
+    "response_token_reserve": 512,
+    "token_counter": "langchain approximate chars_per_token=1.0",
+    "dense_k": 50,
+    "bm25_k": 50,
+    "rrf_k": 60,
+    "generation_k": 10,
+    "query_mode": "raw-question-v1: PreparedQuery(question, question, question); synonyms=[]",
+    "calibration_method": "separable-label-gap-midpoint-v1"
+  },
+  "strategy": "hybrid_rerank",
+  "strategies": {
+    "hybrid_rerank": {
+      "threshold": 2.217834621667862,
+      "false_accept": 0,
+      "false_reject": 0,
+      "method": "separable-label-gap-midpoint-v1",
+      "highest_negative": -0.5910260081291199,
+      "lowest_positive": 5.026695251464844,
+      "samples": [
+        {
+          "id": "cal-a1",
+          "question": "MH-W20的水箱容量是多少？",
+          "score": 7.081652641296387,
+          "answerable": true
+        },
+        {
+          "id": "cal-a2",
+          "question": "MH-LP50有没有App远程监控？",
+          "score": 5.026695251464844,
+          "answerable": true
+        },
+        {
+          "id": "cal-a3",
+          "question": "运输途中破损，要在签收后多长时间联系，准备什么材料？",
+          "score": 5.367248058319092,
+          "answerable": true
+        },
+        {
+          "id": "cal-a4",
+          "question": "非质量问题的换货往返运费谁出？",
+          "score": 5.589810371398926,
+          "answerable": true
+        },
+        {
+          "id": "cal-a5",
+          "question": "MH-FD10每日最多能安排几餐？",
+          "score": 5.285919189453125,
+          "answerable": true
+        },
+        {
+          "id": "cal-a6",
+          "question": "电子类商品自签收起保修多少个月？",
+          "score": 6.345695495605469,
+          "answerable": true
+        },
+        {
+          "id": "cal-n1",
+          "question": "MH-W20水泵内部电路图和各元件阻值是多少？",
+          "score": -0.5910260081291199,
+          "answerable": false
+        },
+        {
+          "id": "cal-n2",
+          "question": "2028年新版退货退款法律全文是什么？",
+          "score": -4.397380828857422,
+          "answerable": false
+        },
+        {
+          "id": "cal-n3",
+          "question": "宠物无人机ZX-900最大飞行高度和电池规格是什么？",
+          "score": -6.522809028625488,
+          "answerable": false
+        },
+        {
+          "id": "cal-n4",
+          "question": "购买商品附送的宠物医疗保险免赔额是多少？",
+          "score": -5.533613204956055,
+          "answerable": false
+        },
+        {
+          "id": "cal-n5",
+          "question": "MH-FD10当前最新固件的SHA256校验值是什么？",
+          "score": -2.0460495948791504,
+          "answerable": false
+        },
+        {
+          "id": "cal-n6",
+          "question": "喵喵优选员工内部报销的差旅标准是多少？",
+          "score": -6.841325759887695,
+          "answerable": false
+        }
+      ]
+    }
+  },
+  "calibrated_at": "2026-10-07T17:12:13.912672+00:00"
+}

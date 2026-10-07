@@ -1,0 +1,349 @@
+{
+  "suite": "knowledge",
+  "evaluated_at": "2026-10-07T17:07:44.630041+00:00",
+  "acceptance": {
+    "answerable_total": 6,
+    "unanswerable_total": 6,
+    "answerable_passed": 4,
+    "false_accepts": 0,
+    "false_rejects": 2,
+    "passed_without_gold_evidence": 0,
+    "service_or_logging_errors": 0,
+    "refusal_rate": 0.6666666666666666,
+    "answerable_refusal_rate": 0.3333333333333333,
+    "unanswerable_refusal_rate": 1.0
+  },
+  "criteria": {
+    "maximum_false_accepts": 0,
+    "minimum_answerable_pass_rate": 0.8,
+    "maximum_missing_gold": 0,
+    "maximum_service_errors": 0
+  },
+  "accepted": false,
+  "model_calls": 0,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "estimated": 0
+  },
+  "cases": [
+    {
+      "id": "acc-a1",
+      "split": "acceptance",
+      "question": "MH-W40多久更换一次滤芯？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/product-specs.md",
+        "section_path": "商品规格手册 / 自动饮水机 Plus(型号 MH-W40)",
+        "quote": "建议每 3 周更换一次滤芯"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=6.4711485, threshold=5.0266953; 通过校准门槛",
+        "score": 6.471148490905762,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "37",
+        "38",
+        "47",
+        "11",
+        "17",
+        "33",
+        "16",
+        "50",
+        "12",
+        "36"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "acc-a2",
+      "split": "acceptance",
+      "question": "MH-LP200适用猫咪的体重范围是多少？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/product-specs.md",
+        "section_path": "商品规格手册 / 智能猫砂盆 Max(型号 MH-LP200)",
+        "quote": "2kg 至 12kg"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=6.0315189, threshold=5.0266953; 通过校准门槛",
+        "score": 6.031518936157227,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "35",
+        "34",
+        "41",
+        "44",
+        "42",
+        "32",
+        "14",
+        "40",
+        "39",
+        "33"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "acc-a3",
+      "split": "acceptance",
+      "question": "无理由退货需要满足什么条件，定制类和生鲜是否适用？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/returns-policy.md",
+        "section_path": "退货退款政策 / 无理由退货 / 适用范围",
+        "quote": "定制类、生鲜类商品除外"
+      },
+      "passed": false,
+      "gold_evidence_present": false,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=4.4021273, threshold=5.0266953; 检索证据置信度低",
+        "score": 4.402127265930176,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "acc-a4",
+      "split": "acceptance",
+      "question": "收到商品想换个不同型号，是直接换货还是先退后买？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/returns-policy.md",
+        "section_path": "退货退款政策 / 换货政策 / 换货条件",
+        "quote": "不同型号或颜色需先退货再重新下单"
+      },
+      "passed": false,
+      "gold_evidence_present": false,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=3.2759113, threshold=5.0266953; 检索证据置信度低",
+        "score": 3.275911331176758,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "acc-a5",
+      "split": "acceptance",
+      "question": "MH-CT30的高度和单层最大承重是多少？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/product-specs.md",
+        "section_path": "商品规格手册 / 大型猫爬架(型号 MH-CT30)",
+        "quote": "单层最大 10kg"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=6.1891513, threshold=5.0266953; 通过校准门槛",
+        "score": 6.189151287078857,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "39",
+        "43",
+        "34",
+        "41",
+        "32",
+        "42",
+        "40",
+        "44",
+        "33",
+        "35"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "acc-a6",
+      "split": "acceptance",
+      "question": "预售商品的定金付了后能无理由退吗？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/returns-policy.md",
+        "section_path": "退货退款政策 / 预售与定金",
+        "quote": "定金支付后不支持无理由退定金"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=6.6146879, threshold=5.0266953; 通过校准门槛",
+        "score": 6.614687919616699,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "53",
+        "18",
+        "46",
+        "19",
+        "50",
+        "47",
+        "20",
+        "49",
+        "52",
+        "45"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "acc-n1",
+      "split": "acceptance",
+      "question": "MH-W60的主控芯片型号和引脚定义是什么？",
+      "answerable": false,
+      "missing": "没有芯片和引脚资料",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-1.3411453, threshold=5.0266953; 检索证据置信度低",
+        "score": -1.3411452770233154,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "acc-n2",
+      "split": "acceptance",
+      "question": "喵喵优选上市后的2029年股票分红方案是什么？",
+      "answerable": false,
+      "missing": "没有股票及分红信息",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-5.8701334, threshold=5.0266953; 检索证据置信度低",
+        "score": -5.870133399963379,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "acc-n3",
+      "split": "acceptance",
+      "question": "宠物汽车QX-888的百公里油耗是多少？",
+      "answerable": false,
+      "missing": "没有该产品和汽车油耗资料",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-7.5259852, threshold=5.0266953; 检索证据置信度低",
+        "score": -7.525985240936279,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "acc-n4",
+      "split": "acceptance",
+      "question": "可以提供公司员工劳动合同里的年终奖金计算公式吗？",
+      "answerable": false,
+      "missing": "没有员工薪酬合同",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-9.9372501, threshold=5.0266953; 检索证据置信度低",
+        "score": -9.937250137329102,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "acc-n5",
+      "split": "acceptance",
+      "question": "MH-LP100生产线最近一次出厂校准原始数据表在哪里？",
+      "answerable": false,
+      "missing": "没有生产校准记录",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-1.6065323, threshold=5.0266953; 检索证据置信度低",
+        "score": -1.606532335281372,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "acc-n6",
+      "split": "acceptance",
+      "question": "平台合作医院给猫做心脏手术的具体收费是多少？",
+      "answerable": false,
+      "missing": "没有合作医疗收费资料",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-9.722744, threshold=5.0266953; 检索证据置信度低",
+        "score": -9.72274398803711,
+        "threshold": 5.026695251464844
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    }
+  ],
+  "provider": "existing_read_only_knowledge_collection",
+  "collection": "knowledge_ch04",
+  "corpus_digest": "2ec492cefd17dac204b8ed00a4149a366e15117c2583db7026c06de3f75f175a",
+  "confidence_fingerprints": {
+    "corpus_digest": "2ec492cefd17dac204b8ed00a4149a366e15117c2583db7026c06de3f75f175a",
+    "calibration_digest": "cb607f3da8a7e5600d65fcf431b1be4935851030df7428226c1ce75de7c55ad3",
+    "embedding_model": "BAAI/bge-m3",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "query_model": "none",
+    "prompt_digest": "39a8ad550981ad5335f40472d5a54b504a57477f96631128470244caef61571a",
+    "context_token_budget": 4096,
+    "response_token_reserve": 512,
+    "token_counter": "langchain approximate chars_per_token=1.0",
+    "dense_k": 50,
+    "bm25_k": 50,
+    "rrf_k": 60,
+    "generation_k": 10,
+    "query_mode": "raw-question-v1: PreparedQuery(question, question, question); synonyms=[]"
+  },
+  "threshold": 5.026695251464844,
+  "cases_sha256": "5d86b75437f72a82712cc2d9678f794024e87206b1eefde3a37c7d3a06187398"
+}
