@@ -18,7 +18,7 @@ def test_demo_is_standalone_simulation_with_measured_runtime_counts(mode, case, 
     assert process.returncode == 0, process.stderr
     result = json.loads(process.stdout.splitlines()[-1])
     assert result['model_source'] == 'simulation' and result['business_data'] == 'seeded random simulation'
-    assert result['provider_requests'] == 0 and result['ticket_writes'] == 0
+    assert result['logical_model_requests'] == 0 and result['ticket_writes'] == 0
     assert minimum_tools <= result['tool_calls'] <= 6 and result['model_calls'] <= 6
     assert result['answer'] and result['final_stream_chunks'] >= (case not in {'complaint','chitchat','weak-evidence'} or mode == 'bare')
     if case == 'multi-step':

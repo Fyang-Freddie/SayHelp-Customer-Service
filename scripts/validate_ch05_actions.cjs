@@ -13,7 +13,8 @@ const actions = [
  {id:'ticket-201',kind:'create_ticket',label:'建工单',description:unsafe,ticket_type:'投诉'}
 ];
 let ticketMode = 'success', streamMode = 'normal', calls = [], chatCalls = 0, requests = [], deleted = new Set();
-let releaseStream, releaseTicket;
+let releaseStream, releaseTicket, releaseHistory;
+let delayHistory = false;
 const json = (res, value, status=200) => {res.writeHead(status, {'Content-Type':'application/json'}); res.end(JSON.stringify(value));};
 const server = http.createServer((req,res) => {
  const url = new URL(req.url,'http://localhost');
@@ -21,7 +22,7 @@ const server = http.createServer((req,res) => {
  if(url.pathname==='/') {res.setHeader('Content-Type','text/html; charset=utf-8'); res.end(fs.readFileSync(path.join(__dirname,'../app/web/index.html'))); return;}
  if(url.pathname==='/v1/conversations') {json(res,{conversations:['101','102'].filter(id=>!deleted.has(id)).map(id=>({id,title:'夹具会话'+id,is_pinned:false,updated_at:'2026-10-08T12:00:00'})),next_cursor:null}); return;}
  const match = url.pathname.match(/^\/v1\/conversations\/(\d+)(?:\/(messages|tickets))?$/);
- if(match && match[2]==='messages') {json(res,{conversation_id:match[1],messages:[{id:'201',role:'assistant',content:'夹具回复'+match[1],actions:match[1]==='101'?actions:[]}]}); return;}
+ if(match && match[2]==='messages') {const finish=()=>json(res,{conversation_id:match[1],messages:[{id:'201',role:'assistant',content:'夹具回复'+match[1],actions:match[1]==='101'?actions:[]}]}); if(delayHistory && match[1]==='101') releaseHistory=finish; else finish(); return;}
  if(match && req.method==='DELETE') {deleted.add(match[1]);res.writeHead(204);res.end();return;}
  if(match && match[2]==='tickets' && req.method==='POST') {
   let raw='';req.on('data',c=>raw+=c);req.on('end',()=>{
@@ -118,6 +119,13 @@ const server = http.createServer((req,res) => {
   await page.evaluate(()=>{window.deletedButton=document.querySelector('.reply-actions [data-kind="create_ticket"]');});
   page.once('dialog',d=>d.accept());await page.locator('[data-manage="101"]').hover();await page.getByRole('menuitem',{name:'删除',exact:true}).click();await page.getByText('已删除对话',{exact:true}).waitFor();
   await page.evaluate(()=>window.deletedButton.click());check('删除后旧按钮不能建单',calls.length===0 && await page.locator('#ticketDialog[open]').count()===0);
+  await fresh();await page.locator('[data-conversation="102"]').click();await page.getByText('夹具回复102',{exact:true}).waitFor();
+  delayHistory=true;releaseHistory=null;const pendingHistory=page.waitForRequest(r=>r.url().endsWith('/101/messages'));await page.locator('[data-conversation="101"]').click();await pendingHistory;
+  await new Promise(resolve=>setImmediate(resolve));
+  check('延迟历史GET已到达夹具',typeof releaseHistory==='function');
+  page.once('dialog',d=>d.accept());await page.locator('[data-manage="101"]').hover();await page.getByRole('menuitem',{name:'删除',exact:true}).click();await page.getByText('已删除对话',{exact:true}).waitFor();
+  const lateHistory=page.waitForResponse(r=>r.url().endsWith('/101/messages'));releaseHistory();await settleResponse(lateHistory);delayHistory=false;
+  check('删除在途历史后旧GET不能恢复正文或本地会话',!(await page.locator('#messages').textContent()).includes('夹具回复101') && await page.evaluate(()=>localStorage.getItem('sayhelp.activeConversation'))!=='101');
   await fresh();streamMode='before_done';await page.locator('#newChatTop').click();await page.locator('#messageInput').fill('完成事件前');await page.locator('#sendButton').click();
   await page.getByText('流式夹具回答，动作待完成',{exact:true}).waitFor();check('done之前不展示可执行建议',await ticket().count()===0);releaseStream();await ticket().waitFor();
   check('done匹配消息后才展示动作',await ticket().count()===1);

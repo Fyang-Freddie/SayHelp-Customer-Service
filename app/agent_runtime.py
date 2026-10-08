@@ -1,6 +1,7 @@
 """Bounded model/tool steps shared by the naked loop and later graph nodes."""
 from dataclasses import dataclass
 import json
+from time import perf_counter
 
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.messages.utils import count_tokens_approximately
@@ -27,9 +28,10 @@ class AgentLimits:
     turn_tokens: int = 12000
     response_tokens: int = 512
     selection_tokens: int = 512
+    input_tokens: int = 3584
 
     def __post_init__(self):
-        for name in ('model_calls', 'tool_calls', 'turn_tokens', 'response_tokens', 'selection_tokens'):
+        for name in ('model_calls', 'tool_calls', 'turn_tokens', 'response_tokens', 'selection_tokens', 'input_tokens'):
             if type(getattr(self, name)) is not int or getattr(self, name) < 1:
                 raise ValueError(f'{name} must be a positive integer')
         if self.model_calls > 6 or self.tool_calls > 6:
@@ -89,9 +91,10 @@ async def agent_step(state: WorkflowState, *, model: AgentModel, tools: dict,
         return {'status': 'stopped', 'stop_reason': 'invalid_messages'}
     if state.get('model_calls', 0) >= limits.model_calls - 1:
         return {'status': 'answer', 'stop_reason': 'model_budget'}
-    schemas = [convert_to_openai_tool(t) for n,t in tools.items() if n in READ_TOOLS] + [SUGGEST_ACTIONS]
-    schema_tokens = max(1, len(json.dumps(schemas, ensure_ascii=False)) // 3)
+    schemas, schema_tokens = _schemas(tools)
     input_tokens = _estimate(messages) + schema_tokens
+    if input_tokens > limits.input_tokens:
+        return {'status': 'answer', 'stop_reason': 'context_budget'}
     # Reserve selection output, then the expanded final input and its output.
     remaining = limits.turn_tokens - _usage(state).total
     needed = input_tokens + limits.selection_tokens + _estimate(messages) + limits.selection_tokens + limits.response_tokens
@@ -99,9 +102,17 @@ async def agent_step(state: WorkflowState, *, model: AgentModel, tools: dict,
         return {'status': 'answer', 'stop_reason': 'token_budget'}
     calls = state.get('model_calls', 0) + 1
     await emit('model_start', {'phase': 'select', 'model_calls': calls})
-    selected = await model.select(messages, schemas, max_tokens=limits.selection_tokens)
+    started = perf_counter()
+    try:
+        selected = await model.select(messages, schemas, max_tokens=limits.selection_tokens)
+    except BaseException as error:
+        await emit('model_error', {'phase': 'select', 'model_calls': calls, 'error_type': type(error).__name__,
+            'duration_ms': (perf_counter()-started)*1000, 'usage': _account(_usage(state), None, input_tokens+limits.selection_tokens)})
+        raise
     update = {'model_calls': calls, 'usage': _account(_usage(state), selected.usage_metadata,
               input_tokens + _estimate([selected]))}
+    await emit('model_end', {'phase': 'select', 'model_calls': calls, 'usage': update['usage'],
+        'duration_ms': (perf_counter()-started)*1000})
     if not _valid_calls(selected, _ids(messages)):
         return {**update, 'status': 'answer', 'stop_reason': 'invalid_tool_calls'}
     if not selected.tool_calls:
@@ -136,6 +147,8 @@ def _suggestions(args):
                 raise ValueError()
         else:
             raise ValueError()
+    if len({action['kind'] for action in actions}) != len(actions):
+        raise ValueError()
     return actions
 
 
@@ -153,8 +166,43 @@ def _failure_streak(messages, call):
     return count
 
 
+def _schemas(tools):
+    schemas = [convert_to_openai_tool(t) for n, t in tools.items() if n in READ_TOOLS] + [SUGGEST_ACTIONS]
+    return schemas, max(1, len(json.dumps(schemas, ensure_ascii=False)) // 3)
+
+
 def _fits_final(messages, usage: Usage, limits: AgentLimits):
-    return usage.total + _estimate(messages) + limits.response_tokens <= limits.turn_tokens
+    tokens = _estimate(messages)
+    return tokens <= limits.input_tokens and usage.total + tokens + limits.response_tokens <= limits.turn_tokens
+
+
+def _number_knowledge(result, citations):
+    # Only the existing gated adapters expose this envelope. Work on a candidate
+    # registry and publish it only after the COMPLETE result passes admission.
+    if result.name not in {'query_faq', 'query_product'} or result.status != 'success':
+        return result, citations
+    try:
+        payload = json.loads(result.content)
+    except (ValueError, TypeError):
+        return result, citations
+    if not isinstance(payload, dict) or payload.get('useful') is not True or not payload.get('citations'):
+        return result, citations
+    def key(c):
+        return (str(c['chunk_id']), c.get('source_digest'), c.get('source_file'))
+    registry = [dict(c) for c in citations]
+    known = {key(c): c['n'] for c in registry}
+    matched = {str(m.get('id')): m for m in payload.get('matches', [])}
+    for citation in payload['citations']:
+        if str(citation.get('chunk_id')) not in matched:
+            return _result_budget_error({'id':result.tool_call_id, 'name':result.name},
+                attempts=result.additional_kwargs.get('execution_attempts',0)), citations
+        identity = key(citation)
+        if identity not in known:
+            known[identity] = len(registry)+1
+            registry.append({**citation, 'n': known[identity]})
+        citation['n'] = known[identity]
+        matched[str(citation['chunk_id'])]['n'] = known[identity]
+    return result.model_copy(update={'content':json.dumps(payload, ensure_ascii=False)}), registry
 
 
 def _result_budget_error(call, *, attempts=0):
@@ -171,12 +219,13 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
         return {'status': 'answer', 'stop_reason': 'invalid_tool_calls'}
     count = state.get('tool_calls', 0)
     results, suggestions = [], list(state.get('suggestions', []))
+    citations = list(state.get('citations', []))
     reason = None
     executor = ToolExecutor({n:t for n,t in tools.items() if n in READ_TOOLS})
     async def attempt(name, number):
         nonlocal count
         count += 1
-        await emit('tool_attempt', {'name': name, 'attempt': number, 'tool_calls': count})
+        await emit('tool_attempt', {'name': name, 'attempt': number, 'tool_calls': count, 'tool_call_id': call['id']})
     # Validate the whole batch before the first side effect.
     denied = any(c['name'] not in READ_TOOLS | {'suggest_actions'} or
                  (c['name'] in READ_TOOLS and c['name'] not in tools) for c in selected.tool_calls)
@@ -197,10 +246,12 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
             reason = 'tool_budget'
         else:
             await emit('tool_start', {'name': call['name'], 'tool_call_id': call['id']})
+            started = perf_counter()
             result = await executor.execute(call, max_attempts=limits.tool_calls-count, on_attempt=attempt)
             result.name = call['name']
             await emit('tool_end', {'name': call['name'], 'tool_call_id': call['id'], 'status': result.status,
-                                    'attempts': result.additional_kwargs.get('execution_attempts', 0)})
+                                    'attempts': result.additional_kwargs.get('execution_attempts', 0),
+                                    'duration_ms': (perf_counter()-started)*1000})
             if result.status == 'error' and _failure_streak(messages + results + [result], call) >= 2:
                 reason = 'repeated_tool_failure'
             elif count >= limits.tool_calls:
@@ -208,6 +259,7 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
         # Admission includes prior results and short paired results for every
         # pending call. A generated read can otherwise consume the allowance
         # reserved for the final input, even though its execution cost is paid.
+        result, candidate_citations = _number_knowledge(result, citations)
         pending = [_result_budget_error(c) for c in selected.tool_calls[index + 1:]]
         if not _fits_final(messages + results + [result] + pending, _usage(state), limits):
             result = _result_budget_error(call, attempts=result.additional_kwargs.get('execution_attempts', 0))
@@ -217,8 +269,10 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
             reason = 'tool_result_budget'
             await emit('tool_result_rejected', {'name': call['name'], 'tool_call_id': call['id'],
                                                'reason': reason})
+        else:
+            citations = candidate_citations
         results.append(result)
-    return {'messages': results, 'tool_calls': count, 'suggestions': suggestions,
+    return {'messages': results, 'tool_calls': count, 'suggestions': suggestions, 'citations': citations,
             'status': 'answer' if reason else 'select', **({'stop_reason': reason} if reason else {})}
 
 
@@ -230,19 +284,29 @@ async def stream_answer(state: WorkflowState, *, model: AgentModel, limits: Agen
     if state.get('model_calls', 0) >= limits.model_calls:
         return {'status': 'stopped', 'stop_reason': 'model_budget'}
     input_tokens = _estimate(messages)
+    if input_tokens > limits.input_tokens:
+        return {'status': 'stopped', 'stop_reason': 'context_budget'}
     if _usage(state).total + input_tokens + limits.response_tokens > limits.turn_tokens:
         return {'status': 'stopped', 'stop_reason': 'token_budget'}
     calls = state.get('model_calls', 0) + 1
     await emit('model_start', {'phase': 'final', 'model_calls': calls, 'tools_bound': False})
     answer, combined = '', None
-    async for chunk in model.stream_reply(messages, max_tokens=limits.response_tokens):
-        combined = chunk if combined is None else combined + chunk
-        text = str(chunk.text)
-        if text:
-            answer += text
-            await emit('token', {'text': text})
+    started = perf_counter()
+    try:
+        async for chunk in model.stream_reply(messages, max_tokens=limits.response_tokens):
+            combined = chunk if combined is None else combined + chunk
+            text = str(chunk.text)
+            if text:
+                answer += text
+                await emit('token', {'text': text})
+    except BaseException as error:
+        await emit('model_error', {'phase': 'final', 'model_calls': calls, 'error_type': type(error).__name__,
+            'duration_ms': (perf_counter()-started)*1000, 'usage': _account(_usage(state), None, input_tokens+limits.response_tokens)})
+        raise
     metadata = combined.usage_metadata if combined is not None else None
     usage = _account(_usage(state), metadata, input_tokens + _estimate([AIMessage(content=answer)]))
+    await emit('model_end', {'phase': 'final', 'model_calls': calls, 'usage': usage,
+        'duration_ms': (perf_counter()-started)*1000})
     return {'messages': [AIMessage(content=answer)], 'answer': answer, 'usage': usage,
             'model_calls': calls, 'status': 'done', 'stop_reason': state.get('stop_reason', 'complete')}
 
@@ -267,4 +331,4 @@ async def run_bare_agent(messages: list, *, model: AgentModel, tools: dict,
         _apply(state, await stream_answer(state, model=model, limits=limits, emit=emit))
     return AgentResult(messages=state['messages'], answer=state['answer'], suggestions=state['suggestions'],
                        usage=_usage(state), model_calls=state['model_calls'], tool_calls=state['tool_calls'],
-                       stop_reason=state.get('stop_reason', 'complete'))
+                       stop_reason=state.get('stop_reason', 'complete'), citations=state.get('citations', []))

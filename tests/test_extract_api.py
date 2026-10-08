@@ -217,7 +217,7 @@ def test_extract_validates_raw_json_from_real_chat_pipeline(
     async def run() -> httpx.Response:
         async with httpx.AsyncClient(transport=httpx.MockTransport(upstream)) as client:
             monkeypatch.setattr(module, "ChatOpenAI", lambda **kwargs: ChatOpenAI(
-                **kwargs, http_async_client=client,
+                **kwargs, http_async_client=client, http_socket_options=(),
             ))
             return await post(
                 create_app(settings(), ModelService(settings())),

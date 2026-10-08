@@ -30,10 +30,11 @@ async def run_demo(message: str, *, settings=None, model=None):
             else:
                 print('\n' + json.dumps({'event': event, **payload}, ensure_ascii=False), flush=True)
         result = await run_bare_agent(
-            [SystemMessage(content=render_workflow_system_prompt()), HumanMessage(content=message)],
+            [SystemMessage(content=render_workflow_system_prompt() + '\n本裸循环演示的 query_product 未连接文档检索，只返回模拟数据，必须标注模拟。'), HumanMessage(content=message)],
             model=model or ModelService(settings), tools=tools,
             limits=AgentLimits(model_calls=settings.agent_model_calls, tool_calls=settings.agent_tool_calls,
-                turn_tokens=settings.agent_turn_tokens, response_tokens=settings.response_token_reserve),
+                turn_tokens=settings.agent_turn_tokens, response_tokens=settings.response_token_reserve,
+                    input_tokens=settings.context_token_budget-settings.response_token_reserve),
             usage=Usage(), emit=emit)
         print('\n' + json.dumps({'model_calls': result.model_calls, 'tool_calls': result.tool_calls,
             'usage': result.usage.to_dict(), 'stop_reason': result.stop_reason}, ensure_ascii=False))

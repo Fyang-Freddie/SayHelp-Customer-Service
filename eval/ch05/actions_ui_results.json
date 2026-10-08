@@ -117,6 +117,14 @@
       "passed": true
     },
     {
+      "name": "延迟历史GET已到达夹具",
+      "passed": true
+    },
+    {
+      "name": "删除在途历史后旧GET不能恢复正文或本地会话",
+      "passed": true
+    },
+    {
       "name": "done之前不展示可执行建议",
       "passed": true
     },

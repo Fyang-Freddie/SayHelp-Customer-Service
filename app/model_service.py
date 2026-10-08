@@ -33,6 +33,11 @@ class ModelService:
             max_retries=0,
         )
 
+        self._agent_model = ChatOpenAI(
+            base_url=settings.chat_base_url, model=settings.chat_model,
+            api_key=settings.chat_api_key, timeout=180, max_retries=0,
+        )
+
     async def classify_intent(self, text: str) -> AIMessage:
         """One JSON request retaining raw content and provider token usage."""
         from app.intent_prompts import intent_messages
@@ -46,14 +51,14 @@ class ModelService:
 
     async def select(self, messages: list, tools: list, *, max_tokens: int) -> AIMessage:
         """Chapter 5 internal selection, with a per-request output budget."""
-        selection = await self._model.bind_tools(tools).ainvoke(messages, max_tokens=max_tokens)
+        selection = await self._agent_model.bind_tools(tools).ainvoke(messages, max_tokens=max_tokens)
         if not isinstance(selection, AIMessage):
             raise TypeError("Tool selection must return an AIMessage")
         return selection
 
     async def stream_reply(self, messages: list, *, max_tokens: int) -> AsyncIterator[AIMessageChunk]:
         """Unbound terminal generation retaining provider usage chunks."""
-        async for chunk in self._model.astream(messages, max_tokens=max_tokens, stream_usage=True):
+        async for chunk in self._agent_model.astream(messages, max_tokens=max_tokens, stream_usage=True):
             yield chunk
 
     async def choose_tool(self, messages: list[BaseMessage], tools: list[BaseTool]) -> AIMessage:

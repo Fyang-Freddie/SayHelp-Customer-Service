@@ -124,7 +124,8 @@ async def run_demo(mode, case, *, live=False, on_token=None):
         # Existing tools close over no business storage; only READ_TOOLS escape.
         tools = {n: t for n, t in build_tools(None, 0, None, knowledge_answer=answer).items() if n in READ_TOOLS}
         limits = AgentLimits(model_calls=settings.agent_model_calls, tool_calls=settings.agent_tool_calls,
-            turn_tokens=settings.agent_turn_tokens, response_tokens=settings.response_token_reserve)
+            turn_tokens=settings.agent_turn_tokens, response_tokens=settings.response_token_reserve,
+                    input_tokens=settings.context_token_budget-settings.response_token_reserve)
         question = CASES[case]['question']
         messages = [SystemMessage(content=render_workflow_system_prompt()), HumanMessage(content=question)]
         # Scope a deterministic RNG to ORIGINAL mock tools; even --live is simulated business data.
@@ -153,7 +154,8 @@ async def run_demo(mode, case, *, live=False, on_token=None):
                 'model_source': 'live configured provider' if live else 'simulation',
                 'model': settings.chat_model, 'business_data': 'seeded random simulation',
                 'knowledge_source': 'existing read-only corpus' if live else 'fixed simulation evidence',
-                'complete_chat_requests': int(live), 'provider_requests': sum(counted.calls.values()) if live else 0,
+                'complete_chat_requests': int(live), 'logical_model_requests': sum(counted.calls.values()) if live else 0,
+                'provider_request_counting': 'logical operations; chapter 5 SDK retries disabled, not HTTP telemetry',
                 'model_operations': counted.calls, 'model_calls': state['model_calls'],
                 'tool_calls': state['tool_calls'], 'usage': state['usage'],
                 'final_stream_chunks': counted.chunks, 'nodes': nodes, 'node_count': len(nodes),

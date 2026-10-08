@@ -111,7 +111,7 @@ def test_provider_adapter_returns_raw_json_and_usage_in_one_request(monkeypatch)
         })
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
-            monkeypatch.setattr(module, 'ChatOpenAI', lambda **kwargs: ChatOpenAI(**kwargs, http_async_client=client))
+            monkeypatch.setattr(module, 'ChatOpenAI', lambda **kwargs: ChatOpenAI(**kwargs, http_async_client=client, http_socket_options=()))
             service = ModelService(Settings(chat_base_url='https://example.test/v1', chat_model='offline', chat_api_key='offline'))
             result = await service.classify_intent('订单 1001 的物流到哪了')
             assert result.content == '{"intent":"物流"}'
@@ -131,7 +131,7 @@ def test_provider_transport_failure_does_not_retry(monkeypatch):
         return httpx.Response(503, json={'error': {'message': 'offline unavailable', 'type': 'server_error'}})
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
-            monkeypatch.setattr(module, 'ChatOpenAI', lambda **kwargs: ChatOpenAI(**kwargs, http_async_client=client))
+            monkeypatch.setattr(module, 'ChatOpenAI', lambda **kwargs: ChatOpenAI(**kwargs, http_async_client=client, http_socket_options=()))
             service = ModelService(Settings(chat_base_url='https://example.test/v1', chat_model='offline', chat_api_key='offline'))
             with pytest.raises(Exception):
                 await service.classify_intent('你好')

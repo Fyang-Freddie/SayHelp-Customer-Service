@@ -190,7 +190,7 @@ def test_model_service_select_binds_tools_and_final_stream_is_unbound():
             yield AIMessageChunk(content='',usage_metadata={'input_tokens': 3,'output_tokens': 2,'total_tokens': 5})
     service = ModelService(Settings(chat_base_url='https://example.test/v1',chat_model='offline',chat_api_key='offline'))
     transport = Transport()
-    service._model = transport
+    service._agent_model = transport
     async def run():
         selected = await service.select([], ['tool-schema'], max_tokens=37)
         chunks = [c async for c in service.stream_reply([], max_tokens=41)]
@@ -291,7 +291,7 @@ def test_oversized_tool_results_preserve_final_stream_and_message_pairing(sizes)
     selected = AIMessage(content='', tool_calls=calls,
         usage_metadata={'input_tokens': 100, 'output_tokens': 20, 'total_tokens': 120})
     model = ScriptModel([selected], [AIMessageChunk(content='结果过大，需要核实。')])
-    result, events = scenario(model, {'query_faq': faq})
+    result, events = scenario(model, {'query_faq': faq}, AgentLimits(input_tokens=11500))
     assert len(model.finals) == 1 and result.answer == '结果过大，需要核实。'
     assert result.model_calls == 2
     # The rejected generated result still cost an execution. Remaining batch

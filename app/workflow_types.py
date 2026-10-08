@@ -1,6 +1,6 @@
 """Serializable chapter 5 turn state and shared runtime contracts."""
 from collections.abc import AsyncIterator, Awaitable, Callable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Annotated, Literal, Protocol, TypedDict
 
 from langgraph.graph.message import add_messages
@@ -52,6 +52,7 @@ class AgentResult:
     model_calls: int
     tool_calls: int
     stop_reason: str
+    citations: list[dict] = field(default_factory=list)
 
 
 class WorkflowState(TypedDict, total=False):

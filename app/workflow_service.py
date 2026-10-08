@@ -3,6 +3,7 @@ import asyncio
 from collections.abc import AsyncIterator
 from contextlib import aclosing, asynccontextmanager, ExitStack
 from uuid import uuid4
+from time import perf_counter
 
 from anyio import CancelScope
 from langchain_core.messages import AIMessage, HumanMessage, RemoveMessage, SystemMessage, ToolMessage
@@ -41,11 +42,12 @@ async def _settled(function, *args, **kwargs):
 
 
 class WorkflowService:
-    def __init__(self, repository, workflow_repository, graph, settings):
+    def __init__(self, repository, workflow_repository, graph, settings, *, log=None):
         self.repository = repository
         self.workflow_repository = workflow_repository
         self.graph = graph
         self.settings = settings
+        self.log = log if log is not None else WorkflowLog()
 
     async def _persist_reply(self, conversation_id, turn_id, current_id, result):
         # Parent agent outputs include its input history; fixed nodes only emit final.
@@ -74,6 +76,8 @@ class WorkflowService:
 
     async def stream_turn(self, conversation_id: int, message: str, filters=None) -> AsyncIterator[ChatEvent]:
         turn_id = uuid4().hex
+        terminal = {'conversation_id': conversation_id, 'turn_id': turn_id, 'usage': {}}
+        began = perf_counter()
         committed = False
         finished = False
         started = False
@@ -99,6 +103,8 @@ class WorkflowService:
             async with aclosing(self.graph.astream(inputs, config,
                     stream_mode=['custom', 'updates'], subgraphs=True)) as stream:
                 async for namespace, mode, data in stream:
+                    if mode == 'custom' and data['event'] in ('model_start', 'model_end', 'model_error'):
+                        terminal.update({k:v for k,v in data['payload'].items() if k in ('usage','model_calls')})
                     if mode == 'custom' and data['event'] in ('tool_start', 'tool_end'):
                         yield ChatEvent('tool_status', {'name': data['payload']['name'],
                             'state': 'running' if data['event'] == 'tool_start' else data['payload']['status']})
@@ -108,11 +114,14 @@ class WorkflowService:
                         yield ChatEvent(data['event'], data['payload'])
                     elif mode == 'updates' and not namespace:
                         for node, result in data.items():
+                            terminal.update({k:v for k,v in (result or {}).items() if k in
+                                ('usage','intent','route','model_calls','tool_calls','stop_reason')})
                             if node not in ('agent', 'fallback', 'complaint', 'chitchat'):
                                 continue
                             if result.get('status') != 'done' or not result.get('answer', '').strip():
                                 raise RuntimeError('Workflow did not produce a complete answer')
                             final = result
+                            terminal.update({k:result.get(k) for k in ('usage','intent','route','model_calls','tool_calls','stop_reason')})
                             message_id, actions = await self._persist_reply(
                                 conversation_id, turn_id, current.id, result)
                             committed = True
@@ -126,9 +135,15 @@ class WorkflowService:
                 yield ChatEvent('citations', {'message_id': message_id, 'citations': final['citations']})
             if actions:
                 yield ChatEvent('actions', {'message_id': message_id, 'actions': public_actions(actions)})
+            self.log.write('turn_terminal', {**terminal, 'status':'complete', 'duration_ms':(perf_counter()-began)*1000})
             finished = True
             yield ChatEvent('completed', {'message_id': message_id})
         except BaseException as error:
+            try:
+                self.log.write('turn_terminal', {**terminal, 'status':'cancelled' if isinstance(error, (asyncio.CancelledError, GeneratorExit)) else 'failed',
+                    'error_type':type(error).__name__, 'duration_ms':(perf_counter()-began)*1000})
+            except Exception:
+                pass
             if started and not finished:
                 status = ('incomplete' if isinstance(error, (asyncio.CancelledError, GeneratorExit))
                           else 'checkpoint_failed' if committed else 'failed')
@@ -172,5 +187,6 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
                 knowledge_gate=knowledge_gate, tools_factory=tools_factory,
                 limits=AgentLimits(model_calls=settings.agent_model_calls,
                     tool_calls=settings.agent_tool_calls, turn_tokens=settings.agent_turn_tokens,
-                    response_tokens=settings.response_token_reserve), log=log, checkpointer=saver)
-            yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings)
+                    response_tokens=settings.response_token_reserve,
+                    input_tokens=settings.context_token_budget-settings.response_token_reserve), log=log, checkpointer=saver)
+            yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings, log=log)

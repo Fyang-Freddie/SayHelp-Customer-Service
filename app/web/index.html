@@ -688,7 +688,7 @@
           const response = await fetch("/v1/conversations/" + encodeURIComponent(id) + "/messages");
           if (!response.ok) throw new Error(response.status === 404 ? "这段历史对话已不存在。" : "历史对话加载失败，请稍后重试。");
           const data = await response.json();
-          if (epoch !== conversationEpoch) return;
+          if (epoch !== conversationEpoch || deletedConversations.has(id) || deletedConversations.has(data.conversation_id)) return;
           conversationId = data.conversation_id;
           rememberConversation(conversationId);
           messages.replaceChildren();
