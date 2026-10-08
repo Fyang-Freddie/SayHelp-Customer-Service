@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-07-sayhelp-ch05-workflow-agent-design.md`（2026-10-07 用户回复“同意”批准）。
 
-**Status:** 用户已选择 Subagent-driven 执行；任务 1–7 已评审通过，继续任务 8。完成状态以本计划勾选和 SDD ledger 为准。
+**Status:** 用户已选择 Subagent-driven 执行；任务 1–8 已评审通过，继续任务 9 整体验收与交付。完成状态以本计划勾选和 SDD ledger 为准。
 
 ## Global Constraints
 
@@ -163,10 +163,10 @@
 
 **Interfaces:** `renderActions(view, actions, conversationId)` 将建议绑定到对应回复；handoff 点击仅本地展示两条固定文字；create_ticket 先展示描述/类型确认再调用任务 7 API。按钮/弹窗逻辑分别管理，不用共享“已处理”状态禁用另一按钮。
 
-- [ ] 先写浏览器验收脚本，复用现有 Node/Playwright + 本地 HTTP 夹具模式；运行 `node scripts/validate_ch05_actions.cjs` 观察当前页面缺按钮而失败。未找到 Playwright 时先查依赖位置并读对应技能/官方文档，不依赖猜测路径。
-- [ ] 实现 actions SSE 与历史恢复；确认框取消不发请求，确认后禁用提交直到返回；重复确认使用同 action_id。所有文案安全文本渲染。转人工只显示 `已转接人工客服` 与 `您好,我是SayHelp,请问有什么可以帮您的`，不发网络请求。
-- [ ] 验证两种点击顺序、只点一个、均不点继续聊天、取消建单、超时、再次打开已成功动作、含 HTML 的描述、窄屏；切会话时旧流与旧弹窗不污染当前会话，删除后旧按钮不建单。
-- [ ] Run `node scripts/validate_ch05_actions.cjs`、`node scripts/validate_ch04_citations.cjs`；保存结构化结果 `eval/ch05/actions_ui_results.json`，不记录客户内容。记录并提交 `feat: add independent handoff and ticket actions`。
+- [x] 先写浏览器验收脚本，复用现有 Node/Playwright + 本地 HTTP 夹具模式；运行 `node scripts/validate_ch05_actions.cjs` 观察当前页面缺按钮而失败。未找到 Playwright 时先查依赖位置并读对应技能/官方文档，不依赖猜测路径。
+- [x] 实现 actions SSE 与历史恢复；确认框取消不发请求，确认后禁用提交直到返回；重复确认使用同 action_id。所有文案安全文本渲染。转人工只显示 `已转接人工客服` 与 `您好,我是SayHelp,请问有什么可以帮您的`，不发网络请求。
+- [x] 验证两种点击顺序、只点一个、均不点继续聊天、取消建单、超时、再次打开已成功动作、含 HTML 的描述、窄屏；切会话时旧流与旧弹窗不污染当前会话，删除后旧按钮不建单。
+- [x] Run `node scripts/validate_ch05_actions.cjs`、`node scripts/validate_ch04_citations.cjs`；保存结构化结果 `eval/ch05/actions_ui_results.json`，不记录客户内容。记录并提交 `feat: add independent handoff and ticket actions`。
 
 ## Task 9: 整体验收、代码评审与交付
 
