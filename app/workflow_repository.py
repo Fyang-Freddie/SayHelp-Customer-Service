@@ -128,6 +128,15 @@ class WorkflowRepository:
                 result.setdefault(str(row.message_id), []).append(_action_dict(row))
             return result
 
+    def incomplete_message_ids(self, conversation_id: int) -> set[str]:
+        """Exclude interrupted turns; a fully committed checkpoint failure is recoverable."""
+        with self.session_factory() as session:
+            rows = session.scalars(select(WorkflowMessageKey.message_id).join(WorkflowTurn)
+                .where(WorkflowTurn.conversation_id == conversation_id,
+                    (WorkflowTurn.final_message_id.is_(None)) |
+                    (WorkflowTurn.status.not_in(['complete', 'checkpoint_failed']))))
+            return {str(identity) for identity in rows}
+
     def set_turn_status(self, turn_id: str, status: str) -> None:
         if not isinstance(status, str) or not status.strip() or len(status) > 32:
             raise ValueError('Invalid turn status')
@@ -136,4 +145,5 @@ class WorkflowRepository:
             if turn is None:
                 raise KeyError('Turn not found')
             _active_conversation(session, turn.conversation_id)
+            session.refresh(turn, with_for_update=True)
             turn.status = status

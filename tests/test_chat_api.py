@@ -2,6 +2,7 @@
 import asyncio
 import json
 from threading import Event
+from uuid import uuid4
 
 import httpx
 import pytest
@@ -13,13 +14,15 @@ from app.db import Conversation
 from app.main import create_app
 from app.model_service import ModelService
 from app.repository import Repository
-from test_db import database_url, sessions
-from test_tools import FakeKnowledgeSearch
+from test_db import database_url
+from test_workflow_repository import sessions
+from test_workflow_service import Gate
+from app.workflow_repository import WorkflowRepository
 
 
 def settings(**overrides):
     values = dict(chat_base_url='https://example.invalid/v1', chat_model='test-model',
-                  chat_api_key='test-secret')
+                  chat_api_key='test-secret', workflow_checkpoint_path='.runtime/ch05/tests/' + uuid4().hex + '.sqlite')
     values.update(overrides)
     return Settings(**values)
 
@@ -33,13 +36,31 @@ def parse_events(body):
     return events
 
 
+async def request(app, method, path, **kwargs):
+    async def send():
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://testserver') as client:
+            return await client.request(method, path, **kwargs)
+    if getattr(app.state, 'workflow_service', None) is not None:
+        return await send()
+    async with app.router.lifespan_context(app):
+        return await send()
+
+
 async def post(app, payload):
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),
-                                 base_url='http://testserver') as client:
-        return await client.post('/v1/chat/stream', json=payload)
+    return await request(app, 'POST', '/v1/chat/stream', json=payload)
 
 
 class FakeModel:
+    async def classify_intent(self, text):
+        return AIMessage(content='{"intent":"订单"}')
+
+    async def select(self, messages, tools, **kwargs):
+        return await self.choose_tool(messages, tools)
+
+    async def stream_reply(self, messages, **kwargs):
+        async for text in self.stream_chat(messages):
+            yield AIMessageChunk(content=text)
+
     async def choose_tool(self, messages, tools):
         return AIMessage(content='draft')
 
@@ -50,11 +71,11 @@ class FakeModel:
 
 def test_app_requires_database_url_or_injected_storage():
     with pytest.raises(ValueError, match='DATABASE_URL'):
-        create_app(settings(), FakeModel(), knowledge_search=FakeKnowledgeSearch())
+        create_app(settings(), FakeModel(), knowledge_gate=Gate())
 
 
 def test_stream_emits_decimal_session_chunks_and_persists_final(sessions):
-    app = create_app(settings(), FakeModel(), session_factory=sessions, knowledge_search=FakeKnowledgeSearch())
+    app = create_app(settings(), FakeModel(), session_factory=sessions, knowledge_gate=Gate())
     response = asyncio.run(post(app, {'message': '你好'}))
     assert response.status_code == 200
     assert response.headers['content-type'].startswith('text/event-stream')
@@ -76,7 +97,7 @@ def test_tool_status_precedes_tokens_and_contains_only_public_badge_data(session
             return AIMessage(content='', tool_calls=[{
                 'id': 'request-1', 'name': 'query_order', 'args': {'order_id': 'private-order'},
             }])
-    app = create_app(settings(), ToolModel(), session_factory=sessions, knowledge_search=FakeKnowledgeSearch())
+    app = create_app(settings(), ToolModel(), session_factory=sessions, knowledge_gate=Gate())
     response = asyncio.run(post(app, {'message': '查询订单'}))
     events = parse_events(response.text)
     assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'done']
@@ -93,15 +114,15 @@ def test_restart_uses_completed_persisted_context(sessions):
     class ContextModel(FakeModel):
         async def stream_chat(self, messages):
             yield 'saved' if [m.content for m in messages[1:-1]] == ['first', '你好'] else 'lost'
-    first = parse_events(asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch()), {'message': 'first'})).text)
+    first = parse_events(asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_gate=Gate()), {'message': 'first'})).text)
     cid = first[0][1]['conversation_id']
-    restarted = create_app(settings(), ContextModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+    restarted = create_app(settings(), ContextModel(), sessions, knowledge_gate=Gate())
     response = asyncio.run(post(restarted, {'message': 'second', 'conversation_id': cid}))
     assert parse_events(response.text)[1] == ('token', {'text': 'saved'})
 
 
 def test_unknown_decimal_conversation_returns_404_before_stream(sessions):
-    response = asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch()),
+    response = asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_gate=Gate()),
                                 {'message': '你好', 'conversation_id': '18446744073709551615'}))
     assert response.status_code == 404
     assert 'text/event-stream' not in response.headers['content-type']
@@ -109,7 +130,7 @@ def test_unknown_decimal_conversation_returns_404_before_stream(sessions):
 
 @pytest.mark.parametrize('cid', ['missing', '', '0', '-1', '+1', '1.0', ' 1', '١', '18446744073709551616', 1])
 def test_malformed_conversation_returns_422_before_stream(cid, sessions):
-    response = asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch()),
+    response = asyncio.run(post(create_app(settings(), FakeModel(), sessions, knowledge_gate=Gate()),
                                 {'message': '你好', 'conversation_id': cid}))
     assert response.status_code == 422
     assert 'text/event-stream' not in response.headers['content-type']
@@ -118,7 +139,7 @@ def test_malformed_conversation_returns_422_before_stream(cid, sessions):
 def test_oversized_request_creates_no_conversation_and_preserves_existing(sessions):
     repo = Repository(sessions)
     cid = repo.create_conversation('existing')
-    app = create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+    app = create_app(settings(), FakeModel(), sessions, knowledge_gate=Gate())
     for id in (None, str(cid)):
         response = asyncio.run(post(app, {'message': 'x' * 20000, 'conversation_id': id}))
         assert response.status_code == 413
@@ -138,7 +159,7 @@ def test_upstream_error_is_safe_and_incomplete_audit_suffix_is_ignored(phase, se
         async def stream_chat(self, messages):
             yield 'partial'
             raise RuntimeError('test-secret provider credentials')
-    first = asyncio.run(post(create_app(settings(), FailingModel(), sessions, knowledge_search=FakeKnowledgeSearch()), {'message': 'first'}))
+    first = asyncio.run(post(create_app(settings(), FailingModel(), sessions, knowledge_gate=Gate()), {'message': 'first'}))
     events = parse_events(first.text)
     assert [kind for kind, _ in events] == (['session', 'error'] if phase == 'selection' else ['session', 'token', 'error'])
     assert 'test-secret' not in first.text and 'credentials' not in first.text
@@ -147,28 +168,26 @@ def test_upstream_error_is_safe_and_incomplete_audit_suffix_is_ignored(phase, se
     class RetryModel(FakeModel):
         async def stream_chat(self, messages):
             yield 'clean' if len(messages) == 2 else 'dirty'
-    retry = asyncio.run(post(create_app(settings(), RetryModel(), sessions, knowledge_search=FakeKnowledgeSearch()), {'message': 'retry', 'conversation_id': cid}))
+    retry = asyncio.run(post(create_app(settings(), RetryModel(), sessions, knowledge_gate=Gate()), {'message': 'retry', 'conversation_id': cid}))
     assert parse_events(retry.text)[1] == ('token', {'text': 'clean'})
 
 
 def test_final_persistence_failure_emits_safe_error_and_releases_reservation(sessions, monkeypatch):
-    original = Repository.append_message
-    def fail_final(self, id, role, content, **kwargs):
-        if role == 'assistant':
-            raise RuntimeError('test-secret commit details')
-        return original(self, id, role, content, **kwargs)
-    monkeypatch.setattr(Repository, 'append_message', fail_final)
-    app = create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+    original = WorkflowRepository.commit_reply
+    def fail_final(self, *args):
+        raise RuntimeError('test-secret commit details')
+    monkeypatch.setattr(WorkflowRepository, 'commit_reply', fail_final)
+    app = create_app(settings(), FakeModel(), sessions, knowledge_gate=Gate())
     response = asyncio.run(post(app, {'message': 'first'}))
     events = parse_events(response.text)
     assert [kind for kind, _ in events] == ['session', 'token', 'token', 'error']
     assert 'test-secret' not in response.text
-    monkeypatch.setattr(Repository, 'append_message', original)
+    monkeypatch.setattr(WorkflowRepository, 'commit_reply', original)
     assert asyncio.run(post(app, {'message': 'retry', 'conversation_id': events[0][1]['conversation_id']})).status_code == 200
 
 
 def test_done_on_wire_has_already_committed_final_answer(sessions):
-    app = create_app(settings(), FakeModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+    app = create_app(settings(), FakeModel(), sessions, knowledge_gate=Gate())
     repo = Repository(sessions)
     async def scenario():
         payload = json.dumps({'message': 'first'}).encode()
@@ -189,7 +208,8 @@ def test_done_on_wire_has_already_committed_final_answer(sessions):
             if 'event: done' in body:
                 observed = True
                 assert [(r.role, r.content) for r in repo.load_messages(cid)] == [('user', 'first'), ('assistant', '你好')]
-        await app(scope, receive, send)
+        async with app.router.lifespan_context(app):
+            await app(scope, receive, send)
         assert observed
     asyncio.run(scenario())
 
@@ -199,13 +219,13 @@ def test_overlap_rejected_until_stream_and_cancelled_write_settle_then_retry(ses
     repo = Repository(sessions)
     cid = str(repo.create_conversation('guest-test'))
     write_entered, write_release = Event(), Event()
-    original = Repository.append_message
-    def slow_write(self, id, role, content, **kwargs):
-        if cancel_write and role == 'assistant' and content == 'old-answer':
+    original = WorkflowRepository.commit_reply
+    def slow_write(self, id, turn_id, position, content, citations, suggestions):
+        if cancel_write and content == 'old-answer':
             write_entered.set()
             assert write_release.wait(5)
-        return original(self, id, role, content, **kwargs)
-    monkeypatch.setattr(Repository, 'append_message', slow_write)
+        return original(self, id, turn_id, position, content, citations, suggestions)
+    monkeypatch.setattr(WorkflowRepository, 'commit_reply', slow_write)
     async def scenario():
         entered, release = asyncio.Event(), asyncio.Event()
         class SlowModel(FakeModel):
@@ -217,7 +237,7 @@ def test_overlap_rejected_until_stream_and_cancelled_write_settle_then_retry(ses
                     yield 'old-answer'
                 else:
                     yield 'new-answer'
-        app = create_app(settings(), SlowModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+        app = create_app(settings(), SlowModel(), sessions, knowledge_gate=Gate())
         active = asyncio.create_task(post(app, {'message': 'active', 'conversation_id': cid}))
         try:
             await asyncio.wait_for(entered.wait(), 2)
@@ -258,7 +278,7 @@ def test_cancelled_generation_releases_reservation_without_invented_answer(sessi
                     entered.set()
                     await asyncio.Event().wait()
                 yield 'clean'
-        app = create_app(settings(), SlowModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+        app = create_app(settings(), SlowModel(), sessions, knowledge_gate=Gate())
         active = asyncio.create_task(post(app, {'message': 'active', 'conversation_id': cid}))
         await asyncio.wait_for(entered.wait(), 2)
         active.cancel()
@@ -274,7 +294,7 @@ def test_model_service_forwards_nonempty_text_chunks_with_configured_model(monke
     import app.model_service as module
     class FakeChatOpenAI:
         def __init__(self, *, base_url, model, api_key, timeout, max_retries):
-            assert (timeout, max_retries) == (180, 1)
+            assert timeout == 180 and max_retries in (0, 1)
             assert (base_url, model, api_key) == ('https://example.invalid/v1', 'test-model', 'test-secret')
         async def astream(self, messages):
             yield AIMessageChunk(content='a')
@@ -290,17 +310,17 @@ def test_http_disconnect_waits_for_pending_write_before_releasing_id(sessions, m
     repo = Repository(sessions)
     cid = str(repo.create_conversation('guest-disconnect'))
     write_entered, write_release = Event(), Event()
-    original = Repository.append_message
-    def slow_write(self, id, role, content, **kwargs):
-        if role == 'assistant' and content == 'old-answer':
+    original = WorkflowRepository.commit_reply
+    def slow_write(self, id, turn_id, position, content, citations, suggestions):
+        if content == 'old-answer':
             write_entered.set()
             assert write_release.wait(5)
-        return original(self, id, role, content, **kwargs)
-    monkeypatch.setattr(Repository, 'append_message', slow_write)
+        return original(self, id, turn_id, position, content, citations, suggestions)
+    monkeypatch.setattr(WorkflowRepository, 'commit_reply', slow_write)
     class DisconnectModel(FakeModel):
         async def stream_chat(self, messages):
             yield 'old-answer' if messages[-1].content == 'active' else 'new-answer'
-    app = create_app(settings(), DisconnectModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+    app = create_app(settings(), DisconnectModel(), sessions, knowledge_gate=Gate())
     async def scenario():
         disconnect = asyncio.Event()
         payload = json.dumps({'message': 'active', 'conversation_id': cid}).encode()
@@ -319,7 +339,10 @@ def test_http_disconnect_waits_for_pending_write_before_releasing_id(sessions, m
             return {'type': 'http.disconnect'}
         async def send(message):
             pass
-        active = asyncio.create_task(app(scope, receive, send))
+        async def live_request():
+            async with app.router.lifespan_context(app):
+                await app(scope, receive, send)
+        active = asyncio.create_task(live_request())
         try:
             assert await asyncio.to_thread(write_entered.wait, 2)
             disconnect.set()
@@ -351,7 +374,7 @@ def test_active_capacity_limits_streams_without_evicting_persisted_chats(session
                     entered.set()
                     await release.wait()
                 yield 'ok'
-        app = create_app(settings(max_conversations=1), SlowModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+        app = create_app(settings(max_conversations=1), SlowModel(), sessions, knowledge_gate=Gate())
         active = asyncio.create_task(post(app, {'message': 'active', 'conversation_id': cid}))
         try:
             await asyncio.wait_for(entered.wait(), 2)
@@ -372,63 +395,51 @@ def test_active_capacity_limits_streams_without_evicting_persisted_chats(session
         assert session.scalar(select(func.count()).select_from(Conversation)) == 2
 
 
-def test_faq_adds_sources_without_changing_tool_contract(sessions):
+def test_faq_uses_complete_gate_payload_and_excludes_ticket_execution(sessions):
     class PostageModel(FakeModel):
         async def choose_tool(self, messages, tools):
-            assert [tool.name for tool in tools] == ['query_order', 'query_product', 'query_logistics', 'query_faq', 'create_ticket']
+            names = [tool['function']['name'] for tool in tools]
+            assert names == ['query_order', 'query_product', 'query_logistics', 'query_faq', 'suggest_actions']
             return AIMessage(content='', tool_calls=[{'id': 'postage-1', 'name': 'query_faq', 'args': {'keyword': '邮费'}}])
-
-    app = create_app(settings(), PostageModel(), sessions, knowledge_search=FakeKnowledgeSearch())
+    app = create_app(settings(), PostageModel(), sessions, knowledge_gate=Gate())
     events = parse_events(asyncio.run(post(app, {'message': '邮费是多少'})).text)
-    assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'sources', 'token', 'token', 'done']
-    assert events[3][1]['sources'][0]['question'] == '订单运费如何计算？'
-    assert events[1:3] == [('tool_status', {'name': 'query_faq', 'state': 'running'}), ('tool_status', {'name': 'query_faq', 'state': 'success'})]
+    assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'done']
     rows = Repository(sessions).load_messages(int(events[0][1]['conversation_id']))
     payload = json.loads(rows[2].content)
-    assert set(payload) == {'keyword', 'matches', 'message'}
-    assert payload['matches'][0]['question'] == '订单运费如何计算？'
+    assert payload['useful'] is True and payload['matches'] == [{'answer': 'evidence'}]
+    assert payload['citations'] == [{'n': 1}]
 
 
-@pytest.mark.parametrize('initialize', [False, True])
-def test_app_lifespan_closes_owned_milvus_client(monkeypatch, sessions, initialize):
+@pytest.mark.parametrize('fail_warmup', [False, True])
+def test_app_lifespan_warms_and_closes_owned_gate(monkeypatch, sessions, fail_warmup):
+    from contextlib import contextmanager
     from types import SimpleNamespace
-    import sys
-    from app.hybrid_store import HybridMilvusStore
-    closed, constructed, stores = [], [], []
-    class Client:
-        def __init__(self, **kwargs): constructed.append(self)
-        def close(self): closed.append(self)
-    monkeypatch.setitem(sys.modules, 'pymilvus', SimpleNamespace(MilvusClient=Client))
-    def factory(**kwargs):
-        store = HybridMilvusStore(**kwargs)
-        stores.append(store)
-        return store
-    monkeypatch.setattr('app.main.HybridMilvusStore', factory)
-    # This test owns client cleanup, not local model inference; startup warmup
-    # success/failure is covered separately in test_rag_latency.
-    monkeypatch.setattr('app.main.RagRetrieval.warmup', lambda self: None)
-    monkeypatch.setattr('app.main.read_current_corpus', lambda *args: SimpleNamespace(corpus_digest='fixture'))
-    monkeypatch.setattr('app.main.ConfidencePolicy.load', lambda *args: SimpleNamespace(assess=lambda r: None))
+    stages = []
+    def warmup():
+        stages.append('warmup')
+        if fail_warmup: raise RuntimeError('warmup failed')
+    @contextmanager
+    def owned(*args, **kwargs):
+        stages.append('open')
+        try: yield SimpleNamespace(retrieval=SimpleNamespace(warmup=warmup))
+        finally: stages.append('close')
+    monkeypatch.setattr('app.workflow_service.create_live_knowledge_gate', owned)
     app = create_app(settings(), FakeModel(), sessions)
-    assert len(stores) == 1 and constructed == []
+    assert stages == []
     async def lifecycle():
         async with app.router.lifespan_context(app):
-            if initialize:
-                stores[0].client
-    asyncio.run(lifecycle())
-    assert len(constructed) == int(initialize)
-    assert closed == constructed
-    with pytest.raises(RuntimeError, match='closed'):
-        stores[0].client
+            stages.append('ready')
+    if fail_warmup:
+        with pytest.raises(RuntimeError, match='warmup'): asyncio.run(lifecycle())
+        assert stages == ['open', 'warmup', 'close']
+    else:
+        asyncio.run(lifecycle())
+        assert stages == ['open', 'warmup', 'ready', 'close']
 
 
-def test_app_lifespan_does_not_close_injected_search(monkeypatch, sessions):
-    class CallerSearch(FakeKnowledgeSearch):
-        def close(self):
-            raise AssertionError('Injected search remains caller owned')
-    monkeypatch.setattr('app.main.HybridMilvusStore', lambda **kwargs: pytest.fail('Injected search must bypass client creation'))
-    app = create_app(settings(), FakeModel(), sessions, CallerSearch())
+def test_app_lifespan_does_not_close_injected_gate(monkeypatch, sessions):
+    monkeypatch.setattr('app.workflow_service.create_live_knowledge_gate', lambda *a, **k: pytest.fail('Caller owns gate'))
+    app = create_app(settings(), FakeModel(), sessions, knowledge_gate=Gate())
     async def lifecycle():
-        async with app.router.lifespan_context(app):
-            pass
+        async with app.router.lifespan_context(app): pass
     asyncio.run(lifecycle())

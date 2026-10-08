@@ -9,7 +9,8 @@ from app.db import make_session_factory
 from app.init_db import initialize_database
 from app.main import create_app
 from app.repository import Repository
-from test_chat_api import settings, FakeModel, parse_events, post
+from test_chat_api import settings, FakeModel, parse_events, post, request
+from test_workflow_service import Gate
 from test_db import database_url
 from test_tools import FakeKnowledgeSearch
 
@@ -18,16 +19,15 @@ from test_tools import FakeKnowledgeSearch
 def factory(database_url):
     from app.init_ch04_db import initialize_ch04_database
     initialize_ch04_database(database_url)
+    from app.init_ch05_db import initialize_ch05_database
+    initialize_ch05_database(database_url)
     result = make_session_factory(database_url)
     yield result
     result.kw['bind'].dispose()
 
 
 def get(app, path):
-    async def fetch():
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
-            return await client.get(path)
-    return asyncio.run(fetch())
+    return asyncio.run(request(app, 'GET', path))
 
 
 def test_history_lists_recent_activity_and_restores_only_public_messages(factory):
@@ -41,7 +41,7 @@ def test_history_lists_recent_activity_and_restores_only_public_messages(factory
     repo.append_message(newer, 'assistant', '另一条答复')
     repo.append_message(older, 'user', '继续旧会话')
     repo.append_message(older, 'assistant', '继续答复')
-    app = create_app(settings(), FakeModel(), factory, FakeKnowledgeSearch())
+    app = create_app(settings(), FakeModel(), factory, knowledge_gate=Gate())
     response = get(app, '/v1/conversations?limit=1')
     assert response.status_code == 200
     listing = response.json()
@@ -64,18 +64,18 @@ def test_history_lists_recent_activity_and_restores_only_public_messages(factory
 
 @pytest.mark.parametrize('suffix,status', [('999999',404), ('0',422), ('bad',422), ('18446744073709551616',422)])
 def test_history_missing_or_invalid_id(factory, suffix, status):
-    app = create_app(settings(), FakeModel(), factory, FakeKnowledgeSearch())
+    app = create_app(settings(), FakeModel(), factory, knowledge_gate=Gate())
     assert get(app, '/v1/conversations/' + suffix + '/messages').status_code == status
 
 
 @pytest.mark.parametrize('query', ['limit=0','limit=101','before=0','before=oops'])
 def test_history_rejects_invalid_pagination(factory, query):
-    app = create_app(settings(), FakeModel(), factory, FakeKnowledgeSearch())
+    app = create_app(settings(), FakeModel(), factory, knowledge_gate=Gate())
     assert get(app, '/v1/conversations?' + query).status_code == 422
 
 
 def test_document_preview_returns_actual_markdown_and_rejects_paths(factory):
-    app = create_app(settings(), FakeModel(), factory, FakeKnowledgeSearch())
+    app = create_app(settings(), FakeModel(), factory, knowledge_gate=Gate())
     response = get(app, '/v1/knowledge/documents/product-specs.md')
     assert response.status_code == 200
     payload = response.json()
@@ -100,21 +100,17 @@ def test_source_mapping_uses_exact_original_text_and_never_guesses(tmp_path):
     assert sources_from_tool('not json', tmp_path) == []
 
 
-def test_faq_source_event_precedes_answer_and_history_keeps_snapshot(factory):
+def test_workflow_citations_and_history_keep_snapshot(factory):
     from langchain_core.messages import AIMessage
     class Model(FakeModel):
-        async def choose_tool(self, messages, tools):
-            return AIMessage(content='', tool_calls=[{'id':'faq','name':'query_faq','args':{'keyword':'退货'}}])
-    app = create_app(settings(), Model(), factory, FakeKnowledgeSearch())
+        async def classify_intent(self, text): return AIMessage(content='{"intent":"退款退货"}')
+    app = create_app(settings(), Model(), factory, knowledge_gate=Gate())
     events = parse_events(asyncio.run(post(app, {'message':'退货'})).text)
-    kinds = [kind for kind,_ in events]
-    assert 'sources' in kinds
-    assert kinds.index('sources') < kinds.index('token')
-    snapshot = next(data['sources'] for kind,data in events if kind == 'sources')
-    assert snapshot[0]['answer'] == '七天内申请'
+    snapshot = next(data['citations'] for kind,data in events if kind == 'citations')
+    assert snapshot == [{'n': 1}]
     cid = events[0][1]['conversation_id']
     history = get(app, f'/v1/conversations/{cid}/messages').json()
-    assert history['messages'][-1]['sources'][0]['answer'] == '七天内申请'
+    assert history['messages'][-1]['citations'] == snapshot
 
 
 def test_invalid_source_entries_do_not_change_original_citation_numbers(tmp_path):

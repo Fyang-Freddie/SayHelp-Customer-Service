@@ -8,19 +8,18 @@ from app.db import Conversation,Message,Ticket
 from app.ch04_db import LowConfidenceQuestion
 from app.repository import Repository
 from app.main import create_app
-from test_db import database_url,sessions
-from test_chat_api import settings,FakeModel,post
+from test_db import database_url
+from test_workflow_repository import sessions
+from test_workflow_service import Gate
+from test_chat_api import settings,FakeModel,post,request
 from test_tools import FakeKnowledgeSearch
 
 
-def app(sessions,model=None): return create_app(settings(),model or FakeModel(),sessions,FakeKnowledgeSearch())
+def app(sessions,model=None): return create_app(settings(),model or FakeModel(),sessions,knowledge_gate=Gate())
 def seed(repo,count):
     ids=[repo.create_conversation(f'guest-{i}') for i in range(count)]
     for i,cid in enumerate(ids): repo.append_message(cid,'user',f'作者测试会话{i}')
     return ids
-async def request(app,method,path,**kwargs):
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://test') as client:
-        return await client.request(method,path,**kwargs)
 
 
 def test_pin_same_second_and_mixed_pagination_has_full_sort_no_dup_or_loss(sessions):

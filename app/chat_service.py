@@ -26,7 +26,7 @@ from app.knowledge_types import KnowledgeFilters
 
 @dataclass(frozen=True)
 class ChatEvent:
-    kind: Literal['tool_status', 'sources', 'token', 'retrieval_status', 'citations', 'timings', 'completed']
+    kind: Literal['tool_status', 'sources', 'token', 'retrieval_status', 'citations', 'timings', 'actions', 'completed']
     data: dict
 
 

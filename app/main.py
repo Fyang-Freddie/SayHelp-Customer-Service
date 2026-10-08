@@ -1,5 +1,4 @@
 """Customer service streaming HTTP API with persistent conversation storage."""
-import asyncio
 from collections.abc import AsyncIterator, Iterator
 from contextlib import aclosing, asynccontextmanager
 from pathlib import Path
@@ -14,22 +13,15 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.chat_service import ChatService
 from app.chat_views import public_messages, read_document
 from app.config import Settings
-from app.embedding import BgeM3Embedder
-from app.knowledge_search import KnowledgeSearch
-from app.hybrid_store import HybridMilvusStore
-from app.ch04_ingest import ROOT, DOCUMENTS, read_current_corpus
-from app.reranking import BgeReranker
-from app.rag_retrieval import RagRetrieval
-from app.rag_generation import RagGenerator
-from app.query_understanding import QueryUnderstanding
-from app.evaluation.calibration import ConfidencePolicy, fingerprints
+from app.ch04_ingest import DOCUMENTS
+from app.workflow_service import open_workflow_service
+from app.workflow_repository import WorkflowRepository
 from app.db import make_session_factory
 from app.history import InputBudgetExceeded, prepare_context
 from app.model_service import ModelService
-from app.prompts import render_service_system_prompt
+from app.prompts import render_workflow_system_prompt
 from app.repository import Repository
 from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest, PinRequest
 
@@ -40,8 +32,7 @@ def create_app(
     settings: Settings | None = None,
     model_service: ModelService | None = None,
     session_factory: sessionmaker[Session] | None = None,
-    knowledge_search: KnowledgeSearch | None = None,
-    *, query_understanding=None, rag_retrieval=None, rag_generator=None, confidence_policy=None,
+    *, knowledge_gate=None,
 ) -> FastAPI:
     settings = settings if settings is not None else Settings.from_env()
     owns_engine = session_factory is None
@@ -51,39 +42,23 @@ def create_app(
         session_factory = make_session_factory(settings.database_url)
     model_service = model_service if model_service is not None else ModelService(settings)
     repository = Repository(session_factory)
-    owned_store = None
-    pipeline = (query_understanding, rag_retrieval, rag_generator, confidence_policy)
-    if any(item is not None for item in pipeline) and any(item is None for item in pipeline):
-        raise ValueError('Inject all four evidence pipeline dependencies together')
-    if knowledge_search is None and all(item is None for item in pipeline):
-        # Exact SQL provenance and calibration are checked before accepting chats.
-        corpus = read_current_corpus(session_factory, ROOT / 'eval/ch04/corpus.json', settings.knowledge_collection)
-        confidence_policy = ConfidencePolicy.load(settings.knowledge_confidence_path,
-            fingerprints(corpus, settings, ROOT / 'eval/ch04/calibration.json'), settings.knowledge_confidence_overrides)
-        owned_store = HybridMilvusStore(uri=settings.milvus_uri, collection_name=settings.knowledge_collection)
-        rag_retrieval = RagRetrieval(session_factory, BgeM3Embedder(cache_dir=settings.bge_cache_dir),
-                                    owned_store, BgeReranker(cache_dir=settings.bge_cache_dir), corpus, diagnostics=False)
-        query_understanding = QueryUnderstanding(model_service)
-        rag_generator = RagGenerator(model_service)
-    service = ChatService(repository, model_service, settings, knowledge_search,
-        query_understanding=query_understanding, rag_retrieval=rag_retrieval,
-        rag_generator=rag_generator, confidence_policy=confidence_policy)
+    workflow_repository = WorkflowRepository(session_factory)
     active: set[int] = set()
     reservation_lock = RLock()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         try:
-            if owned_store is not None:
-                await asyncio.to_thread(rag_retrieval.warmup)
-            yield
+            async with open_workflow_service(repository, model_service, settings,
+                    knowledge_gate=knowledge_gate) as service:
+                app.state.workflow_service = service
+                try:
+                    yield
+                finally:
+                    del app.state.workflow_service
         finally:
-            try:
-                if owned_store is not None:
-                    owned_store.close()
-            finally:
-                if owns_engine:
-                    session_factory.kw['bind'].dispose()
+            if owns_engine:
+                session_factory.kw['bind'].dispose()
 
     app = FastAPI(lifespan=lifespan)
 
@@ -134,7 +109,8 @@ def create_app(
             if repository.get_conversation(int(conversation_id)) is None:
                 raise HTTPException(status_code=404, detail='Conversation not found')
             return {'conversation_id': conversation_id,
-                    'messages': public_messages(repository.load_messages(int(conversation_id)))}
+                    'messages': public_messages(repository.load_messages(int(conversation_id)),
+                        workflow_repository.load_actions(int(conversation_id)))}
         except SQLAlchemyError:
             raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
 
@@ -148,7 +124,7 @@ def create_app(
             raise HTTPException(status_code=404, detail='Knowledge document not found') from None
 
     def prepare_chat(request: ChatRequest) -> Iterator[PreparedChat]:
-        system = SystemMessage(content=render_service_system_prompt())
+        system = SystemMessage(content=render_workflow_system_prompt())
         current = HumanMessage(content=request.message)
         conversation_id = int(request.conversation_id) if request.conversation_id is not None else None
         reserved = False
@@ -188,7 +164,7 @@ def create_app(
         wire_id = str(conversation_id)
         yield ServerSentEvent(event='session', data={'conversation_id': wire_id})
         try:
-            async with aclosing(service.stream_turn(conversation_id, message, filters)) as turn:
+            async with aclosing(app.state.workflow_service.stream_turn(conversation_id, message, filters)) as turn:
                 async for event in turn:
                     if event.kind == 'completed':
                         message_id = event.data['message_id']
@@ -196,6 +172,9 @@ def create_app(
                         yield ServerSentEvent(event=event.kind, data=event.data)
         except Exception:
             yield ServerSentEvent(event='error', data={'message': 'Upstream chat failed'})
+            return
+        if message_id is None:
+            yield ServerSentEvent(event='error', data={'message': 'Workflow did not complete'})
             return
         yield ServerSentEvent(event='done', data={'conversation_id': wire_id, 'message_id': message_id})
 

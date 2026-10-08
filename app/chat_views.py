@@ -62,7 +62,14 @@ def sources_from_tool(content: str | None, directory: Path = KNOWLEDGE_DIR) -> l
     return sources
 
 
-def public_messages(rows) -> list[dict]:
+def public_actions(actions) -> list[dict]:
+    return [{'id': item['action_id'], 'kind': item['kind'],
+             'label': '转人工' if item['kind'] == 'handoff' else '建立工单',
+             'description': item['description'], 'ticket_type': item['ticket_type']}
+            for item in actions]
+
+
+def public_messages(rows, actions=None) -> list[dict]:
     result, sources, faq_calls = [], [], set()
     for row in rows:
         if row.role == 'user':
@@ -80,6 +87,7 @@ def public_messages(rows) -> list[dict]:
             evidence = snapshot if snapshot is not None else sources
             result.append({'id': str(row.id), 'role': row.role, 'content': row.content,
                            'created_at': row.created_at.isoformat(),
+                           'actions': public_actions((actions or {}).get(str(row.id), [])),
                            'sources': evidence if row.role == 'assistant' else [],
                            'citations': snapshot if row.role == 'assistant' and snapshot is not None else []})
     return result

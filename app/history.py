@@ -102,11 +102,7 @@ class ConversationStore:
 
 
 def completed_turns(rows) -> list[list[BaseMessage]]:
-    """Rebuild only complete turns with exactly paired tool request/result IDs.
-
-    Failed audit rows stay in the database. A later user row starts a new turn,
-    allowing successful requests after a failure to reenter model context.
-    """
+    """Recover complete multi-batch turns, retaining stable database identities."""
     from langchain_core.messages import ToolMessage
 
     groups = []
@@ -115,40 +111,48 @@ def completed_turns(rows) -> list[list[BaseMessage]]:
             groups.append([row])
         elif groups:
             groups[-1].append(row)
-
     turns = []
     for group in groups:
-        if len(group) < 2 or group[-1].role != 'assistant' or group[-1].tool_calls:
+        if (len(group) < 2 or group[-1].role != 'assistant'
+                or group[-1].tool_calls or not (group[-1].content or '').strip()):
             continue
-        user = HumanMessage(content=group[0].content or '')
-        final = AIMessage(content=group[-1].content or '')
-        if len(group) == 2:
-            turns.append([user, final])
-            continue
-        request = group[1]
-        if request.role != 'assistant' or not request.tool_calls:
-            continue
-        calls = request.tool_calls
-        if not isinstance(calls, list) or any(not isinstance(call, dict) for call in calls):
-            continue
-        ids = [call.get('id') for call in calls]
-        if any(not isinstance(id, str) or not id for id in ids) or len(set(ids)) != len(ids):
-            continue
-        results = group[2:-1]
-        if len(results) != len(calls) or any(row.role != 'tool' for row in results):
-            continue
-        if set(row.tool_call_id for row in results) != set(ids):
-            continue
+        messages, pending, seen = [], set(), set()
         try:
-            valid = [call for call in calls if call.get('type') != 'invalid_tool_call']
-            invalid = [call for call in calls if call.get('type') == 'invalid_tool_call']
-            assistant = AIMessage(content=request.content or '', tool_calls=valid,
-                                  invalid_tool_calls=invalid)
-        except (TypeError, ValueError):
+            for index, row in enumerate(group):
+                identity = str(row.id) if getattr(row, 'id', None) is not None else None
+                content = row.content or ''
+                if index == 0:
+                    message = HumanMessage(content=content, id=identity)
+                elif row.role == 'tool':
+                    if row.tool_call_id not in pending:
+                        raise ValueError('Unexpected or repeated tool result')
+                    pending.remove(row.tool_call_id)
+                    message = ToolMessage(content=content, tool_call_id=row.tool_call_id, id=identity)
+                elif row.role == 'assistant' and not pending:
+                    if row.tool_calls:
+                        calls = row.tool_calls
+                        if not isinstance(calls, list) or any(not isinstance(c, dict) for c in calls):
+                            raise ValueError('Invalid tool batch')
+                        ids = [c.get('id') for c in calls]
+                        if (any(not isinstance(i, str) or not i for i in ids)
+                                or len(set(ids)) != len(ids) or seen.intersection(ids)):
+                            raise ValueError('Invalid or repeated tool identity')
+                        seen.update(ids)
+                        pending.update(ids)
+                        message = AIMessage(content=content, id=identity,
+                            tool_calls=[c for c in calls if c.get('type') != 'invalid_tool_call'],
+                            invalid_tool_calls=[c for c in calls if c.get('type') == 'invalid_tool_call'])
+                    elif index == len(group)-1:
+                        message = AIMessage(content=content, id=identity)
+                    else:
+                        raise ValueError('Premature final answer')
+                else:
+                    raise ValueError('Incomplete tool batch')
+                messages.append(message)
+            if not pending:
+                turns.append(messages)
+        except (ValueError, TypeError):
             continue
-        turns.append([user, assistant,
-                      *(ToolMessage(content=row.content or '', tool_call_id=row.tool_call_id)
-                        for row in results), final])
     return turns
 
 
