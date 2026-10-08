@@ -1,0 +1,149 @@
+{
+  "checks": [
+    {
+      "name": "历史按回复恢复两个精确按钮",
+      "passed": true
+    },
+    {
+      "name": "转人工只显示精确两条本地消息且无HTTP",
+      "passed": true
+    },
+    {
+      "name": "转人工后建单仍可用",
+      "passed": true
+    },
+    {
+      "name": "HTML描述安全预填",
+      "passed": true
+    },
+    {
+      "name": "显式确认才POST并带稳定动作身份",
+      "passed": true
+    },
+    {
+      "name": "再次打开成功动作展示原结果不重复POST",
+      "passed": true
+    },
+    {
+      "name": "只点建单不触发转人工",
+      "passed": true
+    },
+    {
+      "name": "建单后转人工仍可用",
+      "passed": true
+    },
+    {
+      "name": "相反点击顺序两操作均成功",
+      "passed": true
+    },
+    {
+      "name": "取消建单不发送HTTP",
+      "passed": true
+    },
+    {
+      "name": "Escape取消不发送HTTP",
+      "passed": true
+    },
+    {
+      "name": "均不点击仍正常聊天且SSE动作绑定对应回复",
+      "passed": true
+    },
+    {
+      "name": "unknown没有伪成功或自动重试",
+      "passed": true
+    },
+    {
+      "name": "unknown重试前保留同一载荷",
+      "passed": true
+    },
+    {
+      "name": "unknown显式重试同ID同载荷",
+      "passed": true
+    },
+    {
+      "name": "disconnect没有伪成功或自动重试",
+      "passed": true
+    },
+    {
+      "name": "disconnect重试前保留同一载荷",
+      "passed": true
+    },
+    {
+      "name": "disconnect显式重试同ID同载荷",
+      "passed": true
+    },
+    {
+      "name": "conflict没有伪成功或自动重试",
+      "passed": true
+    },
+    {
+      "name": "conflict重试前保留同一载荷",
+      "passed": true
+    },
+    {
+      "name": "conflict显式重试同ID同载荷",
+      "passed": true
+    },
+    {
+      "name": "stale没有伪成功或自动重试",
+      "passed": true
+    },
+    {
+      "name": "404旧动作禁用提交",
+      "passed": true
+    },
+    {
+      "name": "在途重复确认不产生第二请求",
+      "passed": true
+    },
+    {
+      "name": "旧确认返回不污染新会话",
+      "passed": true
+    },
+    {
+      "name": "切回会话在途动作仍禁止重复确认",
+      "passed": true
+    },
+    {
+      "name": "切回会话的旧确认完成同步原结果",
+      "passed": true
+    },
+    {
+      "name": "切会话后旧按钮不能打开确认框",
+      "passed": true
+    },
+    {
+      "name": "删除后旧按钮不能建单",
+      "passed": true
+    },
+    {
+      "name": "done之前不展示可执行建议",
+      "passed": true
+    },
+    {
+      "name": "done匹配消息后才展示动作",
+      "passed": true
+    },
+    {
+      "name": "动作消息身份错配不渲染按钮",
+      "passed": true
+    },
+    {
+      "name": "切会话旧SSE不恢复动作或旧正文",
+      "passed": true
+    },
+    {
+      "name": "窄屏确认框与操作不横向越界",
+      "passed": true
+    },
+    {
+      "name": "含HTML工单描述和响应以安全文本显示",
+      "passed": true
+    },
+    {
+      "name": "无JavaScript异常或外站请求",
+      "passed": true
+    }
+  ],
+  "scope": "Actual app/web/index.html in Edge headless with authored HTTP/SSE fixtures only; no customer content, model calls or actual ticket writes."
+}
