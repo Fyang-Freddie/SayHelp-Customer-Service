@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-07-sayhelp-ch05-workflow-agent-design.md`（2026-10-07 用户回复“同意”批准）。
 
-**Status:** 用户已选择 Subagent-driven 执行；任务 1–6 已评审通过，继续任务 7。完成状态以本计划勾选和 SDD ledger 为准。
+**Status:** 用户已选择 Subagent-driven 执行；任务 1–7 已评审通过，继续任务 8。完成状态以本计划勾选和 SDD ledger 为准。
 
 ## Global Constraints
 
@@ -152,10 +152,10 @@
 
 **Interfaces:** `TicketActions.confirm(conversation_id: int, action_id: str, description: str, ticket_type: str) -> dict`（async）；`POST /v1/conversations/{conversation_id}/tickets`，body 为 `{action_id,description,ticket_type}`，服务端以 action_id 作为 request_key，并从存储确认归属及动作类型。成功返回 `{ticket_no,status,message}`；不接受客户端覆盖会话身份。
 
-- [ ] 写测试：建议输出期间 tickets 行数零；取消时没有 HTTP 写请求；第一次确认写一行；相同动作相同参数重试同号；不同参数 409；不存在/跨会话/已删除的动作 404；handoff 动作不能建单；无效类型/空描述 422。
-- [ ] Run `python -m pytest tests/test_ticket_actions.py -q` 观察 RED，然后实现只调用原 build_tools(...ticket_request_key=action_id)['create_ticket']，不复制其业务逻辑。
-- [ ] 保持与聊天/删除共享的单会话互斥；生成期间建单返回 409；超时结果未知不假成功、不在后台自动再次调用写工具。已确认旧动作可幂等读取结果，换到其他会话的请求不可用旧 action_id。
-- [ ] Run `python -m pytest tests/test_ticket_actions.py tests/test_tools.py tests/test_workflow_repository.py -q`，记录并提交 `feat: require explicit ticket confirmation`。
+- [x] 写测试：建议输出期间 tickets 行数零；取消时没有 HTTP 写请求；第一次确认写一行；相同动作相同参数重试同号；不同参数 409；不存在/跨会话/已删除的动作 404；handoff 动作不能建单；无效类型/空描述 422。
+- [x] Run `python -m pytest tests/test_ticket_actions.py -q` 观察 RED，然后实现只调用原 build_tools(...ticket_request_key=action_id)['create_ticket']，不复制其业务逻辑。
+- [x] 保持与聊天/删除共享的单会话互斥；生成期间建单返回 409；超时结果未知不假成功、不在后台自动再次调用写工具。已确认旧动作可幂等读取结果，换到其他会话的请求不可用旧 action_id。
+- [x] Run `python -m pytest tests/test_ticket_actions.py tests/test_tools.py tests/test_workflow_repository.py -q`，记录并提交 `feat: require explicit ticket confirmation`。
 
 ## Task 8: 前端两按钮与确认交互
 
