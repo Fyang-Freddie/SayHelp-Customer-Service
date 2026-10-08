@@ -22,8 +22,9 @@ from app.db import make_session_factory
 from app.history import InputBudgetExceeded, prepare_context
 from app.model_service import ModelService
 from app.prompts import render_workflow_system_prompt
+from app.ticket_actions import TicketActions
 from app.repository import Repository
-from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest, PinRequest
+from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest, PinRequest, TicketConfirmationRequest
 
 PreparedChat = tuple[int, str, object]
 
@@ -43,6 +44,7 @@ def create_app(
     model_service = model_service if model_service is not None else ModelService(settings)
     repository = Repository(session_factory)
     workflow_repository = WorkflowRepository(session_factory)
+    ticket_actions = TicketActions(repository, workflow_repository)
     active: set[int] = set()
     reservation_lock = RLock()
 
@@ -113,6 +115,31 @@ def create_app(
                         workflow_repository.load_actions(int(conversation_id)))}
         except SQLAlchemyError:
             raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
+
+    @app.post('/v1/conversations/{conversation_id}/tickets')
+    async def confirm_ticket(conversation_id: ConversationId, request: TicketConfirmationRequest) -> dict:
+        id = int(conversation_id)
+        reserved = False
+        try:
+            with reservation_lock:
+                if id in active:
+                    raise HTTPException(status_code=409, detail='Conversation is active')
+                active.add(id)
+                reserved = True
+            # RLock is thread based; release it before awaiting, keep active claimed.
+            return await ticket_actions.confirm(id, request.action_id,
+                request.description, request.ticket_type)
+        except KeyError:
+            raise HTTPException(status_code=404, detail='Conversation or action not found') from None
+        except ValueError:
+            raise HTTPException(status_code=409, detail='Ticket action or request conflicts') from None
+        except (SQLAlchemyError, TimeoutError):
+            raise HTTPException(status_code=503,
+                detail='Ticket result unavailable; retry this action with the same details') from None
+        finally:
+            if reserved:
+                with reservation_lock:
+                    active.discard(id)
 
     @app.get('/v1/knowledge/documents/{filename}')
     def knowledge_document(filename: str) -> dict:

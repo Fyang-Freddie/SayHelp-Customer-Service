@@ -38,3 +38,10 @@ class AfterSalesExtraction(BaseModel):
 class PinRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     is_pinned: StrictBool
+
+
+class TicketConfirmationRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    action_id: Annotated[str, StringConstraints(min_length=1, max_length=64, pattern=r'\S')]
+    description: NonEmptyText
+    ticket_type: Literal['售后', '投诉', '咨询']
