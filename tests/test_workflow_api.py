@@ -27,9 +27,11 @@ def test_lifespan_uses_workflow_and_restores_stable_actions(sessions, tmp_path):
                 actions = events[2][1]
                 assert actions['message_id'] == events[-1][1]['message_id']
                 assert [a['kind'] for a in actions['actions']] == ['handoff', 'create_ticket']
+                assert [a['label'] for a in actions['actions']] == ['转人工', '建工单']
                 assert set(actions['actions'][1]) == {'id', 'kind', 'label', 'description', 'ticket_type'}
                 history = (await client.get(f'/v1/conversations/{cid}/messages')).json()['messages']
                 assert history[-1]['actions'] == actions['actions']
+                assert [a['label'] for a in history[-1]['actions']] == ['转人工', '建工单']
                 assert history[-1]['id'] == actions['message_id']
     asyncio.run(run())
     (tmp_path/'api.sqlite').rename(tmp_path/'closed.sqlite')

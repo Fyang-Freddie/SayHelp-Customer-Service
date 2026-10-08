@@ -64,7 +64,7 @@ def sources_from_tool(content: str | None, directory: Path = KNOWLEDGE_DIR) -> l
 
 def public_actions(actions) -> list[dict]:
     return [{'id': item['action_id'], 'kind': item['kind'],
-             'label': '转人工' if item['kind'] == 'handoff' else '建立工单',
+             'label': '转人工' if item['kind'] == 'handoff' else '建工单',
              'description': item['description'], 'ticket_type': item['ticket_type']}
             for item in actions]
 
