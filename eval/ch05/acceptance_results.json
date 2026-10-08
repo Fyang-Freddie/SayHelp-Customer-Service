@@ -832,6 +832,27 @@
       "source": "headless Edge synthetic localhost HTTP/SSE"
     },
     "pip_check": "No broken requirements found",
-    "protected_originals_unchanged": 4
+    "protected_originals_unchanged": 4,
+    "post_recovery_api": {
+      "command": ".venv/Scripts/python.exe .superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/run_tests.py tests/test_chat_api.py tests/test_rag_api.py -k 'not test_app_requires_database_url_or_injected_storage and not test_model_service_forwards_nonempty_text_chunks_with_configured_model' -q --tb=short",
+      "passed": 36,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "deselected": 2,
+      "seconds": 86.41,
+      "scope": "Exact36 priorMySQLsetup errors; two priorpassed nonDBchat tests deselected; extraction16 not rerun",
+      "service_recovery": "Controller started existing DockerDesktop and existing contact_agent-mysql-1 without recreation/configchanges"
+    }
+  },
+  "checkpoint_review": {
+    "base_commit": "f3bc87e",
+    "critical": 0,
+    "important": 0,
+    "overall_gate": "incomplete live0/10 and finalfullsuite pending",
+    "deferred_minors": [
+      "provider_requests counts logical model operations; SDK retries may add physical HTTP attempts",
+      "mocked ChatOpenAI pipeline custom-httpx/proxy warning"
+    ]
   }
 }
