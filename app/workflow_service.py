@@ -91,7 +91,7 @@ class WorkflowService:
                 conversation_id, turn_id, 0, 'user', message)
             inputs = {'conversation_id': conversation_id, 'turn_id': turn_id,
                 'messages': [RemoveMessage(id=REMOVE_ALL_MESSAGES), *context], 'raw_question': message,
-                'filters': filters.model_dump() if hasattr(filters, 'model_dump') else (filters or {})}
+                'filters': filters.model_dump(exclude_none=True) if hasattr(filters, 'model_dump') else (filters or {})}
             config = {'configurable': {'thread_id': str(conversation_id)}, 'recursion_limit': 64}
             final = None
             streamed = False

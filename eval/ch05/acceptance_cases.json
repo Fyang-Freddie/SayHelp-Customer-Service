@@ -1,0 +1,9 @@
+[
+  {"id":"logistics","question":"请查订单1001的物流到哪里了。","intent":"物流","expected":"调用query_logistics，明确随机模拟数据，不声称真实物流","tool_names":["query_logistics"]},
+  {"id":"multi-step","question":"先查询订单1001的订单状态，只有结果为已发货或已完成时，再查询它的物流；否则不要查物流。请注明模拟数据。","intent":"订单","expected":"先query_order，读取已发货结果后下一次模型决策才query_logistics，不能并行猜测","tool_names":["query_order","query_logistics"]},
+  {"id":"policy","question":"商品发错货引起退换货，运费由谁承担？","intent":"退款退货","expected":"先真实检索及置信闸；依据退换货运费承担原文回答平台承担，有引用","tool_names":[]},
+  {"id":"complaint","question":"我要投诉你们的服务态度，太差了。","intent":"投诉","expected":"固定安抚，独立handoff/create_ticket建议，无工具和工单副作用","tool_names":[]},
+  {"id":"chitchat","question":"你好","intent":"闲聊","expected":"分类后固定问候，无Agent模型和工具调用","tool_names":[]},
+  {"id":"weak-evidence","question":"MH-W60是否通过NASA火星载人任务认证？","intent":"商品咨询","expected":"弱证据拒答，记录本地日志，Agent调用和工具数为0","tool_names":[]},
+  {"id":"missing-info","question":"帮我查一下物流，我还没有提供订单号。","intent":"物流","expected":"追问订单号，不猜编号、不调用业务工具","tool_names":[]}
+]

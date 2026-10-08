@@ -1,0 +1,837 @@
+{
+  "authored_before_execution": true,
+  "started_at": "2026-10-08T09:57:54.883385+00:00",
+  "live_complete_chat_requests_attempted": 0,
+  "live_limit": 10,
+  "simulation": [
+    {
+      "mode": "bare",
+      "case": "logistics",
+      "question": "请查订单1001的物流到哪里了。",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 0,
+        "selection": 2,
+        "final_stream": 1
+      },
+      "model_calls": 3,
+      "tool_calls": 1,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 2049
+      },
+      "final_stream_chunks": 2,
+      "nodes": [],
+      "node_count": 0,
+      "tool_names": [
+        "query_logistics"
+      ],
+      "event_order": [
+        "model_start",
+        "tool_start",
+        "tool_attempt",
+        "tool_end",
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "simulation：以下是随机模拟业务数据：{\"mock\": true, \"label\": \"随机模拟物流数据\", \"order_id\": \"1001\", \"status\": \"派送中\", \"location\": \"当地配送站\"}",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.007,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true,
+        "read_tool_sequence": true,
+        "simulation_label": true
+      }
+    },
+    {
+      "mode": "bare",
+      "case": "multi-step",
+      "question": "先查询订单1001的订单状态，只有结果为已发货或已完成时，再查询它的物流；否则不要查物流。请注明模拟数据。",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 0,
+        "selection": 3,
+        "final_stream": 1
+      },
+      "model_calls": 4,
+      "tool_calls": 2,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 3174
+      },
+      "final_stream_chunks": 2,
+      "nodes": [],
+      "node_count": 0,
+      "tool_names": [
+        "query_order",
+        "query_logistics"
+      ],
+      "event_order": [
+        "model_start",
+        "tool_start",
+        "tool_attempt",
+        "tool_end",
+        "model_start",
+        "tool_start",
+        "tool_attempt",
+        "tool_end",
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "simulation：以下是随机模拟业务数据：{\"mock\": true, \"label\": \"随机模拟订单数据\", \"order_id\": \"1001\", \"status\": \"已发货\", \"amount\": 299.0}；{\"mock\": true, \"label\": \"随机模拟物流数据\", \"order_id\": \"1001\", \"status\": \"派送中\", \"location\": \"当地配送站\"}",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.004,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true,
+        "read_tool_sequence": true,
+        "simulation_label": true
+      }
+    },
+    {
+      "mode": "bare",
+      "case": "policy",
+      "question": "商品发错货引起退换货，运费由谁承担？",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 0,
+        "selection": 2,
+        "final_stream": 1
+      },
+      "model_calls": 3,
+      "tool_calls": 1,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 2438
+      },
+      "final_stream_chunks": 2,
+      "nodes": [],
+      "node_count": 0,
+      "tool_names": [
+        "query_faq"
+      ],
+      "event_order": [
+        "model_start",
+        "tool_start",
+        "tool_attempt",
+        "tool_end",
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "simulation：发错货退换货运费由平台承担。[1]",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.003,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true
+      }
+    },
+    {
+      "mode": "bare",
+      "case": "complaint",
+      "question": "我要投诉你们的服务态度，太差了。",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 0,
+        "selection": 2,
+        "final_stream": 1
+      },
+      "model_calls": 3,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 2064
+      },
+      "final_stream_chunks": 2,
+      "nodes": [],
+      "node_count": 0,
+      "tool_names": [],
+      "event_order": [
+        "model_start",
+        "suggestions",
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "很抱歉，您可以独立选择转人工或建立工单，建议尚未执行。",
+      "suggestions": [
+        {
+          "kind": "handoff"
+        },
+        {
+          "kind": "create_ticket",
+          "description": "我要投诉你们的服务态度，太差了。",
+          "ticket_type": "投诉"
+        }
+      ],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.002,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true
+      }
+    },
+    {
+      "mode": "bare",
+      "case": "chitchat",
+      "question": "你好",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 0,
+        "selection": 1,
+        "final_stream": 1
+      },
+      "model_calls": 2,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 1008
+      },
+      "final_stream_chunks": 2,
+      "nodes": [],
+      "node_count": 0,
+      "tool_names": [],
+      "event_order": [
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "您好，我是SayHelp演示助手。",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.002,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true
+      }
+    },
+    {
+      "mode": "bare",
+      "case": "weak-evidence",
+      "question": "MH-W60是否通过NASA火星载人任务认证？",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 0,
+        "selection": 1,
+        "final_stream": 1
+      },
+      "model_calls": 2,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 1017
+      },
+      "final_stream_chunks": 2,
+      "nodes": [],
+      "node_count": 0,
+      "tool_names": [],
+      "event_order": [
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "当前证据不足，请人工核实。",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.002,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true
+      }
+    },
+    {
+      "mode": "bare",
+      "case": "missing-info",
+      "question": "帮我查一下物流，我还没有提供订单号。",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 0,
+        "selection": 1,
+        "final_stream": 1
+      },
+      "model_calls": 2,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 1016
+      },
+      "final_stream_chunks": 2,
+      "nodes": [],
+      "node_count": 0,
+      "tool_names": [],
+      "event_order": [
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "请提供订单号，以便查询模拟物流数据。",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.002,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true
+      }
+    },
+    {
+      "mode": "workflow",
+      "case": "logistics",
+      "question": "请查订单1001的物流到哪里了。",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 1,
+        "selection": 2,
+        "final_stream": 1
+      },
+      "model_calls": 3,
+      "tool_calls": 1,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 2706
+      },
+      "final_stream_chunks": 2,
+      "nodes": [
+        "resolve_reference",
+        "classify_intent",
+        "route",
+        "agent_step",
+        "execute_calls",
+        "agent_step",
+        "stream_answer",
+        "agent",
+        "log_turn"
+      ],
+      "node_count": 9,
+      "tool_names": [
+        "query_logistics"
+      ],
+      "event_order": [
+        "model_start",
+        "tool_start",
+        "tool_attempt",
+        "tool_end",
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "simulation：以下是随机模拟业务数据：{\"mock\": true, \"label\": \"随机模拟物流数据\", \"order_id\": \"1001\", \"status\": \"派送中\", \"location\": \"当地配送站\"}",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.065,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true,
+        "read_tool_sequence": true,
+        "simulation_label": true
+      }
+    },
+    {
+      "mode": "workflow",
+      "case": "multi-step",
+      "question": "先查询订单1001的订单状态，只有结果为已发货或已完成时，再查询它的物流；否则不要查物流。请注明模拟数据。",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 1,
+        "selection": 3,
+        "final_stream": 1
+      },
+      "model_calls": 4,
+      "tool_calls": 2,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 3868
+      },
+      "final_stream_chunks": 2,
+      "nodes": [
+        "resolve_reference",
+        "classify_intent",
+        "route",
+        "agent_step",
+        "execute_calls",
+        "agent_step",
+        "execute_calls",
+        "agent_step",
+        "stream_answer",
+        "agent",
+        "log_turn"
+      ],
+      "node_count": 11,
+      "tool_names": [
+        "query_order",
+        "query_logistics"
+      ],
+      "event_order": [
+        "model_start",
+        "tool_start",
+        "tool_attempt",
+        "tool_end",
+        "model_start",
+        "tool_start",
+        "tool_attempt",
+        "tool_end",
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "simulation：以下是随机模拟业务数据：{\"mock\": true, \"label\": \"随机模拟订单数据\", \"order_id\": \"1001\", \"status\": \"已发货\", \"amount\": 299.0}；{\"mock\": true, \"label\": \"随机模拟物流数据\", \"order_id\": \"1001\", \"status\": \"派送中\", \"location\": \"当地配送站\"}",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.058,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true,
+        "read_tool_sequence": true,
+        "simulation_label": true
+      }
+    },
+    {
+      "mode": "workflow",
+      "case": "policy",
+      "question": "商品发错货引起退换货，运费由谁承担？",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 1,
+        "selection": 1,
+        "final_stream": 1
+      },
+      "model_calls": 2,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 1904
+      },
+      "final_stream_chunks": 2,
+      "nodes": [
+        "resolve_reference",
+        "classify_intent",
+        "route",
+        "retrieve",
+        "confidence_gate",
+        "agent_step",
+        "stream_answer",
+        "agent",
+        "log_turn"
+      ],
+      "node_count": 9,
+      "tool_names": [],
+      "event_order": [
+        "knowledge_ready",
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "simulation：发错货退换货运费由平台承担。[1]",
+      "suggestions": [],
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "1",
+          "section_path": "退货退款政策 / 退换货运费承担",
+          "question": "发错货退换货运费",
+          "answer": "因发错货引起退换货，运费由平台承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 1,
+          "source_end_line": 1,
+          "source_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.051,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true,
+        "gate_then_model": true,
+        "citation": true
+      }
+    },
+    {
+      "mode": "workflow",
+      "case": "complaint",
+      "question": "我要投诉你们的服务态度，太差了。",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 1,
+        "selection": 0,
+        "final_stream": 0
+      },
+      "model_calls": 0,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 657
+      },
+      "final_stream_chunks": 0,
+      "nodes": [
+        "resolve_reference",
+        "classify_intent",
+        "route",
+        "complaint",
+        "log_turn"
+      ],
+      "node_count": 5,
+      "tool_names": [],
+      "event_order": [],
+      "answer": "很抱歉给您带来不好的体验。您可以选择转人工或建立工单，也可以继续向我说明情况。",
+      "suggestions": [
+        {
+          "kind": "handoff"
+        },
+        {
+          "kind": "create_ticket",
+          "description": "我要投诉你们的服务态度，太差了。",
+          "ticket_type": "投诉"
+        }
+      ],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.032,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true,
+        "independent_actions": true
+      }
+    },
+    {
+      "mode": "workflow",
+      "case": "chitchat",
+      "question": "你好",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 1,
+        "selection": 0,
+        "final_stream": 0
+      },
+      "model_calls": 0,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 643
+      },
+      "final_stream_chunks": 0,
+      "nodes": [
+        "resolve_reference",
+        "classify_intent",
+        "route",
+        "chitchat",
+        "log_turn"
+      ],
+      "node_count": 5,
+      "tool_names": [],
+      "event_order": [],
+      "answer": "您好，我是 SayHelp。可以帮您查询商品、订单、物流、退换货政策或售后问题。",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.036,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true
+      }
+    },
+    {
+      "mode": "workflow",
+      "case": "weak-evidence",
+      "question": "MH-W60是否通过NASA火星载人任务认证？",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 1,
+        "selection": 0,
+        "final_stream": 0
+      },
+      "model_calls": 0,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 666
+      },
+      "final_stream_chunks": 0,
+      "nodes": [
+        "resolve_reference",
+        "classify_intent",
+        "route",
+        "retrieve",
+        "confidence_gate",
+        "fallback",
+        "log_turn"
+      ],
+      "node_count": 7,
+      "tool_names": [],
+      "event_order": [],
+      "answer": "抱歉，当前知识证据不足。您的问题已记录，您可以选择转人工继续咨询。",
+      "suggestions": [
+        {
+          "kind": "handoff"
+        }
+      ],
+      "citations": [],
+      "stop_reason": "weak_evidence",
+      "ticket_writes": 0,
+      "seconds": 0.057,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true,
+        "blocked_before_agent": true
+      }
+    },
+    {
+      "mode": "workflow",
+      "case": "missing-info",
+      "question": "帮我查一下物流，我还没有提供订单号。",
+      "model_source": "simulation",
+      "model": "scripted-simulation",
+      "business_data": "seeded random simulation",
+      "knowledge_source": "fixed simulation evidence",
+      "complete_chat_requests": 0,
+      "provider_requests": 0,
+      "model_operations": {
+        "classification": 1,
+        "selection": 1,
+        "final_stream": 1
+      },
+      "model_calls": 2,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated": 1675
+      },
+      "final_stream_chunks": 2,
+      "nodes": [
+        "resolve_reference",
+        "classify_intent",
+        "route",
+        "agent_step",
+        "stream_answer",
+        "agent",
+        "log_turn"
+      ],
+      "node_count": 7,
+      "tool_names": [],
+      "event_order": [
+        "model_start",
+        "model_start",
+        "token",
+        "token"
+      ],
+      "answer": "请提供订单号，以便查询模拟物流数据。",
+      "suggestions": [],
+      "citations": [],
+      "stop_reason": "complete",
+      "ticket_writes": 0,
+      "seconds": 0.049,
+      "passed": true,
+      "checks": {
+        "answer": true,
+        "bounded": true,
+        "no_tickets": true,
+        "no_provider": true,
+        "no_guessed_id": true
+      }
+    }
+  ],
+  "live": [],
+  "scope": "Runtime/graph CLI with temporary SQLite. API/MySQL and browser fixtures separately verified. No real business data/tickets.",
+  "live_approval_status": "Initial auto-review rejection; checking existing authorization, no calls sent.",
+  "status": "incomplete_live_authorization_and_controller_review_pending",
+  "verification": {
+    "full_suite": {
+      "command": ".venv/Scripts/python.exe .superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/run_full_task9.py -q --tb=short",
+      "passed": 656,
+      "failed": 16,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 658.5,
+      "failures": "All16 test_extract_api.py obsolete knowledge_search fixture argument",
+      "real_bge_cache": true,
+      "owned_milvus_database_removed": true
+    },
+    "affected_api_rerun": {
+      "passed": 18,
+      "failed": 0,
+      "errors": 36,
+      "skipped": 0,
+      "seconds": 91.61,
+      "error_reason": "Local MySQL connection refused during temporary database setup"
+    },
+    "extraction_fix": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 1.51
+    },
+    "focused_workflow_and_legacy": {
+      "passed": 28,
+      "seconds": 56.15,
+      "skipped": 0
+    },
+    "demo_cli": {
+      "passed": 14,
+      "seconds": 24.28,
+      "skipped": 0
+    },
+    "browsers": {
+      "actions": 36,
+      "citations": 25,
+      "citations_render_ms": 10,
+      "source": "headless Edge synthetic localhost HTTP/SSE"
+    },
+    "pip_check": "No broken requirements found",
+    "protected_originals_unchanged": 4
+  }
+}

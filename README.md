@@ -1,5 +1,44 @@
 # SayHelp 客服系统
 
+## ch05 Workflow + Agent（当前分支）
+
+在线聊天入口现在使用 LangGraph：原话透传 → 七类意图分类 → 固定路由。商品咨询、退款退货先检索并通过置信闸；订单、物流、售后走有预算的 Agent 循环；闲聊和投诉使用固定回复。选择工具时的草稿不发给用户，结束选择后由未绑定工具的模型真实流式生成。每轮最多6次 Agent 模型调用（含最后生成）、6次实际工具执行，默认12000累计token（含分类）；分类请求单独计数。
+
+已有完整 ch04 数据库和知识索引的环境，先备份 MySQL，再执行增量迁移；该命令只增加4张 workflow 元数据表，遇到不兼容/部分迁移会拒绝，不会重建知识库。不要以迁移为由重新摄入或删除已有 Milvus 集合。
+
+```powershell
+python -m pip install -r requirements.txt -c requirements-ch05.lock.txt
+python -m app.init_ch05_db
+python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001 --workers 1
+```
+
+运行配置沿用本地 `.env`，不得提交凭据。启动时验证 ch05 原话检索校准指纹并预热本地检索模型。`eval/ch05/confidence.json` 与当前语料、模型、原话查询模式绑定；ch04 校准文件不能替代它。保留的原始知识验收失败及独立确认集结果见 [验收报告](eval/ch05/report.md)，不要把旧章节状态理解为本章全部完成。
+
+在仓库根目录运行以下命令，不依赖开发阶段的 ignored helper，也无需服务已经启动。默认 **simulation**：固定脚本模型、固定知识证据、原有随机业务工具的独立固定种子、临时 SQLite checkpointer。可以在无 `.env` 的目录使用脚本绝对路径运行。
+
+```powershell
+python scripts/demo_ch05.py --mode bare --case multi-step
+python scripts/demo_ch05.py --mode workflow --case logistics
+python scripts/demo_ch05.py --mode workflow --case policy
+python scripts/demo_ch05.py --mode workflow --case complaint
+python scripts/demo_ch05.py --mode workflow --case chitchat
+python scripts/demo_ch05.py --mode workflow --case weak-evidence
+python scripts/demo_ch05.py --mode workflow --case missing-info
+# 显式真实模型调用：将演示问题、系统提示、模拟工具结果及检索证据发给配置模型
+python scripts/demo_ch05.py --mode workflow --case multi-step --live
+python scripts/demo_ch05.py --mode workflow --case policy --live
+```
+
+`bare` 与 `workflow` 都接受上述7个 case。`--live` 使用配置模型及现有只读知识检索；**订单和物流始终是随机模拟数据，即使模型真实也不是订单系统接入**。multi-step 先查订单，再根据实际返回状态决定是否查物流，第二步不是预先并行调用。演示不写业务历史或真实 tickets；投诉只打印建议，实际建单需在网页点击「建工单」并确认。末行 JSON 记录调用、工具、token、节点、真实流块数量；`--output 路径.json` 可保存结果。默认脚本通过仅证明流程，不能证明模型能力。
+
+网页的「转人工」和「建工单」是独立动作。转人工只显示“已转接人工客服”，不写工单；建工单打开确认框，可编辑类型/描述或取消。相同动作同载荷重试复用原工单，修改已提交载荷会冲突。忽略建议可以继续聊天，过期/已删除会话动作不能建单；网络结果未知时由用户明确重试，不自动追加请求。
+
+SQLite 默认路径为 `.runtime/ch05/checkpoints.sqlite`（可用 `WORKFLOW_CHECKPOINT_PATH` 覆盖），MySQL 保存业务和完整历史。只能单实例、单进程 `--workers 1`；进程内预约锁和本地 SQLite 不提供跨进程协调。备份前停止这个 API 实例并等待连接关闭，保留 SQLite 及可能存在的关联日志文件，同时独立备份 MySQL。两库没有分布式事务，运行时复制单个 SQLite 文件或分别在不同时间备份两库不保证一致恢复；故障恢复以完整 MySQL 历史重建上下文，不能自动重放写工具。临时 CLI SQLite 在命令退出后删除。
+
+`.runtime/ch05/events.jsonl` 保存受限结构化事件；弱证据原问题单独写入本地 `low-confidence.jsonl`，不进旧低置信度池或飞轮数据库。文件不提交 Git，含原问题的日志需要本地访问控制、备份和清理；当前没有自动轮转/保留策略。日志写失败时不会谎称“已记录”。
+
+本章验收、真实调用次数与未完成项见 [report.md](eval/ch05/report.md)、[acceptance_results.json](eval/ch05/acceptance_results.json)，过程见 [dev-notes/ch05.md](dev-notes/ch05.md)。以下 ch01–ch04 内容保留为历史流程；旧 ChatService 离线评估仍独立保留，旧生产注入参数已不再适用于 create_app。
+
 `main` 已整合 ch01–ch04 各功能分支当前已有的代码。知识问答默认使用 Milvus 原生 BM25 与 dense 混合检索、RRF 融合、bge-reranker-v2-m3 重排和证据门控；业务工具、会话和消息保存在 MySQL。历史列表支持滚动、置顶/取消置顶和逻辑删除。
 
 **ch04 仍在开发中。** 已合并代码不表示整章验收完成：真实模型演示、完整四策略评估、编造个案台账流程，以及满意度前端收尾仍以[实施计划](docs/superpowers/plans/2026-10-05-sayhelp-ch04-hybrid-rag.md)的未完成项为准。开发和验证记录见 [dev-notes/ch04.md](dev-notes/ch04.md)。
