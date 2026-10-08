@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-07-sayhelp-ch05-workflow-agent-design.md`（2026-10-07 用户回复“同意”批准）。
 
-**Status:** 用户已选择 Subagent-driven 执行；任务 1–5 已评审通过，继续任务 6。完成状态以本计划勾选和 SDD ledger 为准。
+**Status:** 用户已选择 Subagent-driven 执行；任务 1–6 已评审通过，继续任务 7。完成状态以本计划勾选和 SDD ledger 为准。
 
 ## Global Constraints
 
@@ -139,12 +139,12 @@
 
 **Interfaces:** `WorkflowService.stream_turn(conversation_id: int, message: str, filters=None) -> AsyncIterator[ChatEvent]`；`open_workflow_service(...)` 为应用生命周期使用的 async context manager；继承既有 SSE 名称 session/token/tool_status/citations/done，新增 `actions` 载荷 `{message_id, actions:[{id,kind,label,description,ticket_type}]}`。保留现有 ChatService 供旧章节离线测试，生产 create_app 默认只接本章服务。
 
-- [ ] 写测试断言闸完成前无 token，工具选择正文不流出，模型 final stream 未结束时已收到首 token（用阻塞事件控制后续分片，不能仅用全量 ASGI 响应断言）。不得将预生成答案切片冒充流式。
-- [ ] 写 MySQL/SQLite 双向故障注入、用户取消、删除/并发会话测试；任何持久化失败不能发 completed/done 成功语义，释放会话预留且不重试写工具。Run `python -m pytest tests/test_workflow_service.py tests/test_workflow_api.py -q` 观察 RED。
-- [ ] 实现 service 以稳定 turn_id/position 调用任务 4 仓储；最终历史先持久化，再等待图调用正常完成后发送 actions/completed。SQLite 检查点失败时历史可能已经存在，标记恢复状态，重入按 ID 去重；不谎称跨库事务。SSE 取消则结算已经启动的数据库事务，记录 incomplete，下一轮从最后完整历史新开轮次。
-- [ ] 扩展 completed_turns 解析多组 assistant(tool_calls)/tool，重复 ID、缺结果、未完成 final 不进入模型历史；旧会话首次接入图导入完成历史，之后 State 与持久化身份协调，不能每次双重追加。旧 prompt 的“一轮最多一个工具”不进入新 Agent。
-- [ ] 生命周期集中管理 SQLite、现有模型预热与资源释放；测试必须进入真实 lifespan，不新增运行时兼容分支只为旧 fake 通过。历史接口把动作与对应 message_id 一起恢复。
-- [ ] Run `python -m pytest tests/test_workflow_service.py tests/test_workflow_api.py tests/test_history.py tests/test_chat_api.py tests/test_conversation_management.py tests/test_chat_views.py -q`，更新旧测试中已被本章有意替换的行为断言，并保留旧服务独立契约。记录并提交 `feat: stream workflow replies and restore complete sessions`。
+- [x] 写测试断言闸完成前无 token，工具选择正文不流出，模型 final stream 未结束时已收到首 token（用阻塞事件控制后续分片，不能仅用全量 ASGI 响应断言）。不得将预生成答案切片冒充流式。
+- [x] 写 MySQL/SQLite 双向故障注入、用户取消、删除/并发会话测试；任何持久化失败不能发 completed/done 成功语义，释放会话预留且不重试写工具。Run `python -m pytest tests/test_workflow_service.py tests/test_workflow_api.py -q` 观察 RED。
+- [x] 实现 service 以稳定 turn_id/position 调用任务 4 仓储；最终历史先持久化，再等待图调用正常完成后发送 actions/completed。SQLite 检查点失败时历史可能已经存在，标记恢复状态，重入按 ID 去重；不谎称跨库事务。SSE 取消则结算已经启动的数据库事务，记录 incomplete，下一轮从最后完整历史新开轮次。
+- [x] 扩展 completed_turns 解析多组 assistant(tool_calls)/tool，重复 ID、缺结果、未完成 final 不进入模型历史；旧会话首次接入图导入完成历史，之后 State 与持久化身份协调，不能每次双重追加。旧 prompt 的“一轮最多一个工具”不进入新 Agent。
+- [x] 生命周期集中管理 SQLite、现有模型预热与资源释放；测试必须进入真实 lifespan，不新增运行时兼容分支只为旧 fake 通过。历史接口把动作与对应 message_id 一起恢复。
+- [x] Run `python -m pytest tests/test_workflow_service.py tests/test_workflow_api.py tests/test_history.py tests/test_chat_api.py tests/test_conversation_management.py tests/test_chat_views.py -q`，更新旧测试中已被本章有意替换的行为断言，并保留旧服务独立契约。记录并提交 `feat: stream workflow replies and restore complete sessions`。
 
 ## Task 7: 独立确认建工单 API
 
