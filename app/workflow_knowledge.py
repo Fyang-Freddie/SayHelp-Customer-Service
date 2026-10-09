@@ -78,8 +78,13 @@ class KnowledgeGate:
                     'reason': stop, 'score': None, 'threshold': threshold}, 'stop_reason': stop,
                     'low_confidence_recorded': False, 'logging_error': logging_error}
         confidence = {'sufficient': sufficient, 'reason': reason, 'score': score, 'threshold': threshold}
-        self.log.write('gate_decision', {**confidence,
-            'evidence_ids': [c['chunk_id'] for c in selected.citations] if sufficient else []})
+        try:
+            self.log.write('gate_decision', {**confidence,
+                'evidence_ids': [c['chunk_id'] for c in selected.citations] if sufficient else []})
+        except Exception:
+            return {'evidence': [], 'citations': [], 'confidence': confidence,
+                    'stop_reason': 'knowledge_log_error', 'low_confidence_recorded': False,
+                    'logging_error': True}
         if not sufficient:
             try:
                 self.log.write('weak_evidence', {'question': question, 'score': score,

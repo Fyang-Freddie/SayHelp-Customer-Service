@@ -306,3 +306,14 @@ def test_confirmatory_evaluation_never_requests_development_acceptance_cases():
     report = asyncio.run(evaluate_knowledge(cases + confirmatory, gate=Gate(), split='confirmatory'))
     assert report['accepted'] and len(report['cases']) == 12
     assert all(c['split'] == 'confirmatory' for c in report['cases'])
+
+
+@pytest.mark.parametrize('score', [.1, .8])
+def test_gate_decision_log_failure_returns_safe_empty_evidence(tmp_path, score):
+    class BrokenLog:
+        def write(self, event, payload):
+            raise OSError('private log failure')
+    outcome = asyncio.run(gate(tmp_path, Retrieval(retrieved(score)), log=BrokenLog()).prepare('问题'))
+    assert outcome['evidence'] == outcome['citations'] == []
+    assert outcome['logging_error'] is True and outcome['low_confidence_recorded'] is False
+    assert outcome['stop_reason'] == 'knowledge_log_error'

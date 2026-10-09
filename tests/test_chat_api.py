@@ -401,13 +401,22 @@ def test_faq_uses_complete_gate_payload_and_excludes_ticket_execution(sessions):
             names = [tool['function']['name'] for tool in tools]
             assert names == ['query_order', 'query_product', 'query_logistics', 'query_faq', 'suggest_actions']
             return AIMessage(content='', tool_calls=[{'id': 'postage-1', 'name': 'query_faq', 'args': {'keyword': '邮费'}}])
-    app = create_app(settings(), PostageModel(), sessions, knowledge_gate=Gate())
+    evidence = {'id': 'faq-1', 'n': 1, 'answer': 'evidence'}
+    citation = {'chunk_id': 'faq-1', 'n': 1, 'source_file': 'knowledge_db/product-faq.md',
+                'source_digest': 'a'*64, 'source_start_line': 1, 'source_end_line': 2}
+    class CompleteGate(Gate):
+        async def prepare(self, question, filters=None):
+            return {'evidence': [evidence], 'citations': [citation], 'confidence': {'sufficient': True}}
+    app = create_app(settings(), PostageModel(), sessions, knowledge_gate=CompleteGate())
     events = parse_events(asyncio.run(post(app, {'message': '邮费是多少'})).text)
-    assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'done']
+    assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'citations', 'done']
     rows = Repository(sessions).load_messages(int(events[0][1]['conversation_id']))
     payload = json.loads(rows[2].content)
-    assert payload['useful'] is True and payload['matches'] == [{'answer': 'evidence'}]
-    assert payload['citations'] == [{'n': 1}]
+    assert payload['useful'] is True and payload['matches'] == [evidence]
+    assert payload['citations'] == rows[-1].citations == [citation]
+    emitted = next(data for kind, data in events if kind == 'citations')
+    assert emitted['citations'] == [citation]
+    assert emitted['message_id'] == events[-1][1]['message_id'] == str(rows[-1].id)
 
 
 @pytest.mark.parametrize('fail_warmup', [False, True])

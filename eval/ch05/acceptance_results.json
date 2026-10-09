@@ -854,5 +854,49 @@
       "provider_requests counts logical model operations; SDK retries may add physical HTTP attempts",
       "mocked ChatOpenAI pipeline custom-httpx/proxy warning"
     ]
+  },
+  "final_review_repairs": {
+    "code_commit": "675f43c2318ac6e892ff9d8a0cd57bf26729f4fd",
+    "full_suite": {
+      "passed": 684,
+      "failed": 2,
+      "skipped": 0,
+      "warnings_summary": false,
+      "seconds": 728.05,
+      "owned_milvus_removed": true,
+      "status": "failed_preserved"
+    },
+    "failures": [
+      "test_chat_api.py::test_faq_uses_complete_gate_payload_and_excludes_ticket_execution",
+      "test_rag_api.py::test_weak_log_failure_never_claims_recorded_or_writes_legacy_pool"
+    ],
+    "narrow_repair": {
+      "root_causes": [
+        "incomplete synthetic citation identity fixture",
+        "unguarded new gate_decision write bypassed logging failure fallback"
+      ],
+      "regression_red": {
+        "failed": 2,
+        "deselected": 24,
+        "seconds": 0.83
+      },
+      "focused": {
+        "passed": 68,
+        "failed": 0,
+        "skipped": 0,
+        "warnings": 0,
+        "seconds": 43.81
+      },
+      "final_full_green": "pending_controller_coordination"
+    },
+    "browser": {
+      "actions_passed": 38,
+      "citations_passed": 25,
+      "render_ms": 8
+    },
+    "pip_check": "No broken requirements found",
+    "live_calls": 0,
+    "prompt_quality_validation": "deferred_pending_explicit_live_authorization",
+    "metric_note": "Historical simulation provider_requests values above are unchanged records of logical method calls; new CLI names logical_model_requests and disables chapter5 SDK retries. No physical HTTP telemetry claimed."
   }
 }
