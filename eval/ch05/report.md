@@ -1,6 +1,10 @@
-# Chapter 5 acceptance evidence (2026-10-08)
+# Chapter 5 acceptance evidence (current status: 2026-10-09)
 
-Status: **incomplete — live provider acceptance awaits direct user authorization; controller review/delivery pending**. Simulation, local regression and browser fixtures are separate evidence. The live counter is **0 / 10 complete chat requests**, counting failures; none was sent. The planned small set is seven workflow cases plus one bare multi-step (8 turns).
+Current status: **all8 scoped-review findings ADDRESSED; current code67bef1a verified by688 passed in764.44s, exit0,0 failures/errors/skips/warnings, owned Milvus cleanup confirmed**. Only explicit live destination/payload authorization and real-provider acceptance, plus controller push/remote verification, remain pending at this writing. Overall Task9 is not marked complete. Original protected fingerprints remain4/4 unchanged (controller reverified).
+
+The following chronological records preserve the results and pending statements as they stood on their stated dates. Earlier deferred UI/review/full-suite statements are superseded by the current status above and the final verification section.
+
+Historical status at the initial2026-10-08 checkpoint: **incomplete — live provider acceptance awaits direct user authorization; controller review/delivery pending**. Simulation, local regression and browser fixtures are separate evidence. The live counter is **0 / 10 complete chat requests**, counting failures; none was sent. The planned small set is seven workflow cases plus one bare multi-step (8 turns).
 
 ## Demo scope
 
@@ -104,3 +108,10 @@ The FAQ API failure used an incomplete synthetic gate payload with only citation
 Exact failing tests plus tests/test_workflow_knowledge.py, tests/test_workflow_service.py, tests/test_workflow_graph.py, tests/test_ch05_final_repairs.py returned **68 passed in43.81s**, no failures/errors/skips/warnings. No full-suite repeat has yet run; controller coordinates final scoped review and the justified final green run following this production repair. Live0/10 remains pending and Task9 is not declared fully accepted.
 
 Controller also independently ran workflow/multi-step and bare/logistics CLI examples on current code: workflow4model/2tool/2stream chunks/11nodes with sequential order then logistics, bare3model/1tool/2chunks, both zero ticket writes and explicitly simulation/zero external requests. These validate demonstration mechanics, not real-provider quality. Earlier historical provider_requests fields remain untouched; current CLI calls this logical_model_requests and explicitly does not claim HTTP telemetry.
+
+## Final current-code full verification (2026-10-09)
+Following the actual production logging-failure repair, the controller authorized one final full run on frozen code67bef1aedf7376db6547c028ef512cc516ef54d9. Command: `.venv/Scripts/python.exe .superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/run_full_task9.py -q --tb=short`. Result: **688 passed in764.44s (12:44), exit0; 0 failures,0 errors,0 skips,0 warnings**. The runner printed `Owned disposable Milvus database removed`. The same guarded owned temporary MySQL/Milvus isolation, TEST_BGE_M3=1 and cached offline models were used. No concurrent full run or code changes occurred. Earlier684passed/2failed remains preserved above; this run is separately labelled current-code evidence.
+
+The single scoped final repair review concluded **all8 findings ADDRESSED**, with no new Critical or Important findings (SDD final-fix-review.md). Browser actions38/citations25 and pip check evidence remain as previously recorded; they were not rerun after this documentation step. A late attempt to read suite progress was not executed because automatic approval review could not complete under the account usage limit; this was not an unsafe-action ruling. After the user resumed, the original process was reaped and confirmed exit0 without restarting tests.
+
+This evidence closes the code-repair verification step. **Live calls remain0/10 and explicit destination/payload authorization is pending. Task9 overall acceptance and real-provider/prompt quality are not marked complete.** No provider calls, new implementation, push, merge or worktree cleanup were performed for this record update.
