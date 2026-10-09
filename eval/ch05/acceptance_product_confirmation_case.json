@@ -1,0 +1,17 @@
+{
+  "id": "product-confirmation",
+  "purpose": "Prelabelled additional positive product case for reviewed product prompt correction; not threshold calibration or changed original labels",
+  "question": "MH-W60的水箱容量和表面盘材质是什么？",
+  "intent": "商品咨询",
+  "expected": {
+    "capacity": "6L",
+    "surface_material": "304 不锈钢",
+    "source_file": "knowledge_db/product-specs.md",
+    "source_section": "商品规格手册 / 自动饮水机 Pro 不锈钢(型号 MH-W60)",
+    "gate_before_agent": true,
+    "answer_citations": true,
+    "no_random_simulated_spec_claim": true
+  },
+  "execution": "Ignored eval helper injects this labelled question into demo.CASES then calls existing run_demo(workflow, product-confirmation, live=True); this is not an added production CLI named case",
+  "prelabelled_before_attempt": 9
+}

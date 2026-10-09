@@ -1,6 +1,6 @@
-# Chapter 5 acceptance evidence (current status: 2026-10-09)
+# Chapter 5 acceptance evidence (current status: 2026-10-10)
 
-Current status: **all8 scoped-review findings ADDRESSED; current code67bef1a verified by688 passed in764.44s, exit0,0 failures/errors/skips/warnings, owned Milvus cleanup confirmed**. Only explicit live destination/payload authorization and real-provider acceptance remain pending. The reviewed feature branch was pushed and its remote SHA verified at cb4054361fb735d2e1fb833a24fa2dc8cce8f4b4; this delivery record is a later documentation-only commit. Overall Task9 is not marked complete. Original protected fingerprints remain4/4 unchanged (controller reverified).
+Current status: **all8 review findings closed; code67bef1a verified by688 passed (764.44s,0 failures/errors/skips/warnings); explicitly authorized DeepSeek live smallset9/9 passed within10-attempt cap,0 failures/retries**. Provider api.deepseek.com/model deepseek-v4-flash supported JSON classification, tool decisions and actual unbound final streams. Totals:25 logical model requests,29798 input/2398 output provider tokens,0 estimated. Controller owns final acceptance/delivery closure and pushing this evidence; worker has not claimed overall finish or cleaned the worktree. Earlier blocks and failures are retained below as historical records.
 
 The following chronological records preserve the results and pending statements as they stood on their stated dates. Earlier deferred UI/review/full-suite statements are superseded by the current status above and the final verification section.
 
@@ -115,3 +115,34 @@ Following the actual production logging-failure repair, the controller authorize
 The single scoped final repair review concluded **all8 findings ADDRESSED**, with no new Critical or Important findings (SDD final-fix-review.md). Browser actions38/citations25 and pip check evidence remain as previously recorded; they were not rerun after this documentation step. A late attempt to read suite progress was not executed because automatic approval review could not complete under the account usage limit; this was not an unsafe-action ruling. After the user resumed, the original process was reaped and confirmed exit0 without restarting tests.
 
 This evidence closes the code-repair verification step. **Live calls remain0/10 and explicit destination/payload authorization is pending. Task9 overall acceptance and real-provider/prompt quality are not marked complete.** No provider calls, new implementation, push, merge or worktree cleanup were performed for this record update.
+
+
+## Authorized live acceptance — executed2026-10-09, recorded2026-10-10
+
+The user explicitly replied “允许” to the complete destination/payload scope: api.deepseek.com, at most10 complete synthetic chat attempts including failures, system/classification prompts, original simulated tool outputs and read-only snippets from the existing ch04 document/FAQ corpus; no customer history or tickets. This removed the earlier authorization block before execution. Every started attempt was saved to JSON and ledger before a provider call. No unrecorded retry occurred.
+
+Commands actually executed: `.venv/Scripts/python.exe .superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/run_live_task9.py` (original7workflow + baremulti-step,exit0,8/8) and `.venv/Scripts/python.exe .superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/run_live_product_task9.py` (prelabelled additionalproductcase,exit0,1/1). Both helpers only orchestrated existing run_demo; no production code was changed. The positive product label in acceptance_product_confirmation_case.json was written before attempt9; the helper injected that evaluation question into demo.CASES. It is **not** an added production `--case product-confirmation` CLI option. Required original demo CLI commands remain independent of ignored helpers.
+
+|Attempt|Mode/case|Classification/Agent/tools/nodes|Provider input/output|Final text chunks|Result|
+|---:|---|---:|---:|---:|---|
+|1|workflow/logistics|1/3/1/9|3416/298|89|PASS|
+|2|workflow/multi-step|1/4/2/11|5063/472|92|PASS|
+|3|workflow/policy|1/2/0/9|6311/686|129|PASS|
+|4|workflow/complaint|1/0/0/5|410/7|0|PASS|
+|5|workflow/chitchat|1/0/0/5|402/35|0|PASS|
+|6|workflow/weak-evidence|1/0/0/7|413/68|0|PASS|
+|7|workflow/missing-info|1/2/0/7|1999/304|76|PASS|
+|8|bare/multi-step|0/4/2/0|4583/318|102|PASS|
+|9|workflow/product-confirmation|1/2/0/9|7201/210|67|PASS|
+
+Totals: **9 complete chat attempts,9 passed,0 failed,0 retries;25 logical model requests =8 classifications +17 Agent calls;5 original simulated read-tool executions;29798 input +2398 output =32196 measured provider tokens;0 estimated**. The last1-turn budget was unused. Each per-case usage matches recorded provider usage observations. Chapter5 SDK retries are disabled; logical calls are not independent wire-level HTTP telemetry. No monetary cost is inferred from tokens.
+
+Both workflow and bare multi-step selected query_order first, consumed its actual original mock result已发货, then selected query_logistics in a later model operation. Their answers explicitly labelled simulated data. Policy passed the knowledge gate before Agent output and correctly assigned wrong-item return/exchange shipping to the platform, with[1]/[10] matching the evidence registry. Complaint offered two independent actions without ticket creation; chitchat used the fixed answer. The weak NASA/MH-W60 question refused before all Agent/tool calls after successful temporary local question logging. Missing-info requested order/tracking number and executed no business tool.
+
+Additional positive product case9 answered MH-W60水箱6L/表面盘304不锈钢, cited商品规格手册[1], and did not falsely label specifications as simulation. Its source facts were independently checked and its label frozen before execution. This is targeted confirmation of the reviewed product prompt, not calibration or unbiased generalization evidence. All answer citation numbers were checked against each returned registry, and authored-question answers were manually inspected.
+
+Actual final streams delivered89,92,129,76,102,67 nonempty chunks for the six Agent-answer cases; first tokens were observed before stream completion. Complaint/chitchat/weak-gate cases correctly had0 provider-final chunks and were not counted as stream failures. Detailed timings, classification JSON, selection traces, measured usage and per-case checks remain in acceptance_results.json.
+
+Existing knowledge was read-only; local BGE weights came from cache with offline flags/torch4threads. Temporary CLI SQLite/log files were cleaned through existing resource contexts. There were0 customer-history writes,0 real tickets and0 knowledge mutations. Orders/logistics remain original seeded random simulation even under a live model. The smallset demonstrates these specific behaviors and provider compatibility, not general production accuracy or real business-system integration.
+
+No intent42, knowledge calibration,688-test suite or browser check was repeated during live acceptance or this documentation-only resumption. The prior688-pass current-code evidence,8 closed review findings,browser38/25 and pipcheck remain as recorded. Report update was interrupted after all9 calls by an account-usage-limit approval failure (not an unsafe-action ruling); that write did not execute. On2026-10-10 user continuation, root independently confirmed the saved9 results and token sums; only these records were completed, without any new request or test. Final push/rulings archive/cleanup remain controller-owned.
