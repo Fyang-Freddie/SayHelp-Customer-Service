@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-07-sayhelp-ch05-workflow-agent-design.md`（2026-10-07 用户回复“同意”批准）。
 
-**Status:** 用户已选择 Subagent-driven 执行；任务 1–8 已评审通过，继续任务 9 整体验收与交付。完成状态以本计划勾选和 SDD ledger 为准。
+**Status:** 用户已选择 Subagent-driven；任务 1–8 已完成，任务 9 的实现、独立评审和离线验证已通过（688 tests，38 项动作交互，25 项引用展示）。真实模型整体验收为 0/10，等待明确的数据发送授权；本章暂不标记完结，保留工作树和 SDD 记录。
 
 ## Global Constraints
 
@@ -176,9 +176,9 @@
 
 - [ ] 写五条用户验收题、弱证据和缺信息题，以及 Task 1/6/7 的故障测试汇总。固定夹具验证所有路径，再运行真实模型小集（最多 10 个完整聊天请求；分类/检索评估按前述小集），报告模型与工具步数及用量，禁止把 mock 通过冒充真实能力。
 - [ ] 真实模型不支持所需调用格式时停下报告证据，不换模型/框架或悄悄取消真流式；真实 Milvus/模型不可用的项目保持未完成，不能用整套 skip 报验收通过。临时 MySQL 复用 TEST_DATABASE_URL 随机库 fixture；没有凭据时只报告缺项，不打印现有 .env。
-- [ ] 执行 `python -m pytest -q` 全量回归、`python -m pip check`、两份浏览器验收；实际命令、通过/失败/跳过数及原因写入报告。按既有章节要求启用本地真实模型缓存测试；不清空生产知识集合。
-- [ ] 使用 requesting-code-review 技能进行独立整体评审，覆盖 Review Focus 五项、spec 覆盖和完整 diff。记录结论；Critical/Important 全部修复并只复跑受影响测试，修复影响面广才再次全量回归；不得把评审意见未经核实直接照改。
-- [ ] README 写清迁移、启动 `python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001 --workers 1`、裸循环与图演示命令、SQLite 路径和备份限制、弱证据日志、按钮行为及真实/模拟数据界限。
+- [x] 执行 `python -m pytest -q` 全量回归、`python -m pip check`、两份浏览器验收；实际命令、通过/失败/跳过数及原因写入报告。按既有章节要求启用本地真实模型缓存测试；不清空生产知识集合。
+- [x] 使用 requesting-code-review 技能进行独立整体评审，覆盖 Review Focus 五项、spec 覆盖和完整 diff。记录结论；Critical/Important 全部修复并只复跑受影响测试，修复影响面广才再次全量回归；不得把评审意见未经核实直接照改。
+- [x] README 写清迁移、启动 `python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001 --workers 1`、裸循环与图演示命令、SQLite 路径和备份限制、弱证据日志、按钮行为及真实/模拟数据界限。
 - [ ] 按 verification-before-completion、finishing-a-development-branch 技能核对最终状态；用户要求完成后推送，不能只留本地工作树。验证分支与目标代码一致，保护原有四个修改；需要评审分支则推送并提供审阅入口，不能未经既有授权覆盖运行中的服务。
 - [ ] 提交/推送后核对远端 SHA；阶段完成即时追加 finish 记录并同步推送。最终答复给演示命令、实测结果、dev-notes 路径及未解决限制，不宣称本章以外的生产能力。
 
