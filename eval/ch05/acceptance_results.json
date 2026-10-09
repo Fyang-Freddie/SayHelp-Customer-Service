@@ -2884,7 +2884,7 @@
     },
     "pip_check": "No broken requirements found",
     "live_calls": 9,
-    "prompt_quality_validation": "Authorized live product-positive case9 passed; smallset result, not generalization claim",
+    "prompt_quality_validation": "authorized prelabelled positive product confirmation passed; evidence limited to the recorded small set",
     "metric_note": "Historical simulation provider_requests values above are unchanged records of logical method calls; new CLI names logical_model_requests and disables chapter5 SDK retries. No physical HTTP telemetry claimed.",
     "final_full_suite_after_log_guard": {
       "code_commit": "67bef1aedf7376db6547c028ef512cc516ef54d9",
@@ -2899,15 +2899,15 @@
       "owned_milvus_removed": true,
       "test_bge_m3": true,
       "cached_models_offline": true,
-      "log": ".superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/final-full-suite-after-log-guard.txt"
+      "log": "eval/ch05/full-suite-final.txt"
     },
     "scoped_review": {
       "findings_addressed": 8,
       "new_critical": 0,
       "new_important": 0,
-      "artifact": ".superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/final-fix-review.md"
+      "artifact": "eval/ch05/code-review.md"
     },
-    "overall_acceptance": "8 findings closed,688 tests passed,authorized live9/9 passed;controller delivery closure pending",
+    "overall_acceptance": "All code review, regression and authorized live acceptance gates passed; final controller delivery record follows.",
     "live_calls_at_pre_authorization_checkpoint": 0
   },
   "initial_checkpoint_status": "incomplete_live_authorization_and_controller_review_pending",
@@ -2945,5 +2945,23 @@
     "http_telemetry_claimed": false,
     "scope": "Original7workflow + bareconditionalmultistep + prelabelledpositiveproductconfirmation; syntheticquestions, simulationbusinessdata, existingreadonlyknowledge",
     "acceptance": "9/9 smallset passed;8 review findings closed;688 current-code tests passed;controller finish/push pending"
+  },
+  "process_decisions": "dev-notes/ch05-decisions.md",
+  "current_acceptance_summary": {
+    "product_code": "67bef1aedf7376db6547c028ef512cc516ef54d9",
+    "full_suite_passed": 688,
+    "full_suite_failed": 0,
+    "full_suite_skipped": 0,
+    "browser_actions_passed": 38,
+    "browser_citations_passed": 25,
+    "review_findings_closed": 8,
+    "live_attempts": 9,
+    "live_passed": 9,
+    "live_failed": 0,
+    "live_cap": 10,
+    "input_tokens": 29798,
+    "output_tokens": 2398,
+    "estimated_tokens": 0,
+    "controller_independent_artifact_checks": "passed without additional provider calls"
   }
 }
