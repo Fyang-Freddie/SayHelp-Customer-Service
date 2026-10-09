@@ -1,6 +1,5 @@
 """Five conversation-scoped customer service tools."""
 
-import random
 from typing import Annotated, Literal
 
 from langchain_core.tools import BaseTool, tool
@@ -40,24 +39,21 @@ def build_tools(repository: Repository, conversation_id: int, knowledge_search: 
     """Capture the active conversation; the model cannot supply its identity."""
     @tool(args_schema=OrderInput)
     def query_order(order_id: str) -> dict:
-        """用客户提供的订单号查询订单演示数据；结果是随机模拟数据，必须明确标注。"""
-        return {'mock': True, 'label': '随机模拟订单数据', 'order_id': order_id,
-                'status': random.choice(['待付款', '待发货', '已发货', '已完成']),
-                'amount': random.choice([99.0, 159.0, 299.0])}
+        """用客户提供的订单号查询订单；当前数据源尚未接入，不能返回订单状态或金额。"""
+        return {'order_id': order_id, 'available': False, 'reason': 'data_source_not_connected',
+                'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
 
     @tool(args_schema=ProductInput)
     def query_product(product_query: str) -> dict:
-        """用商品名称或编号查询商品演示数据；结果是随机模拟数据，必须明确标注。"""
-        return {'mock': True, 'label': '随机模拟商品数据', 'product_query': product_query,
-                'price': random.choice([59.0, 129.0, 259.0]),
-                'stock': random.choice([0, 12, 38, 100])}
+        """查询商品资料；未接入真实文档检索时说明数据源尚未接入，不编造价格、库存或规格。"""
+        return {'product_query': product_query, 'available': False, 'reason': 'data_source_not_connected',
+                'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
 
     @tool(args_schema=OrderInput)
     def query_logistics(order_id: str) -> dict:
-        """用客户提供的订单号或运单号查询物流演示数据；结果是随机模拟数据，必须明确标注。"""
-        return {'mock': True, 'label': '随机模拟物流数据', 'order_id': order_id,
-                'status': random.choice(['等待揽收', '运输中', '派送中', '已签收']),
-                'location': random.choice(['发货仓库', '中转站', '当地配送站'])}
+        """用客户提供的订单号或运单号查询物流；当前数据源尚未接入，不能返回物流状态或位置。"""
+        return {'order_id': order_id, 'available': False, 'reason': 'data_source_not_connected',
+                'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
 
     @tool(args_schema=FaqInput)
     def query_faq(keyword: str, filters: KnowledgeFilters | None = None) -> dict:

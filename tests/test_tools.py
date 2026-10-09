@@ -70,18 +70,20 @@ def test_registry_and_pydantic_schemas():
 @pytest.mark.parametrize('name,args', [('query_order', {'order_id': '1001'}),
                                       ('query_product', {'product_query': '鞋'}),
                                       ('query_logistics', {'order_id': '1001'})])
-def test_random_demo_results_are_labeled(name, args, monkeypatch):
-    choices = []
-    def choose(values):
-        choices.append(values)
-        return values[0]
-    monkeypatch.setattr('app.tools.random.choice', choose)
+def test_unconnected_business_sources_return_no_invented_records(name, args):
     result = execute(ToolExecutor(build_tools(FakeRepository(), 123, knowledge_search=FakeKnowledgeSearch())), name, args)
     payload = json.loads(result.content)
-    assert payload['mock'] is True
-    assert '模拟' in payload['label']
-    assert choices
+    assert payload == {**args, 'available': False, 'reason': 'data_source_not_connected',
+                       'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
     assert result.tool_call_id == 'call-42'
+
+
+def test_grounded_product_keeps_actual_knowledge_adapter():
+    async def answer(keyword, filters=None):
+        return {'keyword': keyword, 'useful': True, 'matches': [{'text': '真实规格'}]}
+    tools = build_tools(FakeRepository(), 123, None, knowledge_answer=answer)
+    result = asyncio.run(tools['query_product'].ainvoke({'product_query': 'MH-W60'}))
+    assert result == {'keyword': 'MH-W60', 'useful': True, 'matches': [{'text': '真实规格'}]}
 
 
 def test_query_faq_contract_and_semantic_postage_hit():

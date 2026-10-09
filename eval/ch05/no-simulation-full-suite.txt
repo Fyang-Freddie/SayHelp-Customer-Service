@@ -1,0 +1,79 @@
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+........................................................................ [ 31%]
+........................................................................ [ 42%]
+........................................................................ [ 52%]
+........................................................................ [ 63%]
+........................................................................ [ 74%]
+........................................................................ [ 84%]
+........................................................................ [ 95%]
+.................................                                        [100%]
+============================== warnings summary ===============================
+tests/test_chat_api.py::test_cancelled_generation_releases_reservation_without_invented_answer
+  D:\llm_agent\contact_agent\.venv\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored while closing generator <coroutine object RunnableCallable.ainvoke at 0x0000022D290044F0>: None
+
+  Traceback (most recent call last):
+    File "C:\Users\YF202\.codex\worktrees\sayhelp-ch05-workflow\contact_agent\app\workflow_graph.py", line 77, in node
+      result = await function(state)
+               ^^^^^^^^^^^^^^^^^^^^^
+  GeneratorExit
+
+  During handling of the above exception, another exception occurred:
+
+  Traceback (most recent call last):
+    File "C:\Users\YF202\.codex\worktrees\sayhelp-ch05-workflow\contact_agent\app\workflow_log.py", line 21, in log_context
+      yield
+    File "C:\Users\YF202\.codex\worktrees\sayhelp-ch05-workflow\contact_agent\app\workflow_graph.py", line 86, in node
+      node_audit.reset(audit_token)
+      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  ValueError: <Token var=<ContextVar name='workflow_node_audit' default=None at 0x0000022D28FCAD90> at 0x0000022CD0193080> was created in a different Context
+
+  During handling of the above exception, another exception occurred:
+
+  Traceback (most recent call last):
+    File "C:\Users\YF202\.codex\worktrees\sayhelp-ch05-workflow\contact_agent\.venv\Lib\site-packages\langgraph\_internal\_runnable.py", line 501, in ainvoke
+      ret = await self.afunc(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "C:\Users\YF202\.codex\worktrees\sayhelp-ch05-workflow\contact_agent\app\workflow_graph.py", line 74, in node
+      with log_context(state, name):
+           ~~~~~~~~~~~^^^^^^^^^^^^^
+    File "C:\Users\YF202\AppData\Local\Python\pythoncore-3.14-64\Lib\contextlib.py", line 162, in __exit__
+      self.gen.throw(value)
+      ~~~~~~~~~~~~~~^^^^^^^
+    File "C:\Users\YF202\.codex\worktrees\sayhelp-ch05-workflow\contact_agent\app\workflow_log.py", line 23, in log_context
+      _context.reset(token)
+      ~~~~~~~~~~~~~~^^^^^^^
+  ValueError: <Token var=<ContextVar name='workflow_log_context' default={} at 0x0000022CA2AB3920> at 0x0000022CD0193480> was created in a different Context
+
+
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_chat_api.py::test_cancelled_generation_releases_reservation_without_invented_answer
+  D:\llm_agent\contact_agent\.venv\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored while closing generator <coroutine object Pregel.ainvoke at 0x0000022D28FF0840>: None
+
+  Traceback (most recent call last):
+    File "C:\Users\YF202\.codex\worktrees\sayhelp-ch05-workflow\contact_agent\.venv\Lib\site-packages\langgraph\pregel\main.py", line 4057, in ainvoke
+      async for chunk in self.astream(
+      ...<30 lines>...
+              chunks.append(chunk)
+  RuntimeError: coroutine ignored GeneratorExit
+
+
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+tests/test_chat_api.py::test_cancelled_generation_releases_reservation_without_invented_answer
+  D:\llm_agent\contact_agent\.venv\Lib\site-packages\_pytest\unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored while closing generator <coroutine object arun_with_retry at 0x0000022D1CAA9B70>: None
+
+  Traceback (most recent call last):
+    File "C:\Users\YF202\.codex\worktrees\sayhelp-ch05-workflow\contact_agent\.venv\Lib\site-packages\langgraph\pregel\_retry.py", line 706, in arun_with_retry
+      return await task.proc.ainvoke(task.input, config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  RuntimeError: coroutine ignored GeneratorExit
+  During task with name 'agent' and id '7a1c9faa-611f-2999-e0b0-0781e9fda550'
+
+
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+681 passed, 3 warnings in 22258.66s (6:10:58)
+Owned temporary Milvus database cleanup verified

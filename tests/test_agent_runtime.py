@@ -256,14 +256,29 @@ def test_chapter5_settings_load_and_reject_excess_call_budget(monkeypatch, tmp_p
         Settings.from_env()
 
 
-def test_bare_cli_uses_existing_reads_and_prints_paid_final_step(capsys):
+def test_bare_cli_uses_existing_reads_and_prints_paid_final_step(capsys, monkeypatch):
     from app.bare_agent import run_demo
     from app.config import Settings
     settings = Settings(chat_base_url='https://example.test/v1',chat_model='test',chat_api_key='offline',database_url='sqlite://')
-    model = ScriptModel([decision('query_order'), decision('query_logistics', 'c2'), AIMessage(content='draft')])
+    from contextlib import contextmanager
+    from app import bare_agent
+    opened = []
+    class Gate:
+        async def prepare(self, question, filters=None):
+            opened.append(question)
+            return {'confidence': {'sufficient': True}, 'evidence': [{'n': 1, 'text': '规格原文'}], 'citations': []}
+    @contextmanager
+    def gate_factory(config):
+        assert config is settings
+        yield Gate()
+    monkeypatch.setattr(bare_agent, 'create_live_knowledge_gate', gate_factory, raising=False)
+    model = ScriptModel([decision('query_product', args={'product_query': 'MH-W60'}), AIMessage(content='draft')])
     result = asyncio.run(run_demo('先查订单 1001 的订单状态，再查物流', settings=settings, model=model))
     captured = capsys.readouterr().out
-    assert result.tool_calls == 2 and result.model_calls == 4
+    assert result.tool_calls == 1 and result.model_calls == 3
+    assert opened == ['MH-W60']
+    assert '模拟数据' not in model.selections[0][0].content
+    assert '规格原文' in model.finals[0][-1].content
     assert 'phase' in captured and 'final' in captured and 'model_calls' in captured
     assert result.answer == '模拟结果'
     assert 'create_ticket' not in captured
