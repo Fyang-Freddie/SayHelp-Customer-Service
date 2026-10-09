@@ -788,7 +788,7 @@
   "live": [],
   "scope": "Runtime/graph CLI with temporary SQLite. API/MySQL and browser fixtures separately verified. No real business data/tickets.",
   "live_approval_status": "Initial auto-review rejection; checking existing authorization, no calls sent.",
-  "status": "incomplete_live_authorization_and_controller_review_pending",
+  "status": "incomplete_live_authorization_and_real_provider_acceptance_pending",
   "verification": {
     "full_suite": {
       "command": ".venv/Scripts/python.exe .superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/run_full_task9.py -q --tb=short",
@@ -920,5 +920,13 @@
       "artifact": ".superpowers/sdd/2026-10-07-sayhelp-ch05-workflow-agent/final-fix-review.md"
     },
     "overall_acceptance": "live authorization and real-provider acceptance remain pending; Task9 not marked complete"
+  },
+  "initial_checkpoint_status": "incomplete_live_authorization_and_controller_review_pending",
+  "delivery": {
+    "branch": "codex/ch05-workflow",
+    "remote": "https://github.com/Fyang-Freddie/SayHelp-Customer-Service.git",
+    "verified_remote_checkpoint": "cb4054361fb735d2e1fb833a24fa2dc8cce8f4b4",
+    "verified_product_code": "67bef1aedf7376db6547c028ef512cc516ef54d9",
+    "note": "Reviewed code and offline evidence pushed; later documentation-only delivery record follows this checkpoint. Live acceptance remains pending."
   }
 }

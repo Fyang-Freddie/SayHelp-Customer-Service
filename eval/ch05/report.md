@@ -1,6 +1,6 @@
 # Chapter 5 acceptance evidence (current status: 2026-10-09)
 
-Current status: **all8 scoped-review findings ADDRESSED; current code67bef1a verified by688 passed in764.44s, exit0,0 failures/errors/skips/warnings, owned Milvus cleanup confirmed**. Only explicit live destination/payload authorization and real-provider acceptance, plus controller push/remote verification, remain pending at this writing. Overall Task9 is not marked complete. Original protected fingerprints remain4/4 unchanged (controller reverified).
+Current status: **all8 scoped-review findings ADDRESSED; current code67bef1a verified by688 passed in764.44s, exit0,0 failures/errors/skips/warnings, owned Milvus cleanup confirmed**. Only explicit live destination/payload authorization and real-provider acceptance remain pending. The reviewed feature branch was pushed and its remote SHA verified at cb4054361fb735d2e1fb833a24fa2dc8cce8f4b4; this delivery record is a later documentation-only commit. Overall Task9 is not marked complete. Original protected fingerprints remain4/4 unchanged (controller reverified).
 
 The following chronological records preserve the results and pending statements as they stood on their stated dates. Earlier deferred UI/review/full-suite statements are superseded by the current status above and the final verification section.
 
