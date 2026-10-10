@@ -1,0 +1,19 @@
+{
+  "checked_at_utc": "2026-10-10T14:51:02.014050+00:00",
+  "endpoint": "https://api.typesafe.ai/v1/models",
+  "http_status": 200,
+  "credential_variable": "TYPESAFE_API_KEY",
+  "models": [
+    {
+      "name": "jev-latest",
+      "description": "The latest iteration of TypeSafe's System One Model: Jev",
+      "release_date": "2026-09-10T18:38:01.391457+00:00"
+    },
+    {
+      "name": "jev-preview",
+      "description": "A preview version of `jev-latest`: should be better in most ways",
+      "release_date": "2026-09-10T18:39:06.057655+00:00"
+    }
+  ],
+  "decision_calls": 0
+}

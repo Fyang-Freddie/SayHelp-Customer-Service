@@ -1,6 +1,6 @@
 # SayHelp 第 6 章：正式分流器与退款售后子流程设计
 
-日期：2026-10-10（Asia/Shanghai）。状态：设计草案，等待用户书面审阅；不是实施计划或完成报告。
+日期：2026-10-10（Asia/Shanghai）。状态：用户已书面批准；不是实施计划或完成报告。
 
 ## 1. 目标与已确认边界
 
@@ -216,6 +216,6 @@ TDD覆盖：严格双字段输出、枚举与概率校验、超时及集中兜�
 - https://docs.typesafe.ai/models
 - https://docs.typesafe.ai/introduction/quickstart
 
-当前仅形成设计；未实现产品功能、未执行产品测试、未运行真实 Jev 评估。当前进程和项目 .env 尚未检测到 TYPESAFE_API_KEY，模型列表未完成认证查询。登录 https://console.typesafe.ai 获取 key 后放到服务端，用户只需告知已配置，无需把密钥发入聊天。
+当前设计已获批；未实现产品功能、未执行产品测试、未运行真实 Jev 意图评估。用户已将 TYPESAFE_API_KEY 配入服务端 .env，GET /v1/models 认证查询返回 HTTP 200，实际列表为 jev-latest、jev-preview，非敏感证据保存在 eval/ch06/model-discovery.json。固定模型版本仍须由协议验证响应确认，不从别名推测。密钥不写入聊天、文档或提交。
 
 设计获批后进入 writing-plans，生成按任务列出文件、验证命令、文档核查和实际模型请求预算的实施计划，再按用户选择的执行方式实施。开发记录每阶段追加 dev-notes/ch06.md；实现完成后交付实际可运行演示命令、真实测试/评估结果、浏览器证据、记录路径与 Git 提交/推送信息。
