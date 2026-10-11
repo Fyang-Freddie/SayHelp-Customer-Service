@@ -1,0 +1,888 @@
+{
+  "scope": "calibration only; not independent acceptance",
+  "total": 110,
+  "correct": 110,
+  "wrong_business_routes": 0,
+  "cases": [
+    {
+      "id": "intent-001",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-002",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-003",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-004",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-005",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-006",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-007",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-008",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-009",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-010",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-021",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-022",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-023",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-024",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-025",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-026",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-027",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-028",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-029",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-030",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-041",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-042",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-043",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-044",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-045",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-046",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-047",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-048",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-049",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-050",
+      "expected": "商品咨询",
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-061",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-062",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-063",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-064",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-065",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-066",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-067",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-068",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-069",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-070",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-081",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-082",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-083",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-084",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-085",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-086",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-087",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-088",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-089",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-090",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-101",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-102",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-103",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-104",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-105",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-106",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-107",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-108",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-109",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-110",
+      "expected": "投诉",
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-121",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-122",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-123",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-124",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 0.98,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-125",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 0.97,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-126",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-127",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 0.95,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-128",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-129",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-130",
+      "expected": "闲聊",
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "intent-141",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.97,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-142",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.99,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-143",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.91,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-144",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.98,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-145",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.52,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-146",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.73,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-147",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.97,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-148",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.98,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-149",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.99,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "intent-150",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.93,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "boundary-01",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "boundary-02",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.98,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "boundary-03",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.93,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "boundary-04",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "boundary-05",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "boundary-06",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "boundary-07",
+      "expected": "订单",
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "boundary-08",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.78,
+      "reason": "low_confidence",
+      "correct": true
+    },
+    {
+      "id": "boundary-09",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "boundary-10",
+      "expected": "售后",
+      "intent": "售后",
+      "confidence": 0.98,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "boundary-11",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.95,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "boundary-12",
+      "expected": "其他",
+      "intent": "其他",
+      "confidence": 0.98,
+      "reason": "valid_other",
+      "correct": true
+    },
+    {
+      "id": "dialogue-01-1",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-01-2",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-01-3",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-02-1",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-02-2",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-02-3",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-03-1",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-03-2",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-03-3",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-04-1",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-04-2",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-04-3",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-05-1",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-05-2",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-05-3",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-06-1",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-06-2",
+      "expected": "退款退货",
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    },
+    {
+      "id": "dialogue-06-3",
+      "expected": "物流",
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "correct": true
+    }
+  ]
+}
