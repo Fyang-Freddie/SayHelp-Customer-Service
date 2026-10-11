@@ -6,6 +6,7 @@ from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
 from app.repository import Repository
+from app.business_data import BusinessDataError
 from app.knowledge_types import KnowledgeFilters
 from app.knowledge_search import KnowledgeSearch, KnowledgeSearchUnavailable
 
@@ -35,11 +36,26 @@ class TicketInput(ToolInput):
     ticket_type: Literal['售后', '投诉', '咨询']
 
 
-def build_tools(repository: Repository, conversation_id: int, knowledge_search: KnowledgeSearch | None, *, knowledge_answer=None, ticket_request_key: str | None = None) -> dict[str, BaseTool]:
+def build_tools(repository: Repository, conversation_id: int, knowledge_search: KnowledgeSearch | None, *, knowledge_answer=None, ticket_request_key: str | None = None, business_data=None, customer_id: str | None = None) -> dict[str, BaseTool]:
     """Capture the active conversation; the model cannot supply its identity."""
+    def scoped_business(order_id, logistics=False):
+        if not customer_id:
+            return {'available': False, 'reason': 'customer_id_required', 'message': '请提供客户ID，以便查询您的订单。'}
+        try:
+            if logistics:
+                return {'available': True, **business_data.get_logistics(customer_id, order_id)}
+            items = [item.to_dict() for item in business_data.list_items(customer_id) if item.order_id == order_id]
+            if not items:
+                raise BusinessDataError('not_found')
+            return {'available': True, 'order_id': order_id, 'items': items}
+        except BusinessDataError as error:
+            return {'available': False, 'reason': error.code, 'message': '无法确认该订单记录，请核对客户ID和订单号或联系人工。'}
+
     @tool(args_schema=OrderInput)
     def query_order(order_id: str) -> dict:
-        """用客户提供的订单号查询订单；当前数据源尚未接入，不能返回订单状态或金额。"""
+        """按当前客户与提供的订单号精确查询订单商品项；缺客户ID时要求补充，不猜测记录。"""
+        if business_data is not None:
+            return scoped_business(order_id)
         return {'order_id': order_id, 'available': False, 'reason': 'data_source_not_connected',
                 'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
 
@@ -51,7 +67,9 @@ def build_tools(repository: Repository, conversation_id: int, knowledge_search: 
 
     @tool(args_schema=OrderInput)
     def query_logistics(order_id: str) -> dict:
-        """用客户提供的订单号或运单号查询物流；当前数据源尚未接入，不能返回物流状态或位置。"""
+        """按当前客户与订单号精确查询物流；缺客户ID时要求补充，不猜测物流状态。"""
+        if business_data is not None:
+            return scoped_business(order_id, logistics=True)
         return {'order_id': order_id, 'available': False, 'reason': 'data_source_not_connected',
                 'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
 

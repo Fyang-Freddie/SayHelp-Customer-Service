@@ -1,0 +1,10 @@
+{
+  "valid": true,
+  "items": 100,
+  "orders": 82,
+  "logistics_orders": 80,
+  "waybills": 88,
+  "reasons": 50,
+  "digest": "c812fa0dac963310f131f5bfc582b9b5ccf59a5ef320367c68f193ac614d914b",
+  "issues": []
+}
