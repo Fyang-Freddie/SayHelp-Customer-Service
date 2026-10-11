@@ -50,6 +50,36 @@ class ModelService:
         result = await structured.ainvoke(messages)
         return result['raw']
 
+    async def _ch06_structured(self,schema,messages,max_tokens):
+        from app.jev_classifier import strict_json
+        from app.query_resolver import QueryResolutionError
+        from app.workflow_types import Usage
+        from app.agent_runtime import _estimate
+        structured=self._agent_model.with_structured_output(schema,method='json_mode',include_raw=True,temperature=0,max_tokens=max_tokens)
+        result=await structured.ainvoke(messages)
+        raw=result['raw']
+        usage=(Usage(raw.usage_metadata['input_tokens'],raw.usage_metadata['output_tokens']) if isinstance(raw,AIMessage) and raw.usage_metadata else Usage(estimated=_estimate(messages)+max_tokens))
+        try:
+            if not isinstance(raw,AIMessage) or not isinstance(raw.content,str) or len(raw.content)>16000 or raw.tool_calls or raw.invalid_tool_calls:raise ValueError()
+            return schema.model_validate(strict_json(raw.content)),usage
+        except (TypeError,ValueError):raise QueryResolutionError('agent_invalid_response',usage) from None
+
+    async def ask_customer(self,query,*,max_tokens=512):
+        from app.ch06_types import CustomerQuestion
+        from app.ch06_prompts import CUSTOMER_SYSTEM
+        from langchain_core.messages import SystemMessage,HumanMessage
+        result,usage=await self._ch06_structured(CustomerQuestion,[SystemMessage(content=CUSTOMER_SYSTEM),HumanMessage(content=query)],max_tokens)
+        return result.question,usage
+
+    async def judge_eligibility(self,query,item,evidence,facts,*,max_tokens=512):
+        from datetime import datetime
+        from app.business_data import TZ
+        from app.ch06_types import Eligibility
+        from app.ch06_prompts import ELIGIBILITY_SYSTEM
+        from langchain_core.messages import SystemMessage,HumanMessage
+        payload={'query':query,'item':item.to_dict(),'evidence':evidence,'facts':facts,'now':datetime.now(TZ).isoformat()}
+        return await self._ch06_structured(Eligibility,[SystemMessage(content=ELIGIBILITY_SYSTEM),HumanMessage(content=json.dumps(payload,ensure_ascii=False))],max_tokens)
+
     async def select(self, messages: list, tools: list, *, max_tokens: int) -> AIMessage:
         """Chapter 5 internal selection, with a per-request output budget."""
         selection = await self._agent_model.bind_tools(tools).ainvoke(messages, max_tokens=max_tokens)

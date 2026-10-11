@@ -13,6 +13,10 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from langgraph.config import get_stream_writer
 from langgraph.graph import END, START, StateGraph
+from langgraph.errors import GraphInterrupt
+from app.aftersales_workflow import total_usage, budget_reason
+from app.query_resolver import QueryResolutionError
+from app.ch06_prompts import resolution_messages
 from langgraph.graph.state import CompiledStateGraph
 
 from app.agent_runtime import AgentLimits, _estimate, agent_step, execute_calls, stream_answer
@@ -48,7 +52,7 @@ def _fixed(state: WorkflowState, answer: str, **fields) -> dict:
 def build_workflow(*, model: AgentModel,
                    classifier: Callable[[str], Awaitable[tuple[IntentDecision, Usage]]],
                    knowledge_gate: KnowledgeGate, tools_factory: Callable[[int], dict],
-                   limits: AgentLimits, log: WorkflowLog, checkpointer) -> CompiledStateGraph:
+                   limits: AgentLimits, log: WorkflowLog, checkpointer, resolver=None, aftersales=None) -> CompiledStateGraph:
     """Build once; resources stay in closures. Caller owns saver and thread IDs.
 
     ``astream(..., stream_mode='custom', subgraphs=True)`` exposes safe runtime
@@ -75,6 +79,9 @@ def build_workflow(*, model: AgentModel,
                 log.write('node_start', {})
                 try:
                     result = await function(state)
+                except GraphInterrupt:
+                    log.write('node_paused', {'duration_ms':(perf_counter()-started)*1000})
+                    raise
                 except BaseException as error:
                     payload = {'status': 'cancelled' if isinstance(error, (asyncio.CancelledError, GeneratorExit)) else 'failed',
                         'error_type': type(error).__name__, 'duration_ms': (perf_counter()-started)*1000,
@@ -94,15 +101,35 @@ def build_workflow(*, model: AgentModel,
         return node
 
     async def reset(state: WorkflowState):
-        return {'resolved_question': resolve_reference(state['raw_question']), 'intent': '', 'intent_confidence': 0.0, 'intent_failure': '', 'route': '',
+        fields={'resolved_question': resolve_reference(state['raw_question']), 'intent': '', 'intent_confidence': 0.0, 'intent_failure': '', 'route': '',
                 'evidence': [], 'citations': [], 'confidence': {}, 'suggestions': [],
                 'model_calls': 0, 'tool_calls': 0, 'usage': Usage().to_dict(), 'answer': '',
                 'status': 'classify', 'stop_reason': '', 'message_id': '',
-                'low_confidence_recorded': False, 'logging_error': False}
+                'low_confidence_recorded': False, 'logging_error': False,
+                'intent_decision':{},'jev_calls':0,'resolution':{},'eligibility':{},'order_item':{},
+                'selected_order':{},'queries':[],'knowledge_confidence':{},'facts':{}}
+        if resolver is None:return fields
+        confirmed={**state.get('confirmed',{}),'conversation_id':state['conversation_id']}
+        history=[{'role':'user' if m.type=='human' else 'assistant','content':m.content}
+                 for m in state.get('messages',[])[:-1] if m.type in ('human','ai') and isinstance(m.content,str) and not getattr(m,'tool_calls',None)]
+        from app.query_resolver import bounded_context
+        rows,known=bounded_context(history,confirmed)
+        estimate=_estimate(resolution_messages(state['raw_question'],rows,known))
+        reason=budget_reason(fields,limits,estimate,1024)
+        if reason:return {**fields,'status':'fallback','stop_reason':reason}
+        fields['model_calls']=1
+        try:
+            resolution,usage=await resolver.resolve(state['raw_question'],history,confirmed)
+            fields.update(resolved_question=resolution.query,resolution=resolution.model_dump(),usage=usage.to_dict())
+            if resolution.unresolved_references:fields.update(status='fallback',stop_reason='unresolved_reference')
+            if usage.total>limits.turn_tokens:fields.update(status='fallback',stop_reason='token_budget')
+        except QueryResolutionError as error:fields.update(status='fallback',stop_reason=error.reason,usage=error.usage.to_dict())
+        return fields
 
     async def classify(state: WorkflowState):
+        if state.get('status')=='fallback':return {}
         estimated = len(state['resolved_question']) + len(INSTRUCTIONS) + len(json.dumps(CRITERIA,ensure_ascii=False)) + 128
-        if estimated > limits.input_tokens or estimated + 128 > limits.turn_tokens:
+        if estimated > limits.input_tokens or estimated + 128 + Usage(**state.get('usage',{})).total > limits.turn_tokens:
             return {'status': 'fallback', 'stop_reason': 'context_budget' if estimated > limits.input_tokens else 'token_budget'}
         started = perf_counter()
         await runtime_emit('model_start', {'phase':'classify'})
@@ -111,16 +138,26 @@ def build_workflow(*, model: AgentModel,
         except IntentClassificationError as error:
             await runtime_emit('model_end', {'phase':'classify', 'reason':error.reason, 'usage':error.usage.to_dict(), 'duration_ms':(perf_counter()-started)*1000})
             return {'intent':error.decision.intent,'intent_confidence':error.decision.confidence,
-                    'intent_failure':error.reason,'usage': error.usage.to_dict(), 'stop_reason': 'invalid_intent', 'status': 'fallback'}
+                    'intent_failure':error.reason,'usage': total_usage(state,error.usage), 'jev_calls':1, 'stop_reason': 'invalid_intent', 'status': 'fallback'}
         except BaseException as error:
             await runtime_emit('model_error', {'phase':'classify', 'error_type':type(error).__name__,
                 'usage':Usage(estimated=estimated+128).to_dict(), 'duration_ms':(perf_counter()-started)*1000})
             raise
         await runtime_emit('model_end', {'phase':'classify', 'usage':usage.to_dict(), 'duration_ms':(perf_counter()-started)*1000})
-        return {'intent': decision.intent, 'intent_confidence':decision.confidence, 'usage': usage.to_dict()}
+        return {'intent': decision.intent, 'intent_confidence':decision.confidence, 'intent_decision':decision.model_dump(), 'jev_calls':1, 'usage': total_usage(state,usage)}
+
+    async def intent_policy(state):
+        if state.get('status')=='fallback' or state.get('intent_failure'):
+            return {'route':'fallback'}
+        if Usage(**state.get('usage',{})).total>limits.turn_tokens:
+            return {'status':'fallback','stop_reason':'token_budget','route':'fallback'}
+        return {}
 
     async def route(state: WorkflowState):
-        return {'route': route_intent(state['intent']) if state['intent'] else 'fallback'}
+        if state.get('status')=='fallback':return {'route':'fallback'}
+        destination=route_intent(state['intent']) if state['intent'] else 'fallback'
+        if destination=='aftersales' and aftersales is None:return {'route':'fallback','stop_reason':'aftersales_unavailable'}
+        return {'route':destination}
 
     async def retrieve(state: WorkflowState):
         filters = KnowledgeFilters(**state['filters']) if state.get('filters') else None
@@ -176,7 +213,7 @@ def build_workflow(*, model: AgentModel,
     child.add_edge('stream_answer', END)
 
     outer = StateGraph(WorkflowState)
-    for name, node in [('resolve_reference', reset), ('classify_intent', classify), ('route', route),
+    for name, node in [('resolve_reference', reset), ('classify_intent', classify), ('intent_policy', intent_policy), ('route', route),
         ('retrieve', retrieve), ('confidence_gate', confidence_gate), ('fallback', fallback),
         ('complaint', complaint), ('chitchat', chitchat), ('log_turn', log_turn)]:
         outer.add_node(name, observed(name, node))
@@ -184,9 +221,14 @@ def build_workflow(*, model: AgentModel,
     outer.add_node('agent', child.compile())
     outer.add_edge(START, 'resolve_reference')
     outer.add_edge('resolve_reference', 'classify_intent')
-    outer.add_edge('classify_intent', 'route')
-    outer.add_conditional_edges('route', lambda s: s['route'], {'knowledge': 'retrieve',
-        'business': 'agent', 'complaint': 'complaint', 'chitchat': 'chitchat', 'fallback': 'fallback'})
+    outer.add_edge('classify_intent', 'intent_policy')
+    outer.add_edge('intent_policy', 'route')
+    routes={'knowledge':'retrieve','business':'agent','complaint':'complaint','chitchat':'chitchat','fallback':'fallback'}
+    if aftersales is not None:
+        outer.add_node('aftersales',aftersales)
+        routes['aftersales']='aftersales'
+        outer.add_conditional_edges('aftersales',lambda s:'fallback' if s.get('status')=='fallback' else 'done',{'fallback':'fallback','done':'log_turn'})
+    outer.add_conditional_edges('route',lambda s:s['route'],routes)
     outer.add_edge('retrieve', 'confidence_gate')
     outer.add_conditional_edges('confidence_gate', lambda s: s['status'],
         {'select': 'agent', 'fallback': 'fallback'})

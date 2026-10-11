@@ -40,8 +40,7 @@ def resolve_reference(text: str) -> str:
 
 
 def route_intent(intent: str):
-    # Core route migration happens together with the deterministic subgraph in task 6.
     routes={'物流':'business','订单':'business','商品咨询':'knowledge',
-            '退款退货':'knowledge','售后':'business','投诉':'complaint','闲聊':'chitchat','其他':'fallback'}
+            '退款退货':'aftersales','售后':'aftersales','投诉':'complaint','闲聊':'chitchat','其他':'fallback'}
     try: return routes[intent]
     except (KeyError,TypeError): raise ValueError('Unknown intent; routing rejected') from None

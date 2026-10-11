@@ -48,3 +48,7 @@ class Eligibility(StrictModel):
     explanation: str = Field(min_length=1,max_length=4000)
     evidence_ids: list[str]
     missing_facts: list[str]
+
+
+class CustomerQuestion(StrictModel):
+    question: str = Field(min_length=1,max_length=300)

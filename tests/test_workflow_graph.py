@@ -96,8 +96,8 @@ async def collect(graph, data, config=None):
     ('物流','business',['agent_step','execute_calls','agent_step','stream_answer','agent','log_turn'],0,3),
     ('订单','business',['agent_step','execute_calls','agent_step','stream_answer','agent','log_turn'],0,3),
     ('商品咨询','knowledge',['retrieve','confidence_gate','agent_step','stream_answer','agent','log_turn'],1,2),
-    ('退款退货','knowledge',['retrieve','confidence_gate','agent_step','stream_answer','agent','log_turn'],1,2),
-    ('售后','business',['agent_step','execute_calls','agent_step','stream_answer','agent','log_turn'],0,3),
+    ('退款退货','fallback',['fallback','log_turn'],0,0),
+    ('售后','fallback',['fallback','log_turn'],0,0),
     ('投诉','complaint',['complaint','log_turn'],0,0),
     ('闲聊','chitchat',['chitchat','log_turn'],0,0),
 ])
@@ -105,7 +105,7 @@ def test_seven_paths_have_fixed_nodes_and_bounded_calls(tmp_path, intent, route,
     model = Model([selected(), AIMessage(content='draft')]) if route == 'business' else Model()
     graph, model, retrieval, classifications, attempts, factories = build(tmp_path, intent, model)
     result, trace, events = asyncio.run(collect(graph, turn()))
-    assert trace == ['resolve_reference','classify_intent','route'] + tail
+    assert trace == ['resolve_reference','classify_intent','intent_policy','route'] + tail
     assert classifications == ['  原始问题\n不改写  ']
     assert result['resolved_question'] == '  原始问题\n不改写  '
     assert result['route'] == route and len(retrieval.calls) == retrieves
@@ -121,6 +121,8 @@ def test_seven_paths_have_fixed_nodes_and_bounded_calls(tmp_path, intent, route,
     elif route == 'chitchat':
         assert result['answer'] == '您好，我是 SayHelp。可以帮您查询商品、订单、物流、退换货政策或售后问题。'
         assert result['usage'] == {'input_tokens':7,'output_tokens':3,'estimated':0}
+    elif route=='fallback':
+        assert result['stop_reason']=='aftersales_unavailable'
     else:
         assert result['answer'] == '有依据的回答'
         assert all('hidden text' != m.content for m in result['messages'])
@@ -132,7 +134,7 @@ def test_seven_paths_have_fixed_nodes_and_bounded_calls(tmp_path, intent, route,
 def test_real_weak_gate_blocks_all_agent_events_and_records_original_once(tmp_path):
     graph, model, retrieval, classifications, attempts, factories = build(tmp_path, '商品咨询', score=.2)
     result, trace, events = asyncio.run(collect(graph, turn()))
-    assert trace == ['resolve_reference','classify_intent','route','retrieve','confidence_gate','fallback','log_turn']
+    assert trace == ['resolve_reference','classify_intent','intent_policy','route','retrieve','confidence_gate','fallback','log_turn']
     assert len(retrieval.calls)==len(classifications)==1
     assert model.selected == model.finals == attempts == factories == []
     assert not any(e['event'] in ('model_start','token','tool_start') for e in events)
@@ -144,7 +146,7 @@ def test_real_weak_gate_blocks_all_agent_events_and_records_original_once(tmp_pa
 
 
 def test_real_strong_gate_emits_ready_before_selection_and_first_token(tmp_path):
-    graph, model, retrieval, *_ = build(tmp_path, '退款退货')
+    graph, model, retrieval, *_ = build(tmp_path, '商品咨询')
     result, trace, events = asyncio.run(collect(graph, turn()))
     names=[e['event'] for e in events]
     assert names.index('knowledge_ready') < names.index('model_start') < names.index('token')
@@ -159,7 +161,7 @@ def test_invalid_classification_is_controlled_and_keeps_paid_usage(tmp_path):
         raise IntentClassificationError(Usage(estimated=23))
     graph, model, retrieval, *_ = build(tmp_path, classifier=invalid)
     result, trace, events = asyncio.run(collect(graph, turn()))
-    assert trace == ['resolve_reference','classify_intent','route','fallback','log_turn']
+    assert trace == ['resolve_reference','classify_intent','intent_policy','route','fallback','log_turn']
     assert result['stop_reason']=='invalid_intent' and result['usage']['estimated']==23
     assert not model.selected and not retrieval.calls
 
@@ -216,7 +218,7 @@ def test_graph_tool_budget_and_failed_read_stop_before_another_selection(tmp_pat
     assert len(attempts)==result['tool_calls']==attempt_count
     assert len(model.selected)==len(model.finals)==1 and result['model_calls']==2
     assert result['stop_reason']==reason and result['answer']=='有依据的回答'
-    assert trace==['resolve_reference','classify_intent','route','agent_step','execute_calls','stream_answer','agent','log_turn']
+    assert trace==['resolve_reference','classify_intent','intent_policy','route','agent_step','execute_calls','stream_answer','agent','log_turn']
 
 
 def test_knowledge_tool_admission_reserves_full_ephemeral_evidence_and_final_answer(tmp_path):

@@ -79,3 +79,16 @@ class WorkflowState(TypedDict, total=False):
     message_id: str
     low_confidence_recorded: bool
     logging_error: bool
+
+    confirmed: dict
+    selected_order: dict
+    order_item: dict
+    data_digest: str
+    queries: list[str]
+    knowledge_confidence: dict
+    eligibility: dict
+    clarification: str
+    facts: dict
+    intent_decision: dict
+    jev_calls: int
+    resolution: dict
