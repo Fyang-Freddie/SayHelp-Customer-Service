@@ -33,7 +33,7 @@ def test_tool_citations_share_stable_turn_registry(tmp_path, initial):
         """Read admitted FAQ evidence."""
         return knowledge(keyword)
     async def classify(question):
-        return IntentDecision(intent='商品咨询' if initial else '订单'), Usage()
+        return IntentDecision(intent='商品咨询' if initial else '订单',confidence=1.0), Usage()
     decisions = [AIMessage(content='', tool_calls=[{'name': 'query_faq', 'id': f'c{i}', 'args': {'keyword': key}}])
                  for i, key in enumerate(['new', 'another', 'new'])] + [AIMessage(content='')]
     model = Model(decisions)
@@ -86,9 +86,9 @@ def test_classification_budget_preflight_makes_zero_calls(tmp_path):
     called = []
     async def classify(question):
         called.append(question)
-        return IntentDecision(intent='订单'), Usage()
+        return IntentDecision(intent='订单',confidence=1.0), Usage()
     graph = build_workflow(model=Model(), classifier=classify, knowledge_gate=None,
-        tools_factory=lambda cid:{}, limits=AgentLimits(turn_tokens=513), log=WorkflowLog(tmp_path), checkpointer=None)
+        tools_factory=lambda cid:{}, limits=AgentLimits(turn_tokens=513,input_tokens=10000), log=WorkflowLog(tmp_path), checkpointer=None)
     result, _, _ = asyncio.run(collect(graph, turn('Q'*3000)))
     assert not called and result['stop_reason'] == 'token_budget' and result['usage'] == Usage().to_dict()
 
@@ -134,7 +134,7 @@ def test_interleaved_graph_logs_are_correlated_safe_and_include_failures(tmp_pat
         return 'private customer result'
     async def classify(question):
         await asyncio.sleep(0)
-        return IntentDecision(intent='订单'), Usage(input_tokens=4,output_tokens=2)
+        return IntentDecision(intent='订单',confidence=1.0), Usage(input_tokens=4,output_tokens=2)
     graph = build_workflow(model=Failure(), classifier=classify, knowledge_gate=None,
         tools_factory=lambda cid:{'query_order':query_order}, limits=AgentLimits(model_calls=2), log=WorkflowLog(tmp_path), checkpointer=None)
     async def run():
@@ -171,7 +171,7 @@ def test_cancelled_graph_writes_correlated_terminal(tmp_path):
         async def select(self, *args, **kwargs):
             entered.set()
             await asyncio.Event().wait()
-    async def classify(question): return IntentDecision(intent='订单'), Usage()
+    async def classify(question): return IntentDecision(intent='订单',confidence=1.0), Usage()
     graph = build_workflow(model=Blocked(), classifier=classify, knowledge_gate=None,
         tools_factory=lambda cid:{}, limits=AgentLimits(), log=WorkflowLog(tmp_path), checkpointer=None)
     async def cancel():
@@ -207,7 +207,7 @@ def test_tool_registry_reaches_service_sse_and_mysql_history(sessions, tmp_path,
     async def query_product(product_query: str) -> dict:
         """Read independently gated product source."""
         return knowledge('new')
-    async def classify(question): return IntentDecision(intent='商品咨询' if initial else '订单'), Usage()
+    async def classify(question): return IntentDecision(intent='商品咨询' if initial else '订单',confidence=1.0), Usage()
     class Answer(Model):
         async def stream_reply(self, messages, *, max_tokens):
             yield AIMessageChunk(content=f'Answer [{1+initial}]')

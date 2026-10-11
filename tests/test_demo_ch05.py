@@ -17,7 +17,8 @@ class ProviderDouble:
         self.results = []
 
     async def classify_intent(self, text):
-        return AIMessage(content='{"intent":"订单"}')
+        from app.ch06_types import IntentDecision,IntentOutcome
+        return IntentOutcome(IntentDecision(intent='订单',confidence=1.0),'accepted','test',{})
 
     async def select(self, messages, tools, **kwargs):
         results = [m for m in messages if isinstance(m, ToolMessage)]

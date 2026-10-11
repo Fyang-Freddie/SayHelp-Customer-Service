@@ -41,7 +41,7 @@ class Gate:
 
 
 def graph(saver, model, *, gate=None, intent='订单', log=None, tools_factory=None):
-    async def classify(question): return IntentDecision(intent=intent), Usage(input_tokens=1, output_tokens=1)
+    async def classify(question): return IntentDecision(intent=intent,confidence=1.0), Usage(input_tokens=1, output_tokens=1)
     return build_workflow(model=model, classifier=classify, knowledge_gate=gate or Gate(),
         tools_factory=tools_factory or (lambda cid: {}), limits=AgentLimits(),
         log=log or SimpleNamespace(write=lambda *args: None), checkpointer=saver)

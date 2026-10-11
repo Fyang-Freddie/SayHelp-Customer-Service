@@ -1,80 +1,47 @@
-"""Strict seven-label classification and deterministic workflow routing."""
-import json
-from typing import TYPE_CHECKING, Literal
-
-from langchain_core.messages import AIMessage
-from pydantic import BaseModel, ConfigDict
-
-from app.intent_prompts import intent_messages
+"""Jev-only business adapter and deterministic routing."""
+from pathlib import Path
+from app.ch06_types import Intent,IntentDecision,IntentOutcome
+from app.intent_criteria import criteria_fingerprint
+from app.intent_policy import IntentPolicy
+from app.jev_classifier import JevIntentClassifier
 from app.workflow_types import Usage
-
-if TYPE_CHECKING:
-    from app.model_service import ModelService
-
-Intent = Literal['物流', '订单', '商品咨询', '退款退货', '售后', '投诉', '闲聊']
-Route = Literal['knowledge', 'business', 'complaint', 'chitchat']
-
-
-class IntentDecision(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True, frozen=True)
-    intent: Intent
 
 
 class IntentClassificationError(ValueError):
-    """Invalid provider classification; retains paid usage without exposing raw content."""
-    def __init__(self, usage: Usage):
-        super().__init__('Intent classification returned invalid structured JSON')
-        self.usage = usage
+    """Explicit fallback metadata without provider response content."""
+    def __init__(self,usage: Usage,reason='invalid_response',decision=None):
+        super().__init__('Intent classification requires fallback')
+        self.usage,self.reason=usage,reason
+        self.decision=decision or IntentDecision(intent='其他',confidence=0.0)
 
 
-def _unique_keys(items):
-    result = {}
-    for key, value in items:
-        if key in result:
-            raise ValueError('Duplicate JSON key')
-        result[key] = value
-    return result
+class IntentClassifier:
+    """Independent decision node; calibrated policy is applied only in business code."""
+    def __init__(self,settings,client=None):
+        self.provider=JevIntentClassifier(settings,client)
+        self.policy=IntentPolicy.from_artifact(Path(settings.intent_policy_path),
+            {'model':settings.jev_model,'criteria':criteria_fingerprint()})
+
+    async def classify(self,query: str) -> IntentOutcome:
+        return self.policy.apply(await self.provider.classify(query))
 
 
-def _reject_constant(value):
-    raise ValueError('Non-JSON constant')
-
-
-def _usage(text: str, result: AIMessage) -> Usage:
-    metadata = result.usage_metadata
-    if metadata is not None:
-        return Usage(input_tokens=metadata['input_tokens'], output_tokens=metadata['output_tokens'])
-    # Conservative character estimate, including both prompt messages and output.
-    # Never label this as provider-measured usage.
-    estimate = sum(len(str(message.content)) + 16 for message in intent_messages(text))
-    return Usage(estimated=estimate + len(str(result.content)) + 16)
-
-
-async def classify_intent(text: str, *, model: 'ModelService') -> tuple[IntentDecision, Usage]:
-    result = await model.classify_intent(text)
-    if not isinstance(result, AIMessage):
+async def classify_intent(text: str, *, model) -> tuple[IntentDecision,Usage]:
+    outcome=await model.classify_intent(text)
+    if not isinstance(outcome,IntentOutcome):
         raise IntentClassificationError(Usage())
-    usage = _usage(text, result)
-    try:
-        raw = result.content
-        if not isinstance(raw, str) or len(raw) > 50000 or result.tool_calls or result.invalid_tool_calls:
-            raise ValueError('Expected bounded JSON without tool calls')
-        payload = json.loads(raw, object_pairs_hook=_unique_keys, parse_constant=_reject_constant)
-        return IntentDecision.model_validate(payload), usage
-    except (ValueError, TypeError):
-        raise IntentClassificationError(usage) from None
+    if outcome.reason not in ('accepted','valid_other'):
+        raise IntentClassificationError(outcome.usage,outcome.reason,outcome.decision)
+    return outcome.decision,outcome.usage
 
 
 def resolve_reference(text: str) -> str:
     return text
 
 
-def route_intent(intent: str) -> Route:
-    routes: dict[Intent, Route] = {
-        '物流': 'business', '订单': 'business', '商品咨询': 'knowledge',
-        '退款退货': 'knowledge', '售后': 'business', '投诉': 'complaint', '闲聊': 'chitchat',
-    }
-    try:
-        return routes[intent]
-    except (KeyError, TypeError):
-        raise ValueError('Unknown intent; routing rejected') from None
+def route_intent(intent: str):
+    # Core route migration happens together with the deterministic subgraph in task 6.
+    routes={'物流':'business','订单':'business','商品咨询':'knowledge',
+            '退款退货':'knowledge','售后':'business','投诉':'complaint','闲聊':'chitchat','其他':'fallback'}
+    try: return routes[intent]
+    except (KeyError,TypeError): raise ValueError('Unknown intent; routing rejected') from None

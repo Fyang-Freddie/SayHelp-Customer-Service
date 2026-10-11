@@ -16,7 +16,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from app.agent_runtime import AgentLimits, _estimate, agent_step, execute_calls, stream_answer
-from app.intent_prompts import intent_messages
+from app.intent_criteria import CRITERIA, INSTRUCTIONS
 from app.intent import IntentClassificationError, IntentDecision, resolve_reference, route_intent
 from app.knowledge_types import KnowledgeFilters
 from app.workflow_knowledge import KnowledgeGate
@@ -94,14 +94,14 @@ def build_workflow(*, model: AgentModel,
         return node
 
     async def reset(state: WorkflowState):
-        return {'resolved_question': resolve_reference(state['raw_question']), 'intent': '', 'route': '',
+        return {'resolved_question': resolve_reference(state['raw_question']), 'intent': '', 'intent_confidence': 0.0, 'intent_failure': '', 'route': '',
                 'evidence': [], 'citations': [], 'confidence': {}, 'suggestions': [],
                 'model_calls': 0, 'tool_calls': 0, 'usage': Usage().to_dict(), 'answer': '',
                 'status': 'classify', 'stop_reason': '', 'message_id': '',
                 'low_confidence_recorded': False, 'logging_error': False}
 
     async def classify(state: WorkflowState):
-        estimated = _estimate(intent_messages(state['resolved_question']))
+        estimated = len(state['resolved_question']) + len(INSTRUCTIONS) + len(json.dumps(CRITERIA,ensure_ascii=False)) + 128
         if estimated > limits.input_tokens or estimated + 128 > limits.turn_tokens:
             return {'status': 'fallback', 'stop_reason': 'context_budget' if estimated > limits.input_tokens else 'token_budget'}
         started = perf_counter()
@@ -109,14 +109,15 @@ def build_workflow(*, model: AgentModel,
         try:
             decision, usage = await classifier(state['resolved_question'])
         except IntentClassificationError as error:
-            await runtime_emit('model_end', {'phase':'classify', 'usage':error.usage.to_dict(), 'duration_ms':(perf_counter()-started)*1000})
-            return {'usage': error.usage.to_dict(), 'stop_reason': 'invalid_intent', 'status': 'fallback'}
+            await runtime_emit('model_end', {'phase':'classify', 'reason':error.reason, 'usage':error.usage.to_dict(), 'duration_ms':(perf_counter()-started)*1000})
+            return {'intent':error.decision.intent,'intent_confidence':error.decision.confidence,
+                    'intent_failure':error.reason,'usage': error.usage.to_dict(), 'stop_reason': 'invalid_intent', 'status': 'fallback'}
         except BaseException as error:
             await runtime_emit('model_error', {'phase':'classify', 'error_type':type(error).__name__,
                 'usage':Usage(estimated=estimated+128).to_dict(), 'duration_ms':(perf_counter()-started)*1000})
             raise
         await runtime_emit('model_end', {'phase':'classify', 'usage':usage.to_dict(), 'duration_ms':(perf_counter()-started)*1000})
-        return {'intent': decision.intent, 'usage': usage.to_dict()}
+        return {'intent': decision.intent, 'intent_confidence':decision.confidence, 'usage': usage.to_dict()}
 
     async def route(state: WorkflowState):
         return {'route': route_intent(state['intent']) if state['intent'] else 'fallback'}

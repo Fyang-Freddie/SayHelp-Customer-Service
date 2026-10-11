@@ -62,6 +62,8 @@ class WorkflowState(TypedDict, total=False):
     raw_question: str
     resolved_question: str
     intent: str
+    intent_confidence: float
+    intent_failure: str
     route: str
     filters: dict
     evidence: list[dict]

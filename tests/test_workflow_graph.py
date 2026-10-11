@@ -61,7 +61,7 @@ def build(tmp_path, intent='订单', model=None, score=.8, checkpointer=None, li
     classifications, attempts, factories = [], [], []
     async def classify(question):
         classifications.append(question)
-        return IntentDecision(intent=intent), Usage(input_tokens=7, output_tokens=3)
+        return IntentDecision(intent=intent,confidence=1.0), Usage(input_tokens=7, output_tokens=3)
     retrieval = Retrieval(score)
     log = WorkflowLog(tmp_path / 'log')
     gate = KnowledgeGate(retrieval, ConfidencePolicy({'hybrid_rerank': .5}, {}),
@@ -207,7 +207,7 @@ def test_graph_tool_budget_and_failed_read_stop_before_another_selection(tmp_pat
             raise RuntimeError('offline read failed')
         return '已发货'
     async def classify(question):
-        return IntentDecision(intent='订单'),Usage(input_tokens=7,output_tokens=3)
+        return IntentDecision(intent='订单',confidence=1.0),Usage(input_tokens=7,output_tokens=3)
     model=Model([selected(str(i)) for i in range(9)])
     graph=api.build_workflow(model=model,classifier=classify,knowledge_gate=None,
         tools_factory=lambda cid:{'query_order':query_order},limits=AgentLimits(tool_calls=tool_budget),
@@ -235,7 +235,7 @@ def test_knowledge_tool_admission_reserves_full_ephemeral_evidence_and_final_ans
         attempts.append(order_id)
         return 'R' * 40000
     async def classify(question):
-        return IntentDecision(intent='商品咨询'),Usage(input_tokens=7,output_tokens=3)
+        return IntentDecision(intent='商品咨询',confidence=1.0),Usage(input_tokens=7,output_tokens=3)
     decision = AIMessage(content='',tool_calls=[{'name':'query_order','id':'read-1','args':{'order_id':'1'}}],
         usage_metadata={'input_tokens':10,'output_tokens':10,'total_tokens':20})
     model = Model([decision])
@@ -259,3 +259,13 @@ def test_knowledge_tool_admission_reserves_full_ephemeral_evidence_and_final_ans
     assert 30+count_tokens_approximately(model.finals[0])+limits.response_tokens<=limits.turn_tokens
     assert Usage(**result['usage']).total<=limits.turn_tokens
     assert any(e['event']=='tool_result_rejected' for e in events)
+
+
+def test_classifier_failure_reason_and_confidence_survive_graph(tmp_path):
+    async def low(question):
+        raise IntentClassificationError(Usage(12,3),'low_confidence',IntentDecision(intent='其他',confidence=.4))
+    graph,model,retrieval,*_=build(tmp_path,classifier=low)
+    result,_,_=asyncio.run(collect(graph,turn()))
+    assert result['intent']=='其他' and result['intent_confidence']==.4
+    assert result['intent_failure']=='low_confidence' and result['route']=='fallback'
+    assert not model.selected and not retrieval.calls
