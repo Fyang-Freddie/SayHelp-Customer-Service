@@ -1,0 +1,28 @@
+{
+  "started_at": "2026-10-11T03:49:01.907178+00:00",
+  "query": "我想申请退货退款。",
+  "expected_intent": "退款退货",
+  "requested_model": "jev-latest",
+  "reason": "accepted",
+  "actual_model": "jev-1.13.0",
+  "decision": {
+    "intent": "退款退货",
+    "confidence": 1.0
+  },
+  "probabilities": {
+    "物流": 0.0,
+    "订单": 0.0,
+    "商品咨询": 0.0,
+    "退款退货": 1.0,
+    "售后": 0.0,
+    "投诉": 0.0,
+    "闲聊": 0.0,
+    "其他": 0.0
+  },
+  "usage": {
+    "input_tokens": 804,
+    "output_tokens": 84,
+    "estimated": 0
+  },
+  "passed": true
+}

@@ -10,12 +10,20 @@ from pathlib import Path
 from dotenv import dotenv_values
 
 
+JEV_DISCOVERY_MODEL = "jev-latest"
+
+
 @dataclass(frozen=True)
 class Settings:
     chat_base_url: str
     chat_model: str
     chat_api_key: str = field(repr=False)
     database_url: str | None = field(default=None, repr=False)
+    jev_api_key: str = field(default='', repr=False)
+    jev_model: str = ''
+    jev_base_url: str = 'https://api.typesafe.ai/v1'
+    jev_timeout: float = 10.0
+    intent_policy_path: str = 'eval/ch06/intent-policy.json'
     workflow_checkpoint_path: str = ".runtime/ch05/checkpoints.sqlite"
     agent_model_calls: int = 6
     agent_tool_calls: int = 6
@@ -103,6 +111,11 @@ class Settings:
             chat_base_url=base_url,
             chat_model=model,
             chat_api_key=api_key,
+            jev_api_key=value('TYPESAFE_API_KEY') or '',
+            jev_model=value('JEV_MODEL') or '',
+            jev_base_url=value('JEV_BASE_URL') or 'https://api.typesafe.ai/v1',
+            jev_timeout=positive_int('JEV_TIMEOUT_SECONDS',10),
+            intent_policy_path=value('INTENT_POLICY_PATH') or 'eval/ch06/intent-policy.json',
             workflow_checkpoint_path=checkpoint_path,
             agent_model_calls=bounded_calls(agent_name('AGENT_MAX_MODEL_CALLS', 'AGENT_MODEL_CALLS')),
             agent_tool_calls=bounded_calls(agent_name('AGENT_MAX_TOOL_CALLS', 'AGENT_TOOL_CALLS')),

@@ -1,0 +1,6 @@
+{
+  "started_at": "2026-10-11T03:49:01.907178+00:00",
+  "query": "我想申请退货退款。",
+  "expected_intent": "退款退货",
+  "requested_model": "jev-latest"
+}
