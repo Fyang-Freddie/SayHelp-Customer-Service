@@ -103,7 +103,7 @@ def test_source_mapping_uses_exact_original_text_and_never_guesses(tmp_path):
 def test_workflow_citations_and_history_keep_snapshot(factory):
     from app.ch06_types import IntentDecision, IntentOutcome
     class Model(FakeModel):
-        async def classify_intent(self, text): return IntentOutcome(IntentDecision(intent='退款退货',confidence=1.0), 'classified', 'test', {'退款退货':1.0})
+        async def classify_intent(self, text): return IntentOutcome(IntentDecision(intent='退款退货',confidence=1.0), 'accepted', 'test', {'退款退货':1.0})
     app = create_app(settings(), Model(), factory, knowledge_gate=Gate())
     events = parse_events(asyncio.run(post(app, {'message':'退货'})).text)
     snapshot = next(data['citations'] for kind,data in events if kind == 'citations')

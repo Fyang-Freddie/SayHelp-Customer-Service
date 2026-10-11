@@ -71,7 +71,7 @@ def public_actions(actions) -> list[dict]:
             for item in actions]
 
 
-def public_messages(rows, actions=None) -> list[dict]:
+def public_messages(rows, actions=None, *, interactions=None) -> list[dict]:
     result, sources, faq_calls = [], [], set()
     for row in rows:
         if row.role == 'user':
@@ -92,4 +92,7 @@ def public_messages(rows, actions=None) -> list[dict]:
                            'actions': public_actions((actions or {}).get(str(row.id), [])),
                            'sources': evidence if row.role == 'assistant' else [],
                            'citations': snapshot if row.role == 'assistant' and snapshot is not None else []})
+            interaction=(interactions or {}).get(str(row.id))
+            if interaction is not None:
+                result[-1]['interaction']={key:interaction[key] for key in ('interrupt_id','turn_id','kind','payload','status')}
     return result
