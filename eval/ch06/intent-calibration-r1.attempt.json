@@ -1,0 +1,11 @@
+{
+  "run": "intent-calibration-r1",
+  "fingerprints": {
+    "model": "jev-1.13.0",
+    "criteria": "73fcfacd85713aa678dd7571686d06b04285d8338f72b6b34b785b8aef39d994",
+    "resolver": "c27d959329ea0af774157a9cd013a561f5eccd8139b10920695e4f3b904f7eed",
+    "chat_model": "deepseek-v4-flash",
+    "cases": "6fd22bcd1c795668441d475c88155815f134e6c533dc1453d8a349f85ebd8592"
+  },
+  "cases": 110
+}

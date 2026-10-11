@@ -1,0 +1,1876 @@
+[
+  {
+    "id": "intent-001",
+    "split": "calibration",
+    "raw": "我的耳机什么时候发货？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-002",
+    "split": "calibration",
+    "raw": "订单的快递到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-003",
+    "split": "calibration",
+    "raw": "包裹今天能送到吗？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-004",
+    "split": "calibration",
+    "raw": "帮我看看物流轨迹。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-005",
+    "split": "calibration",
+    "raw": "快递一直停在转运中心，怎么回事？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-006",
+    "split": "calibration",
+    "raw": "我想查签收时间。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-007",
+    "split": "calibration",
+    "raw": "订单发货了吗？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-008",
+    "split": "calibration",
+    "raw": "快递为什么还没揽收？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-009",
+    "split": "calibration",
+    "raw": "包裹正在派送吗？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-010",
+    "split": "calibration",
+    "raw": "查一下承运的快递公司。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-011",
+    "split": "acceptance",
+    "raw": "我买的电饭煲预计几天到？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-012",
+    "split": "acceptance",
+    "raw": "包裹显示签收但我没拿到，查下配送。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-013",
+    "split": "acceptance",
+    "raw": "运单的最新状态是什么？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-014",
+    "split": "acceptance",
+    "raw": "周末会安排发货吗？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-015",
+    "split": "acceptance",
+    "raw": "我的手机壳物流更新了吗？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-016",
+    "split": "acceptance",
+    "raw": "快递卡在路上三天了，请查物流。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-017",
+    "split": "acceptance",
+    "raw": "请告诉我快递单号。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-018",
+    "split": "acceptance",
+    "raw": "我的键盘已经出库了吗？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-019",
+    "split": "acceptance",
+    "raw": "查一下这个订单的配送进度。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-020",
+    "split": "acceptance",
+    "raw": "我只想知道包裹在哪，不申请退款。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-021",
+    "split": "calibration",
+    "raw": "帮我查订单详情。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-022",
+    "split": "calibration",
+    "raw": "我刚才付款成功了吗？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-023",
+    "split": "calibration",
+    "raw": "这张订单能开发票吗？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-024",
+    "split": "calibration",
+    "raw": "订单收货地址能修改吗？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-025",
+    "split": "calibration",
+    "raw": "我想取消尚未付款的订单。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-026",
+    "split": "calibration",
+    "raw": "帮我修改订单的联系电话。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-027",
+    "split": "calibration",
+    "raw": "这个订单用了什么优惠券？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-028",
+    "split": "calibration",
+    "raw": "订单的收件人写错了，想改一下。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-029",
+    "split": "calibration",
+    "raw": "为什么付款后订单还是待支付？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-030",
+    "split": "calibration",
+    "raw": "我的发票抬头要修改。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-031",
+    "split": "acceptance",
+    "raw": "查询我的交易记录。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-032",
+    "split": "acceptance",
+    "raw": "我想看订单总金额。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-033",
+    "split": "acceptance",
+    "raw": "如何支付刚提交的订单？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-034",
+    "split": "acceptance",
+    "raw": "订单备注可以补充吗？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-035",
+    "split": "acceptance",
+    "raw": "我需要下载电子发票。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-036",
+    "split": "acceptance",
+    "raw": "订单里买了哪些商品？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-037",
+    "split": "acceptance",
+    "raw": "未付款订单多久自动关闭？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-038",
+    "split": "acceptance",
+    "raw": "我想更改发票类型。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-039",
+    "split": "acceptance",
+    "raw": "订单已经支付了多少金额？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-040",
+    "split": "acceptance",
+    "raw": "帮我核实订单编号。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-041",
+    "split": "calibration",
+    "raw": "蓝牙耳机支持同时连接两台设备吗？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-042",
+    "split": "calibration",
+    "raw": "这款电饭煲容量是多少？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-043",
+    "split": "calibration",
+    "raw": "智能手环支持苹果手机吗？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-044",
+    "split": "calibration",
+    "raw": "键盘是什么轴体？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-045",
+    "split": "calibration",
+    "raw": "这个杯子可以放洗碗机吗？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-046",
+    "split": "calibration",
+    "raw": "鼠标有没有静音按键？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-047",
+    "split": "calibration",
+    "raw": "移动硬盘支持什么接口？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-048",
+    "split": "calibration",
+    "raw": "空气炸锅的功率是多少？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-049",
+    "split": "calibration",
+    "raw": "商品有哪些颜色可以选？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-050",
+    "split": "calibration",
+    "raw": "保温杯用什么材质？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-051",
+    "split": "acceptance",
+    "raw": "打印机支持双面打印吗？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-052",
+    "split": "acceptance",
+    "raw": "笔记本支架可以调节高度吗？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-053",
+    "split": "acceptance",
+    "raw": "这个充电器支持快充吗？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-054",
+    "split": "acceptance",
+    "raw": "蓝牙音箱防水吗？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-055",
+    "split": "acceptance",
+    "raw": "请介绍一下净水器的功能。",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-056",
+    "split": "acceptance",
+    "raw": "这款洗面奶适合油性皮肤吗？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-057",
+    "split": "acceptance",
+    "raw": "这个手机壳兼容哪些型号？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-058",
+    "split": "acceptance",
+    "raw": "首次使用耳机怎么配对？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-059",
+    "split": "acceptance",
+    "raw": "如何给智能手环设置闹钟？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-060",
+    "split": "acceptance",
+    "raw": "这条数据线有多长？",
+    "expected_intent": "商品咨询",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-061",
+    "split": "calibration",
+    "raw": "我想申请退货退款。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-062",
+    "split": "calibration",
+    "raw": "蓝牙耳机拆封了还能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-063",
+    "split": "calibration",
+    "raw": "订单取消后钱什么时候退回来？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-064",
+    "split": "calibration",
+    "raw": "电饭煲有质量问题，我要求退款。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-065",
+    "split": "calibration",
+    "raw": "买错型号了，想退货。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-066",
+    "split": "calibration",
+    "raw": "退款到账需要多久？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-067",
+    "split": "calibration",
+    "raw": "退货运费谁承担？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-068",
+    "split": "calibration",
+    "raw": "这个商品支持七天无理由退货吗？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-069",
+    "split": "calibration",
+    "raw": "请查询退款申请的进度。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-070",
+    "split": "calibration",
+    "raw": "未发货订单可以退款吗？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-071",
+    "split": "acceptance",
+    "raw": "我买的课程兑换码能退款吗？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-072",
+    "split": "acceptance",
+    "raw": "签收已经八天，还能退货吗？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-073",
+    "split": "acceptance",
+    "raw": "退货需要保留原包装吗？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-074",
+    "split": "acceptance",
+    "raw": "收到的商品破损，我要退钱。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-075",
+    "split": "acceptance",
+    "raw": "我想知道这单能退多少钱。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-076",
+    "split": "acceptance",
+    "raw": "申请退货需要寄到哪里？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-077",
+    "split": "acceptance",
+    "raw": "耳机用了两次，现在想退货。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-078",
+    "split": "acceptance",
+    "raw": "包裹还没收到，我不要了，要退款。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-079",
+    "split": "acceptance",
+    "raw": "退回的商品已经签收，为什么没退款？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-080",
+    "split": "acceptance",
+    "raw": "我很生气，但现在只要求退货退款。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-081",
+    "split": "calibration",
+    "raw": "耳机左边没有声音，怎么维修？",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-082",
+    "split": "calibration",
+    "raw": "电饭煲坏了，可以保修吗？",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-083",
+    "split": "calibration",
+    "raw": "我想换一个相同型号的键盘。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-084",
+    "split": "calibration",
+    "raw": "收到的配件少了一个，请补发。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-085",
+    "split": "calibration",
+    "raw": "这台打印机能送修吗？",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-086",
+    "split": "calibration",
+    "raw": "请帮我查询维修进度。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-087",
+    "split": "calibration",
+    "raw": "商品保修期是多久？",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-088",
+    "split": "calibration",
+    "raw": "充电器无法充电，想换货。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-089",
+    "split": "calibration",
+    "raw": "显示器出现亮点，需要售后检测。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-090",
+    "split": "calibration",
+    "raw": "电池鼓包了，申请保修。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-091",
+    "split": "acceptance",
+    "raw": "我想知道维修需要哪些材料。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-092",
+    "split": "acceptance",
+    "raw": "我的音箱故障怎么处理？",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-093",
+    "split": "acceptance",
+    "raw": "买的鼠标失灵了，要求更换。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-094",
+    "split": "acceptance",
+    "raw": "保修是否包含人工费用？",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-095",
+    "split": "acceptance",
+    "raw": "净水器漏水，想安排检修。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-096",
+    "split": "acceptance",
+    "raw": "商品寄去维修以后多久寄回？",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-097",
+    "split": "acceptance",
+    "raw": "我少收到一根数据线，帮我补寄。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-098",
+    "split": "acceptance",
+    "raw": "耳机损坏，先看看能不能修。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-099",
+    "split": "acceptance",
+    "raw": "我不退款，只申请换货。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-100",
+    "split": "acceptance",
+    "raw": "这台手环开不了机，如何申请售后？",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-101",
+    "split": "calibration",
+    "raw": "我要投诉客服的服务态度。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-102",
+    "split": "calibration",
+    "raw": "我要正式投诉这家店。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-103",
+    "split": "calibration",
+    "raw": "请把我的服务投诉升级给主管。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-104",
+    "split": "calibration",
+    "raw": "我需要针对客服辱骂建立投诉工单。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-105",
+    "split": "calibration",
+    "raw": "我要求追究销售人员虚假承诺的责任。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-106",
+    "split": "calibration",
+    "raw": "如何投诉商家？",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-107",
+    "split": "calibration",
+    "raw": "请告诉我投诉处理进度。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-108",
+    "split": "calibration",
+    "raw": "我要反映你们处理纠纷不公。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-109",
+    "split": "calibration",
+    "raw": "我要就被恶意挂断电话提出投诉。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-110",
+    "split": "calibration",
+    "raw": "请将我的投诉转给负责人。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-111",
+    "split": "acceptance",
+    "raw": "我现在不办退款，只投诉服务。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-112",
+    "split": "acceptance",
+    "raw": "我要投诉客服泄露信息。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-113",
+    "split": "acceptance",
+    "raw": "我要求调查店员的不当行为。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-114",
+    "split": "acceptance",
+    "raw": "这次服务争议请升级处理。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-115",
+    "split": "acceptance",
+    "raw": "如何提交正式投诉材料？",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-116",
+    "split": "acceptance",
+    "raw": "我要投诉售后人员推诿责任。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-117",
+    "split": "acceptance",
+    "raw": "我的投诉为什么没有回复？",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-118",
+    "split": "acceptance",
+    "raw": "请记录一条服务质量投诉。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-119",
+    "split": "acceptance",
+    "raw": "我希望主管处理我的投诉。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-120",
+    "split": "acceptance",
+    "raw": "我要对客服的失职追责。",
+    "expected_intent": "投诉",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-121",
+    "split": "calibration",
+    "raw": "你好。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-122",
+    "split": "calibration",
+    "raw": "早上好！",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-123",
+    "split": "calibration",
+    "raw": "谢谢你的帮助。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-124",
+    "split": "calibration",
+    "raw": "辛苦了。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-125",
+    "split": "calibration",
+    "raw": "再见。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-126",
+    "split": "calibration",
+    "raw": "晚上好。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-127",
+    "split": "calibration",
+    "raw": "你在吗？",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-128",
+    "split": "calibration",
+    "raw": "今天心情不错。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-129",
+    "split": "calibration",
+    "raw": "祝你周末愉快。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-130",
+    "split": "calibration",
+    "raw": "很高兴认识你。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-131",
+    "split": "acceptance",
+    "raw": "谢谢，已经明白了。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-132",
+    "split": "acceptance",
+    "raw": "午安。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-133",
+    "split": "acceptance",
+    "raw": "祝你工作顺利。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-134",
+    "split": "acceptance",
+    "raw": "今天过得好吗？",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-135",
+    "split": "acceptance",
+    "raw": "哈哈，谢谢啦。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-136",
+    "split": "acceptance",
+    "raw": "回头见。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-137",
+    "split": "acceptance",
+    "raw": "你叫什么名字？",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-138",
+    "split": "acceptance",
+    "raw": "我来打个招呼。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-139",
+    "split": "acceptance",
+    "raw": "下午好呀。",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-140",
+    "split": "acceptance",
+    "raw": "你可以陪我聊一会儿吗？",
+    "expected_intent": "闲聊",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-141",
+    "split": "calibration",
+    "raw": "证明黎曼猜想。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-142",
+    "split": "calibration",
+    "raw": "帮我写一段排序算法。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-143",
+    "split": "calibration",
+    "raw": "今天股票该买哪只？",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-144",
+    "split": "calibration",
+    "raw": "请诊断我的头痛。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-145",
+    "split": "calibration",
+    "raw": "火星的天气如何？",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-146",
+    "split": "calibration",
+    "raw": "甲乙丙咕噜咕噜。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-147",
+    "split": "calibration",
+    "raw": "？？？？",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-148",
+    "split": "calibration",
+    "raw": "把昨天那个处理一下。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-149",
+    "split": "calibration",
+    "raw": "就按之前说的办。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-150",
+    "split": "calibration",
+    "raw": "不知道该做什么。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-151",
+    "split": "acceptance",
+    "raw": "帮我翻译一篇论文。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-152",
+    "split": "acceptance",
+    "raw": "计算这个积分。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-153",
+    "split": "acceptance",
+    "raw": "推荐一条欧洲旅游路线。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-154",
+    "split": "acceptance",
+    "raw": "我的汽车保险怎么理赔？",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-155",
+    "split": "acceptance",
+    "raw": "解释一下量子纠缠。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-156",
+    "split": "acceptance",
+    "raw": "给我写一首长诗。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-157",
+    "split": "acceptance",
+    "raw": "预测明年的房价。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-158",
+    "split": "acceptance",
+    "raw": "帮我创建一个游戏账号。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-159",
+    "split": "acceptance",
+    "raw": "修复我的数据库脚本。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "intent-160",
+    "split": "acceptance",
+    "raw": "请替我写法律诉状。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-01",
+    "split": "calibration",
+    "raw": "这个能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [
+      "这个"
+    ],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-02",
+    "split": "calibration",
+    "raw": "把那个弄好。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [
+      "那个"
+    ],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-03",
+    "split": "calibration",
+    "raw": "我既要开发票又要维修耳机，两件都急。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-04",
+    "split": "calibration",
+    "raw": "不要退款，只查快递在哪。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-05",
+    "split": "calibration",
+    "raw": "不是投诉，我要退货。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-06",
+    "split": "calibration",
+    "raw": "不退货，我要换货。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-07",
+    "split": "calibration",
+    "raw": "没付款的订单帮我取消。",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-08",
+    "split": "calibration",
+    "raw": "请发票退款维修一块全办。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-09",
+    "split": "calibration",
+    "raw": "快递太慢让我很生气，我要退款。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-10",
+    "split": "calibration",
+    "raw": "耳机坏了但不退钱，只维修。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-11",
+    "split": "calibration",
+    "raw": "阿巴咔咔%%###",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-12",
+    "split": "calibration",
+    "raw": "那个怎么办？",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [
+      "那个"
+    ],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-13",
+    "split": "acceptance",
+    "raw": "它能退款吗？",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [
+      "它"
+    ],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-14",
+    "split": "acceptance",
+    "raw": "照上次那样。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-15",
+    "split": "acceptance",
+    "raw": "我想同时换地址和投诉客服，都要办理。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-16",
+    "split": "acceptance",
+    "raw": "先不退了，查快递。",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-17",
+    "split": "acceptance",
+    "raw": "别给我维修了，我要退款。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-18",
+    "split": "acceptance",
+    "raw": "不退款了，帮我保修。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-19",
+    "split": "acceptance",
+    "raw": "这笔付款是否成功？",
+    "expected_intent": "订单",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-20",
+    "split": "acceptance",
+    "raw": "开票和换货同等重要，请同时办。",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-21",
+    "split": "acceptance",
+    "raw": "我抱怨几句，但要办理的是退货。",
+    "expected_intent": "退款退货",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-22",
+    "split": "acceptance",
+    "raw": "我只想补发少的配件，不要退款。",
+    "expected_intent": "售后",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-23",
+    "split": "acceptance",
+    "raw": "%#……随机乱码",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [],
+    "history": [],
+    "confirmed": {}
+  },
+  {
+    "id": "boundary-24",
+    "split": "acceptance",
+    "raw": "上面那个处理完没？",
+    "expected_intent": "其他",
+    "unchanged": true,
+    "required_terms": [],
+    "unresolved": [
+      "那个"
+    ],
+    "history": [],
+    "confirmed": {}
+  }
+]

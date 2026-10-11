@@ -35,6 +35,14 @@ class ModelService:
         """Compatibility facade for the independent Jev decision node."""
         return await self._intent_classifier.classify(text)
 
+    async def resolve_query(self, messages: list) -> AIMessage:
+        from app.ch06_types import Resolution
+        structured = self._agent_model.with_structured_output(
+            Resolution, method='json_mode', include_raw=True, temperature=0, max_tokens=1024)
+        result = await structured.ainvoke(messages)
+        # The resolver revalidates raw JSON, preserving usage even on parsing failure.
+        return result['raw']
+
     async def select(self, messages: list, tools: list, *, max_tokens: int) -> AIMessage:
         """Chapter 5 internal selection, with a per-request output budget."""
         selection = await self._agent_model.bind_tools(tools).ainvoke(messages, max_tokens=max_tokens)

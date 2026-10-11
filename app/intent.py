@@ -1,7 +1,7 @@
 """Jev-only business adapter and deterministic routing."""
 from pathlib import Path
 from app.ch06_types import Intent,IntentDecision,IntentOutcome
-from app.intent_criteria import criteria_fingerprint
+from app.evaluation.ch06 import fingerprints
 from app.intent_policy import IntentPolicy
 from app.jev_classifier import JevIntentClassifier
 from app.workflow_types import Usage
@@ -20,7 +20,7 @@ class IntentClassifier:
     def __init__(self,settings,client=None):
         self.provider=JevIntentClassifier(settings,client)
         self.policy=IntentPolicy.from_artifact(Path(settings.intent_policy_path),
-            {'model':settings.jev_model,'criteria':criteria_fingerprint()})
+            fingerprints(settings))
 
     async def classify(self,query: str) -> IntentOutcome:
         return self.policy.apply(await self.provider.classify(query))
