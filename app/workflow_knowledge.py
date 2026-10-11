@@ -11,6 +11,7 @@ from app.evaluation.calibration import ConfidenceConfigurationError, ConfidenceP
 from app.evidence import select_prompt_evidence
 from app.knowledge_types import KnowledgeFilters, PreparedQuery
 from app.rag_retrieval import IndexStaleError, RagRetrieval
+from app.knowledge_policy import knowledge_fingerprints as ch06_knowledge_fingerprints, load_policy as load_ch06_policy
 from app.workflow_log import WorkflowLog
 
 QUERY_MODE = 'raw-question-v1: PreparedQuery(question, question, question); synonyms=[]'
@@ -115,8 +116,10 @@ def create_live_retrieval(settings):
     sessions = make_session_factory(settings.database_url)
     store = None
     try:
-        corpus = read_current_corpus(sessions, ROOT / 'eval/ch04/corpus.json', settings.knowledge_collection)
-        store = HybridMilvusStore(uri=settings.milvus_uri, collection_name=settings.knowledge_collection)
+        collection=getattr(settings,'ch06_knowledge_collection',settings.knowledge_collection)
+        manifest=ROOT/getattr(settings,'ch06_knowledge_manifest','eval/ch06/corpus.json')
+        corpus = read_current_corpus(sessions, manifest, collection)
+        store = HybridMilvusStore(uri=settings.milvus_uri, collection_name=collection)
         retrieval = RagRetrieval(sessions, BgeM3Embedder(cache_dir=settings.bge_cache_dir),
                                  store, BgeReranker(cache_dir=settings.bge_cache_dir), corpus, diagnostics=False)
         yield retrieval
@@ -133,6 +136,6 @@ def create_live_knowledge_gate(settings, *, log=None, confidence_path=None):
     """Own read-only retrieval resources and validate raw-query calibration."""
     from app.ch04_ingest import ROOT
     with create_live_retrieval(settings) as retrieval:
-        expected = knowledge_fingerprints(retrieval.corpus, settings, ROOT / 'eval/ch05/knowledge_cases.json')
-        policy = load_knowledge_policy(confidence_path or ROOT / 'eval/ch05/confidence.json', expected)
+        expected = ch06_knowledge_fingerprints(retrieval.corpus, settings)
+        policy = load_ch06_policy(confidence_path or ROOT/getattr(settings,'ch06_knowledge_policy','eval/ch06/knowledge-policy.json'), expected,'faq')
         yield KnowledgeGate(retrieval, policy, settings, log=log)

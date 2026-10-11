@@ -169,7 +169,7 @@ def test_live_gate_factory_closes_retrieval_on_policy_error(monkeypatch):
         try: yield SimpleNamespace(corpus='corpus')
         finally: closed.append(True)
     monkeypatch.setattr(api, 'create_live_retrieval', resources)
-    monkeypatch.setattr(api, 'knowledge_fingerprints', lambda *args: {})
+    monkeypatch.setattr(api, 'ch06_knowledge_fingerprints', lambda *args: {})
     with pytest.raises(Exception, match='calibration missing'):
         with api.create_live_knowledge_gate(settings(), confidence_path='missing-policy.json'):
             pass

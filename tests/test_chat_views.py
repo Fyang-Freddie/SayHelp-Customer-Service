@@ -76,34 +76,34 @@ def test_history_rejects_invalid_pagination(factory, query):
 
 def test_document_preview_returns_actual_markdown_and_rejects_paths(factory):
     app = create_app(settings(), FakeModel(), factory, knowledge_gate=Gate())
-    response = get(app, '/v1/knowledge/documents/product-specs.md')
+    response = get(app, '/v1/knowledge/documents/product-specifications.md')
     assert response.status_code == 200
     payload = response.json()
-    assert payload['filename'] == 'product-specs.md'
+    assert payload['filename'] == 'product-specifications.md'
     assert '# 商品规格手册' in payload['text']
-    assert 'MH-LP100' in payload['text'] and 'MH-W60' in payload['text']
-    for name in ['.env','missing.md','%2e%2e%5c.env','%2e%2e%2f.env']:
+    assert 'MM-E100' in payload['text'] and 'MM-W60' not in payload['text']
+    for name in ['orders.md','logistics.md','refund-reasons.md','product-specs.md','.env','missing.md','%2e%2e%5c.env','%2e%2e%2f.env']:
         assert get(app, '/v1/knowledge/documents/' + name).status_code in (404,422)
 
 
 def test_source_mapping_uses_exact_original_text_and_never_guesses(tmp_path):
     from app.chat_views import sources_from_tool
-    (tmp_path / 'manual.md').write_text('# 手册\n\n## 型号 MH-W60\n\n6L，建议每周清洗。\n', encoding='utf-8')
+    (tmp_path / 'after-sales-manual.md').write_text('# 手册\n\n## 型号 MH-W60\n\n6L，建议每周清洗。\n', encoding='utf-8')
     content = json.dumps({'matches': [{'question':'型号 MH-W60','answer':'6L，建议每周清洗。','category':'手册'}]})
     source = sources_from_tool(content, tmp_path)[0]
-    assert (source['n'],source['source_file'],source['section_path'],source['source_line']) == (1,'manual.md','手册 / 型号 MH-W60',5)
+    assert (source['n'],source['source_file'],source['section_path'],source['source_line']) == (1,'after-sales-manual.md','手册 / 型号 MH-W60',5)
     assert source['answer'] == '6L，建议每周清洗。'
     missing = sources_from_tool(json.dumps({'matches':[{'question':'猜测','answer':'不存在的规格','category':'手册'}]}), tmp_path)[0]
     assert missing['source_file'] is None and missing['section_path'] is None
-    (tmp_path / 'copy.md').write_text('# 复制\n\n6L，建议每周清洗。\n', encoding='utf-8')
+    (tmp_path / 'returns-policy.md').write_text('# 复制\n\n6L，建议每周清洗。\n', encoding='utf-8')
     assert sources_from_tool(content, tmp_path)[0]['source_file'] is None
     assert sources_from_tool('not json', tmp_path) == []
 
 
 def test_workflow_citations_and_history_keep_snapshot(factory):
-    from langchain_core.messages import AIMessage
+    from app.ch06_types import IntentDecision, IntentOutcome
     class Model(FakeModel):
-        async def classify_intent(self, text): return AIMessage(content='{"intent":"退款退货"}')
+        async def classify_intent(self, text): return IntentOutcome(IntentDecision(intent='退款退货',confidence=1.0), 'classified', 'test', {'退款退货':1.0})
     app = create_app(settings(), Model(), factory, knowledge_gate=Gate())
     events = parse_events(asyncio.run(post(app, {'message':'退货'})).text)
     snapshot = next(data['citations'] for kind,data in events if kind == 'citations')

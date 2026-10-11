@@ -136,6 +136,8 @@ def test_old_dense_collection_can_never_be_cleaned_or_rebuilt(sessions, corpus):
 def test_real_file_dry_run_needs_no_database_or_models(monkeypatch, capsys):
     import json
     from pathlib import Path
+    from tests.ch04_support import activate_legacy_corpus
+    activate_legacy_corpus(monkeypatch)
     build = module('build_ch04_knowledge')
     monkeypatch.delenv('DATABASE_URL', raising=False)
     manifest = Path(__file__).resolve().parents[1]/'eval/ch04/corpus.json'

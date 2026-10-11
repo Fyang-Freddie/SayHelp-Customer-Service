@@ -43,6 +43,13 @@ class ModelService:
         # The resolver revalidates raw JSON, preserving usage even on parsing failure.
         return result['raw']
 
+    async def expand_query(self, messages: list) -> AIMessage:
+        from app.ch06_types import Expansion
+        structured = self._agent_model.with_structured_output(
+            Expansion, method='json_mode', include_raw=True, temperature=0, max_tokens=1024)
+        result = await structured.ainvoke(messages)
+        return result['raw']
+
     async def select(self, messages: list, tools: list, *, max_tokens: int) -> AIMessage:
         """Chapter 5 internal selection, with a per-request output budget."""
         selection = await self._agent_model.bind_tools(tools).ainvoke(messages, max_tokens=max_tokens)

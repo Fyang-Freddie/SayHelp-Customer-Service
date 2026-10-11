@@ -52,7 +52,8 @@ async def post(app, payload):
 
 class FakeModel:
     async def classify_intent(self, text):
-        return AIMessage(content='{"intent":"订单"}')
+        from app.ch06_types import IntentDecision, IntentOutcome
+        return IntentOutcome(IntentDecision(intent='订单',confidence=1.0), 'classified', 'test', {'订单':1.0})
 
     async def select(self, messages, tools, **kwargs):
         return await self.choose_tool(messages, tools)

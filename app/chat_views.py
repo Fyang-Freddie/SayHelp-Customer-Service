@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from app.knowledge_chunking import chunk_markdown
+from app.ch04_ingest import DOCUMENTS
 
 KNOWLEDGE_DIR = Path(__file__).resolve().parents[1] / 'knowledge_db'
 
@@ -36,7 +37,8 @@ def sources_from_tool(content: str | None, directory: Path = KNOWLEDGE_DIR) -> l
     if not isinstance(payload, dict) or not isinstance(payload.get('matches'), list):
         return []
     documents = []
-    for path in directory.glob('*.md'):
+    for filename in sorted(DOCUMENTS):
+        path = directory / Path(filename).name
         try:
             stat = path.stat()
             documents.append((path.name, *_document_chunks(str(path), stat.st_mtime_ns, stat.st_size)))

@@ -11,6 +11,10 @@ from dotenv import dotenv_values
 
 
 JEV_DISCOVERY_MODEL = "jev-latest"
+POLICY_SEARCH_CONCURRENCY = 2
+POLICY_RRF_K = 60
+POLICY_CANDIDATES = 50
+POLICY_TOP_K = 10
 
 
 @dataclass(frozen=True)
@@ -24,6 +28,9 @@ class Settings:
     jev_base_url: str = 'https://api.typesafe.ai/v1'
     jev_timeout: float = 10.0
     intent_policy_path: str = 'eval/ch06/intent-policy.json'
+    ch06_knowledge_collection: str = 'knowledge_ch06'
+    ch06_knowledge_manifest: str = 'eval/ch06/corpus.json'
+    ch06_knowledge_policy: str = 'eval/ch06/knowledge-policy.json'
     workflow_checkpoint_path: str = ".runtime/ch05/checkpoints.sqlite"
     agent_model_calls: int = 6
     agent_tool_calls: int = 6
@@ -116,6 +123,9 @@ class Settings:
             jev_base_url=value('JEV_BASE_URL') or 'https://api.typesafe.ai/v1',
             jev_timeout=positive_int('JEV_TIMEOUT_SECONDS',10),
             intent_policy_path=value('INTENT_POLICY_PATH') or 'eval/ch06/intent-policy.json',
+            ch06_knowledge_collection=value('CH06_KNOWLEDGE_COLLECTION') or 'knowledge_ch06',
+            ch06_knowledge_manifest=value('CH06_KNOWLEDGE_MANIFEST') or 'eval/ch06/corpus.json',
+            ch06_knowledge_policy=value('CH06_KNOWLEDGE_POLICY') or 'eval/ch06/knowledge-policy.json',
             workflow_checkpoint_path=checkpoint_path,
             agent_model_calls=bounded_calls(agent_name('AGENT_MAX_MODEL_CALLS', 'AGENT_MODEL_CALLS')),
             agent_tool_calls=bounded_calls(agent_name('AGENT_MAX_TOOL_CALLS', 'AGENT_TOOL_CALLS')),

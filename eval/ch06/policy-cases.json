@@ -1,0 +1,650 @@
+[
+  {
+    "id": "policy-calibration-01",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "七天无理由退货的七天期限从什么时候开始计算？",
+    "answerable": true,
+    "required_sections": [
+      "R04"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-02",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "普通数码配件申请无理由退货需要满足哪些商品完好要求？",
+    "answerable": true,
+    "required_sections": [
+      "R07"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-03",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "为检查商品而必要拆封是否必然不能退货？",
+    "answerable": true,
+    "required_sections": [
+      "R08"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-04",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "定制刻字商品因为不喜欢可以无理由退货吗？",
+    "answerable": true,
+    "required_sections": [
+      "R10"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-05",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "激活后的软件激活码能无理由退款吗？",
+    "answerable": true,
+    "required_sections": [
+      "R12"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-06",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "退货商品缺少配件时应该如何处理？",
+    "answerable": true,
+    "required_sections": [
+      "R18"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-07",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "尚未实际发货的普通商品如何申请退款？",
+    "answerable": true,
+    "required_sections": [
+      "R27"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-08",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "不喜欢商品而退货，退回运费由谁承担？",
+    "answerable": true,
+    "required_sections": [
+      "R31"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-09",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "商品维修受理需要符合哪些免费保修条件？",
+    "answerable": true,
+    "required_sections": [
+      "A07"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-10",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "商品少配件可不可以申请补发？",
+    "answerable": true,
+    "required_sections": [
+      "A09"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-11",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "人为进水损坏是否属于免费保修？",
+    "answerable": true,
+    "required_sections": [
+      "A10"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-12",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "商家可以承诺维修一定在哪天完成吗？",
+    "answerable": true,
+    "required_sections": [
+      "A14"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-13",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "同一核心故障两次维修仍无法使用怎么处理？",
+    "answerable": true,
+    "required_sections": [
+      "A16"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-14",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "维修前个人数据应如何处理？",
+    "answerable": true,
+    "required_sections": [
+      "A22"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-15",
+    "split": "calibration",
+    "mode": "faq",
+    "query": "MM-E100耳机使用什么充电接口？",
+    "answerable": true,
+    "required_sections": [
+      "无线蓝牙耳机"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-16",
+    "split": "calibration",
+    "mode": "faq",
+    "query": "MM-K87R键盘是什么连接方式？",
+    "answerable": true,
+    "required_sections": [
+      "机械键盘"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-17",
+    "split": "calibration",
+    "mode": "faq",
+    "query": "MM-PB100充电宝最大输出功率是多少？",
+    "answerable": true,
+    "required_sections": [
+      "充电宝"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-18",
+    "split": "calibration",
+    "mode": "faq",
+    "query": "MM-BAND5N手环是否支持NFC？",
+    "answerable": true,
+    "required_sections": [
+      "智能手环"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-19",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "你们是否提供宇航服在火星使用后的退款政策？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-20",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "购买商业卫星发射服务失败能赔偿多少钱？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-21",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "店铺是否承担我购买比特币亏损的赔偿？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-22",
+    "split": "calibration",
+    "mode": "policy",
+    "query": "境外私人游艇租赁合同退订规则是什么？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-23",
+    "split": "calibration",
+    "mode": "faq",
+    "query": "MM-E100耳机有多少亿个晶体管？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-calibration-24",
+    "split": "calibration",
+    "mode": "faq",
+    "query": "MM-K87R键盘每个按键的精确化学成分是什么？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-01",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "商品没有签收时七天无理由的期限如何计算？",
+    "answerable": true,
+    "required_sections": [
+      "R05"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-02",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "合理试穿衣服的退货要求有哪些？",
+    "answerable": true,
+    "required_sections": [
+      "R09"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-03",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "鲜果礼盒有无七天无理由退货保障？",
+    "answerable": true,
+    "required_sections": [
+      "R11"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-04",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "卫生封签已拆的内衣可以无理由退货吗？",
+    "answerable": true,
+    "required_sections": [
+      "R13"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-05",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "赠品丢了会不会直接拒绝主商品退货？",
+    "answerable": true,
+    "required_sections": [
+      "R19"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-06",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "卖家发错颜色申请退货，谁承担运费？",
+    "answerable": true,
+    "required_sections": [
+      "R24"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-07",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "已发货尚未签收的商品退款如何处理？",
+    "answerable": true,
+    "required_sections": [
+      "R28"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-08",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "某件商品的退款上限如何确定？",
+    "answerable": true,
+    "required_sections": [
+      "R35"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-09",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "商品签收后第8到15天出现质量问题怎么办？",
+    "answerable": true,
+    "required_sections": [
+      "A04"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-10",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "什么条件可以优先申请换货？",
+    "answerable": true,
+    "required_sections": [
+      "A08"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-11",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "擅自焊接零件造成故障能免费保修吗？",
+    "answerable": true,
+    "required_sections": [
+      "A11"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-12",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "保修范围内质量问题的寄修运费谁承担？",
+    "answerable": true,
+    "required_sections": [
+      "A15"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-13",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "质量问题换货但同款长期缺货怎么办？",
+    "answerable": true,
+    "required_sections": [
+      "A18"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-14",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "维修后是否会自动重新获得完整无限期保修？",
+    "answerable": true,
+    "required_sections": [
+      "A23"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-15",
+    "split": "acceptance",
+    "mode": "faq",
+    "query": "MM-E100耳机防护等级是多少？",
+    "answerable": true,
+    "required_sections": [
+      "无线蓝牙耳机"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-16",
+    "split": "acceptance",
+    "mode": "faq",
+    "query": "MM-K87R键盘有没有背光？",
+    "answerable": true,
+    "required_sections": [
+      "机械键盘"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-17",
+    "split": "acceptance",
+    "mode": "faq",
+    "query": "MM-PB100充电宝有哪些输出接口？",
+    "answerable": true,
+    "required_sections": [
+      "充电宝"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-18",
+    "split": "acceptance",
+    "mode": "faq",
+    "query": "MM-BAND5N手环屏幕尺寸是多少？",
+    "answerable": true,
+    "required_sections": [
+      "智能手环"
+    ],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-19",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "购买深海矿产勘探权的退款规则是什么？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-20",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "购买国外公寓后不喜欢可以退多少契税？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-21",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "网站会赔偿我期货交易爆仓的损失吗？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-22",
+    "split": "acceptance",
+    "mode": "policy",
+    "query": "私人直升机包机取消后退款需要多少手续费？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-23",
+    "split": "acceptance",
+    "mode": "faq",
+    "query": "MM-E100耳机使用的芯片晶圆来自哪座工厂？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  },
+  {
+    "id": "policy-acceptance-24",
+    "split": "acceptance",
+    "mode": "faq",
+    "query": "MM-K87R键盘的每个螺丝精确扭矩是多少？",
+    "answerable": false,
+    "required_sections": [],
+    "item": {
+      "product_name": "普通商品",
+      "variant": "以订单为准"
+    }
+  }
+]

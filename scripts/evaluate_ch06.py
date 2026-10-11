@@ -28,16 +28,28 @@ class Budget:
         if self.counts[provider]%10==0: print(provider,'attempts:',self.counts[provider],flush=True)
 
 async def run(args):
-    cases=[c for c in load_cases() if c['split']==args.split]
-    assert len(cases)==110 and len({c['id'] for c in cases})==110
+    if args.suite=='policy':
+        from app.evaluation.policy_ch06 import cases_for
+        cases=cases_for(args.split)
+    else: cases=[c for c in load_cases() if c['split']==args.split]
+    expected_count=110 if args.suite=='intent' else 24
+    assert len(cases)==expected_count and len({c['id'] for c in cases})==expected_count
     if not args.live:
-        print(json.dumps({'mode':'dry_run','suite':args.suite,'split':args.split,'cases':len(cases),'max_chat_requests':110,'max_jev_requests':110})); return 0
+        print(json.dumps({'mode':'dry_run','suite':args.suite,'split':args.split,'cases':len(cases),'max_chat_requests':110 if args.suite=='intent' else sum(c['mode']=='policy' for c in cases),'max_jev_requests':110 if args.suite=='intent' else 0})); return 0
     if args.env_file:
         for name,value in dotenv_values(args.env_file).items():
             if value is not None: os.environ.setdefault(name,value)
     settings=Settings.from_env()
     if not settings.jev_api_key or not settings.jev_model: raise SystemExit('Jev server configuration required')
     model=ModelService(settings); provider=JevIntentClassifier(settings)
+    if args.suite=='policy':
+        from app.evaluation.policy_ch06 import evaluate_policy_cases
+        if args.round not in (1,2) or args.split=='acceptance' and args.round!=1: raise SystemExit('Evaluation round exceeds approved budget')
+        run_id=f'policy-{args.split}-r{args.round}'
+        with (ROOT/f'eval/ch06/{run_id}.attempt.json').open('x',encoding='utf-8') as stream:
+            json.dump({'run':run_id,'cases':len(cases)},stream)
+        report=await evaluate_policy_cases(cases,settings,model,Budget(run_id),Path(args.output) if args.output else ROOT/f'eval/ch06/{run_id}.json',args.split)
+        print(json.dumps({key:value for key,value in report.items() if key!='cases'},ensure_ascii=True)); return 0
     expected=fingerprints(settings)
     run_id=f'intent-{args.split}-r{args.round}'
     if args.split=='acceptance' and args.round!=1: raise SystemExit('Acceptance may run only once')
@@ -66,7 +78,7 @@ async def run(args):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser()
-    parser.add_argument('--suite',choices=['intent'],default='intent')
+    parser.add_argument('--suite',choices=['intent','policy'],default='intent')
     parser.add_argument('--split',choices=['calibration','acceptance'],default='calibration')
     parser.add_argument('--round',type=int,default=1)
     parser.add_argument('--live',action='store_true')
