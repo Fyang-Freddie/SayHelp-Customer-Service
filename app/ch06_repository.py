@@ -3,9 +3,9 @@ import hashlib
 import json
 import re
 from uuid import NAMESPACE_URL, uuid5
-from sqlalchemy import select
+from sqlalchemy import select, text
 from app.ch05_db import WorkflowTurn
-from app.ch06_db import WorkflowInteraction, WorkflowResumeRequest, RefundAction
+from app.ch06_db import WorkflowInteraction, WorkflowResumeRequest, RefundAction, RefundRequest
 from app.workflow_repository import WorkflowRepository, _active_conversation, _identity
 
 
@@ -137,7 +137,7 @@ def _refund_action(row):
 
 
 class RefundRepository(WorkflowRepository):
-    def issue_action(self,conversation_id,turn_id,item,eligibility,fingerprints):
+    def issue_action(self,conversation_id,turn_id,item,eligibility,fingerprints,*,context=None):
         from app.business_data import OrderItem
         from app.ch06_types import Eligibility
         _identity(turn_id,0)
@@ -145,6 +145,7 @@ class RefundRepository(WorkflowRepository):
         if item.issues or eligibility.status!='eligible' or eligibility.missing_facts or not eligibility.evidence_ids:raise ValueError('Eligibility is not established')
         if not isinstance(fingerprints,dict) or not fingerprints or any(not isinstance(v,str) or not v for v in fingerprints.values()):raise ValueError('Missing source fingerprints')
         data=_json(item.to_dict());decision=eligibility.model_dump();versions=_json(fingerprints)
+        if context is not None:decision['context']=_json(context)
         identity=json.dumps([conversation_id,turn_id,item.customer_id,item.order_id,item.item_id],ensure_ascii=False)
         action_id=uuid5(NAMESPACE_URL,'sayhelp-refund:'+identity).hex
         def operation(s):
@@ -164,3 +165,104 @@ class RefundRepository(WorkflowRepository):
             _active_conversation(s,conversation_id)
             for row in s.scalars(select(RefundAction).where(RefundAction.conversation_id==conversation_id,RefundAction.status=='active')):row.status='cancelled'
         self._write(operation)
+
+
+    def get_action(self,conversation_id,action_id):
+        with self.session_factory.begin() as s:
+            _active_conversation(s,conversation_id)
+            row=s.get(RefundAction,action_id)
+            if row is None or row.conversation_id!=conversation_id:raise KeyError('Refund action not found')
+            return _refund_action(row)
+
+    def load_forms(self,conversation_id):
+        with self.session_factory.begin() as s:
+            _active_conversation(s,conversation_id)
+            pairs=s.execute(select(RefundAction,WorkflowTurn.final_message_id).join(WorkflowTurn,WorkflowTurn.turn_id==RefundAction.turn_id).where(RefundAction.conversation_id==conversation_id,WorkflowTurn.final_message_id.is_not(None))).all()
+            receipts={row.action_id:{**_refund_request(row),'reason_code':row.reason_code} for row in s.scalars(select(RefundRequest).where(RefundRequest.conversation_id==conversation_id))}
+            return {str(message_id):{**_refund_action(row),'receipt':receipts.get(row.action_id)} for row,message_id in pairs}
+
+    def find_request(self,conversation_id,action_id,reason_code,request_id):
+        with self.session_factory.begin() as s:
+            _active_conversation(s,conversation_id)
+            row=s.get(RefundRequest,request_id)
+            if row is None:return None
+            if (row.conversation_id,row.action_id,row.reason_code)!=(conversation_id,action_id,reason_code):raise ValueError('Refund request identity conflict')
+            return _refund_request(row)
+
+    def reserve_review(self,conversation_id,action_id,request_id,reason_code,limits):
+        def operation(s):
+            _active_conversation(s,conversation_id)
+            row=s.get(RefundAction,action_id,with_for_update=True)
+            if row is None or row.conversation_id!=conversation_id:raise KeyError('Refund action not found')
+            if row.status!='active':raise ValueError('Refund action is not active')
+            value=_json(row.eligibility);context=value.get('context',{});reviews=context.setdefault('reviews',{})
+            prior=reviews.get(request_id)
+            if prior is not None:
+                if prior['reason_code']!=reason_code:raise ValueError('Refund review identity conflict')
+                return {**prior,'claimed':False}
+            if any(review['status']=='processing' for review in reviews.values()):raise ValueError('Refund review is processing')
+            from app.workflow_types import Usage
+            if context.get('model_calls',0)>=limits.model_calls or Usage(**context.get('usage',{})).total>=limits.turn_tokens:raise ValueError('Refund review budget exhausted')
+            context['model_calls']=context.get('model_calls',0)+1
+            reviews[request_id]={'reason_code':reason_code,'status':'processing'}
+            value['context']=context;row.eligibility=value
+            return {**reviews[request_id],'claimed':True}
+        return self._write(operation)
+
+    def finish_review(self,conversation_id,action_id,request_id,decision,usage):
+        def operation(s):
+            _active_conversation(s,conversation_id)
+            row=s.get(RefundAction,action_id,with_for_update=True)
+            if row is None or row.conversation_id!=conversation_id:raise KeyError('Refund action not found')
+            value=_json(row.eligibility);context=value['context'];review=context['reviews'][request_id]
+            if review['status']!='processing':raise ValueError('Refund review already ended')
+            from app.aftersales_workflow import total_usage
+            context['usage']=total_usage(context,usage)
+            review.update(status='complete' if decision else 'failed',decision=decision)
+            row.eligibility=value
+        self._write(operation)
+
+    def create_request(self,conversation_id,action_id,reason_code,request_id,item,expected_fingerprints):
+        _opaque(request_id,128);_opaque(action_id);_opaque(reason_code)
+        identity=json.dumps([item.customer_id,item.order_id,item.item_id],ensure_ascii=False,separators=(',',':'))
+        lock_name='sh_refund:'+hashlib.sha256(identity.encode()).hexdigest()[:54]
+        digest=hashlib.sha256(json.dumps([conversation_id,action_id,reason_code,item.to_dict()],sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+        def operation(s):
+            _active_conversation(s,conversation_id)
+            existing=s.get(RefundRequest,request_id)
+            if existing is not None:
+                if existing.payload_digest!=digest:raise ValueError('Refund request identity conflict')
+                return _refund_request(existing)
+            action=s.get(RefundAction,action_id,with_for_update=True)
+            if action is None or action.conversation_id!=conversation_id:raise KeyError('Refund action not found')
+            if action.status!='active' or action.item!=item.to_dict() or action.fingerprints!=expected_fingerprints:raise ValueError('Refund action is stale')
+            review=action.eligibility.get('context',{}).get('reviews',{}).get(request_id,{})
+            decision=review.get('decision') or {}
+            if review.get('status')!='complete' or review.get('reason_code')!=reason_code or decision.get('status')!='eligible' or decision.get('missing_facts'):raise ValueError('Refund requires reassessment')
+            if item.issues or item.quantity<1 or item.paid_amount<=0 or any(token in item.order_status+item.aftersales_status for token in ('已退款','退款中','已退货')):raise ValueError('Order cannot be refunded')
+            duplicate=s.scalar(select(RefundRequest).where(RefundRequest.customer_id==item.customer_id,RefundRequest.order_id==item.order_id,RefundRequest.item_id==item.item_id))
+            if duplicate is not None:raise ValueError('An active refund request already exists')
+            row=RefundRequest(request_id=request_id,action_id=action_id,conversation_id=conversation_id,refund_no='RF'+uuid5(NAMESPACE_URL,request_id).hex,customer_id=item.customer_id,order_id=item.order_id,item_id=item.item_id,amount=item.paid_amount,quantity=item.quantity,reason_code=reason_code,payload_digest=digest,status='pending')
+            s.add(row);action.status='submitted';s.flush()
+            return _refund_request(row)
+        # Named lock belongs to this connection, not the transaction; release explicitly.
+        engine=self.session_factory.kw['bind']
+        with engine.connect() as connection:
+            locked=connection.execute(text('SELECT GET_LOCK(:name, 10)'),{'name':lock_name}).scalar()
+            connection.commit()
+            if locked!=1:raise TimeoutError('Refund item is busy')
+            try:return self._write(operation)
+            finally:
+                try:
+                    connection.rollback()
+                    released=connection.execute(text('SELECT RELEASE_LOCK(:name)'),{'name':lock_name}).scalar()
+                    connection.commit()
+                    if released!=1:connection.invalidate()
+                except BaseException:
+                    connection.invalidate()
+                    raise
+
+
+def _refund_request(row):
+    return {'refund_no':row.refund_no,'status':row.status,'amount':str(row.amount),'quantity':row.quantity,
+            'message':'退款申请已提交，等待处理'}

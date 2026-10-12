@@ -33,6 +33,7 @@ def test_http_pause_order_resume_and_invalid_scope(sessions,tmp_path):
             assert (await request(app,'POST',url.replace(f'/{cid}/',f'/{other}/'),json=payload)).status_code in (404,409)
             response=await request(app,'POST',url,json=payload)
             assert parse_events(response.text)[-1][0]=='done'
+            assert [data['stage'] for name,data in parse_events(response.text) if name=='workflow_stage']==['order','expansion','policy','eligibility']
             before=list(events)
             response=await request(app,'POST',url,json=payload)
             assert parse_events(response.text)[-1][0]=='done' and events==before

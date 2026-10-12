@@ -11,14 +11,14 @@ from test_db import database_url
 from test_aftersales_workflow import Business,Expander,Policy,Model,emit
 
 def graph(saver,events):
-    from app.workflow_graph import build_workflow
+    from app.workflow_graph import build_workflow,_emit
     from app.aftersales_workflow import build_aftersales_subgraph
     from app.agent_runtime import AgentLimits
     from app.ch06_types import IntentDecision
     from app.workflow_types import Usage
     model=Model(events)
     async def classify(query):return IntentDecision(intent='退款退货',confidence=1.0),Usage()
-    child=build_aftersales_subgraph(business=Business(events),expander=Expander(events),policy_retrieval=Policy(events),model=model,limits=AgentLimits(),emit=emit)
+    child=build_aftersales_subgraph(business=Business(events),expander=Expander(events),policy_retrieval=Policy(events),model=model,limits=AgentLimits(),emit=_emit)
     return build_workflow(model=model,classifier=classify,knowledge_gate=None,tools_factory=lambda cid:{},limits=AgentLimits(),log=SimpleNamespace(write=lambda *args:None),checkpointer=saver,aftersales=child)
 
 from test_chat_api import settings

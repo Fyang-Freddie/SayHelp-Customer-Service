@@ -50,7 +50,7 @@ def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,
         return fields
 
     async def wait_customer(state):
-        payload={'kind':'customer_input','message':state['clarification'],'turn_id':state['turn_id']}
+        payload={'kind':'customer_input','message':state['clarification'],'turn_id':state['turn_id'],'query':state['resolved_question'],'intent':state.get('intent_decision',{})}
         while True:
             value=interrupt(payload)
             customer=value.get('customer_id') if isinstance(value,dict) else None
@@ -64,13 +64,14 @@ def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,
         while True:
             snapshot=await asyncio.to_thread(business.load)
             items=await asyncio.to_thread(business.list_items,customer)
-            payload={'kind':'order_selection','turn_id':state['turn_id'],'message':'请选择需要处理的订单商品。','customer_id':customer,'data_digest':snapshot.digest,'orders':[item.to_dict() for item in items]}
+            payload={'kind':'order_selection','query':state['resolved_question'],'intent':state.get('intent_decision',{}),'turn_id':state['turn_id'],'message':'请选择需要处理的订单商品。','customer_id':customer,'data_digest':snapshot.digest,'orders':[item.to_dict() for item in items]}
             selected=interrupt(payload)
             if isinstance(selected,dict) and selected.get('customer_id')==customer and selected.get('data_digest')==snapshot.digest:
                 match=next((item for item in items if item.order_id==selected.get('order_id') and item.item_id==selected.get('item_id')),None)
                 if match:return {'selected_order':{k:selected[k] for k in ('customer_id','order_id','item_id','data_digest')},'status':'order'}
 
     async def order(state):
+        await emit('workflow_stage',{'stage':'order'})
         selected=state.get('selected_order',{});customer=state.get('confirmed',{}).get('customer_id')
         if not customer or selected.get('customer_id')!=customer:return stopped('order_scope_mismatch')
         try:
@@ -91,6 +92,7 @@ def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,
         return item
 
     async def expand(state):
+        await emit('workflow_stage',{'stage':'expansion'})
         try:item=await item_for(state)
         except ValueError:return stopped('order_data_changed')
         result,fields=await paid(state,'expand',[state['resolved_question'],item.to_dict()],lambda:expander.expand(state['resolved_question'],item),1024)
@@ -98,12 +100,14 @@ def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,
         return fields
 
     async def retrieve(state):
+        await emit('workflow_stage',{'stage':'policy'})
         try:item=await item_for(state)
         except ValueError:return stopped('order_data_changed')
         result=await policy_retrieval.prepare(state['resolved_question'],state['queries'],item)
         return {**result,'status':'judge' if result.get('knowledge_confidence',{}).get('sufficient') and result.get('evidence') and result.get('citations') else 'fallback'}
 
     async def judge(state):
+        await emit('workflow_stage',{'stage':'eligibility'})
         try:item=await item_for(state)
         except ValueError:return stopped('order_data_changed')
         facts={**state.get('facts',{}),'intent':state['intent']}

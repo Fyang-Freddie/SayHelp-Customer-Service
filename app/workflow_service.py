@@ -45,7 +45,8 @@ async def _settled(function, *args, **kwargs):
 
 
 class WorkflowService:
-    def __init__(self, repository, workflow_repository, graph, settings, *, log=None, interactions=None, business=None):
+    def __init__(self, repository, workflow_repository, graph, settings, *, log=None, interactions=None, business=None, refunds=None):
+        self.refunds = refunds
         self.business = business
         self.interactions = interactions
         self.repository = repository
@@ -97,6 +98,8 @@ class WorkflowService:
                 yield ChatEvent('interaction_required',pending)
                 yield ChatEvent('paused',{'turn_id':pending['turn_id'],'interrupt_id':pending['interrupt_id']})
                 return
+        if self.refunds is not None:
+            await _settled(self.refunds.repository.cancel_actions,conversation_id)
         async with aclosing(self._stream_turn(conversation_id,message,filters)) as stream:
             async for event in stream:yield event
 
@@ -215,6 +218,8 @@ class WorkflowService:
                     if mode == 'custom' and data['event'] in ('tool_start', 'tool_end'):
                         yield ChatEvent('tool_status', {'name': data['payload']['name'],
                             'state': 'running' if data['event'] == 'tool_start' else data['payload']['status']})
+                    elif mode == 'custom' and data['event']=='workflow_stage':
+                        yield ChatEvent('workflow_stage',data['payload'])
                     elif mode == 'custom' and data['event'] == 'token':
                         if data['event'] == 'token':
                             streamed = True
@@ -258,6 +263,15 @@ class WorkflowService:
                 yield ChatEvent('citations', {'message_id': message_id, 'citations': final['citations']})
             if actions:
                 yield ChatEvent('actions', {'message_id': message_id, 'actions': public_actions(actions)})
+            if self.refunds is not None and final.get('intent')=='退款退货' and final.get('eligibility',{}).get('status')=='eligible':
+                from app.ch06_types import Eligibility
+                bound=final['selected_order']
+                item=await asyncio.to_thread(self.business.get_item,bound['customer_id'],bound['order_id'],bound['item_id'])
+                if item.to_dict()!=final['order_item']:raise ValueError('Order changed before refund form')
+                form=await _settled(self.refunds.prepare_action,conversation_id,turn_id,item,
+                    Eligibility.model_validate(final['eligibility']),final['evidence'],query=final['resolved_question'],
+                    facts=final.get('facts',{}),model_calls=final.get('model_calls',0),usage=final.get('usage',{}))
+                yield ChatEvent('refund_form',{'message_id':message_id,**form})
             self.log.write('turn_terminal', {**terminal, 'status':'complete', 'duration_ms':(perf_counter()-began)*1000})
             if resume:
                 await _settled(self.interactions.finish_resume,resume['request_id'],{'status':'complete','message_id':message_id})
@@ -304,7 +318,7 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
         from app.query_expansion import QueryExpander
         from app.aftersales_workflow import build_aftersales_subgraph
         from app.business_data import MarkdownBusinessData
-        from app.ch06_repository import InteractionRepository
+        from app.ch06_repository import InteractionRepository,RefundRepository
         from app.policy_retrieval import PolicyRetrieval
         from app.knowledge_policy import load_policy, knowledge_fingerprints
         from app.ch04_ingest import ROOT
@@ -318,6 +332,16 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
             policy=load_policy(ROOT/settings.ch06_knowledge_policy,knowledge_fingerprints(knowledge_gate.retrieval.corpus,settings),'policy')
             core=build_aftersales_subgraph(business=business,expander=QueryExpander(model_service),
                 policy_retrieval=PolicyRetrieval(knowledge_gate.retrieval,policy,settings),model=model_service,limits=limits,emit=_emit)
+        from app.refund_service import RefundService
+        from app.ch06_prompts import ELIGIBILITY_SYSTEM
+        def refund_fingerprints():
+            digest=hashlib.sha256()
+            for filename in sorted(('returns-policy.md','after-sales-manual.md','product-specifications.md')):
+                digest.update((ROOT/'knowledge_db'/filename).read_bytes())
+            return {'policy_sources':digest.hexdigest(),
+                    'knowledge_policy':hashlib.sha256((ROOT/settings.ch06_knowledge_policy).read_bytes()).hexdigest(),
+                    'eligibility_prompt':hashlib.sha256(ELIGIBILITY_SYSTEM.encode()).hexdigest(),'chat_model':settings.chat_model}
+        refunds=RefundService(RefundRepository(repository.session_factory),business,model_service,limits,refund_fingerprints)
         async def classifier(text):
             return await classify_intent(text, model=model_service)
         async def answer(keyword, filters=None):
@@ -332,4 +356,4 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
                 knowledge_gate=knowledge_gate, tools_factory=tools_factory,
                 limits=limits,log=log,checkpointer=saver,resolver=QueryResolver(model_service),
                 aftersales=core,scoped_tools_factory=scoped_tools_factory,business=business)
-            yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings, log=log,interactions=InteractionRepository(repository.session_factory),business=business)
+            yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings, log=log,interactions=InteractionRepository(repository.session_factory),business=business,refunds=refunds)

@@ -25,7 +25,7 @@ from app.model_service import ModelService
 from app.prompts import render_workflow_system_prompt
 from app.ticket_actions import TicketActions
 from app.repository import Repository
-from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest, PinRequest, TicketConfirmationRequest, InteractionResumeRequest
+from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest, PinRequest, TicketConfirmationRequest, InteractionResumeRequest, RefundSubmissionRequest
 
 PreparedChat = tuple[int, str, object]
 
@@ -118,8 +118,11 @@ def create_app(
             try:
                 pending=None if busy else await service.get_pending_interaction(int(conversation_id))
                 interactions=await asyncio.to_thread(service.interactions.load_interactions,int(conversation_id)) if service.interactions else {}
-                return {'conversation_id':conversation_id,'pending_interaction':pending,
-                        'messages':public_messages(repository.load_messages(int(conversation_id)),workflow_repository.load_actions(int(conversation_id)),interactions=interactions)}
+                messages=public_messages(repository.load_messages(int(conversation_id)),workflow_repository.load_actions(int(conversation_id)),interactions=interactions)
+                forms=await asyncio.to_thread(service.refunds.load_forms,int(conversation_id)) if service.refunds else {}
+                for message in messages:
+                    if message['id'] in forms:message['refund_form']=forms[message['id']]
+                return {'conversation_id':conversation_id,'pending_interaction':pending,'messages':messages}
             finally:
                 if not busy:
                     with reservation_lock:active.discard(int(conversation_id))
@@ -261,6 +264,16 @@ def create_app(
         except KeyError:raise HTTPException(status_code=404,detail='Conversation or interaction not found') from None
         except ValueError:raise HTTPException(status_code=409,detail='Interaction is no longer cancellable') from None
         except (SQLAlchemyError,TimeoutError):raise HTTPException(status_code=503,detail='Cancellation unavailable') from None
+
+    @app.post('/v1/conversations/{conversation_id}/refunds')
+    async def submit_refund(request: RefundSubmissionRequest,cid: Annotated[int,Depends(reserve_interaction,scope='request')]):
+        try:
+            service=app.state.workflow_service.refunds
+            if service is None:raise HTTPException(status_code=503,detail='Refund service unavailable')
+            return await service.submit(cid,request.action_id,request.reason_code,request.request_id)
+        except KeyError:raise HTTPException(status_code=404,detail='Conversation or refund action not found') from None
+        except ValueError:raise HTTPException(status_code=409,detail='Refund requires reassessment or request conflicts; refresh the conversation') from None
+        except (SQLAlchemyError,TimeoutError):raise HTTPException(status_code=503,detail='Refund result unavailable; retry the same request') from None
 
     @app.post('/v1/aftersales/extract')
     async def extract_after_sales(request: ExtractRequest) -> AfterSalesExtraction:
