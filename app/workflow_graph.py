@@ -52,7 +52,7 @@ def _fixed(state: WorkflowState, answer: str, **fields) -> dict:
 def build_workflow(*, model: AgentModel,
                    classifier: Callable[[str], Awaitable[tuple[IntentDecision, Usage]]],
                    knowledge_gate: KnowledgeGate, tools_factory: Callable[[int], dict],
-                   limits: AgentLimits, log: WorkflowLog, checkpointer, resolver=None, aftersales=None) -> CompiledStateGraph:
+                   limits: AgentLimits, log: WorkflowLog, checkpointer, resolver=None, aftersales=None, scoped_tools_factory=None, business=None) -> CompiledStateGraph:
     """Build once; resources stay in closures. Caller owns saver and thread IDs.
 
     ``astream(..., stream_mode='custom', subgraphs=True)`` exposes safe runtime
@@ -80,7 +80,7 @@ def build_workflow(*, model: AgentModel,
                 try:
                     result = await function(state)
                 except GraphInterrupt:
-                    log.write('node_paused', {'duration_ms':(perf_counter()-started)*1000})
+                    log.write('node_end', {'status':'waiting','duration_ms':(perf_counter()-started)*1000})
                     raise
                 except BaseException as error:
                     payload = {'status': 'cancelled' if isinstance(error, (asyncio.CancelledError, GeneratorExit)) else 'failed',
@@ -110,6 +110,15 @@ def build_workflow(*, model: AgentModel,
                 'selected_order':{},'queries':[],'knowledge_confidence':{},'facts':{}}
         if resolver is None:return fields
         confirmed={**state.get('confirmed',{}),'conversation_id':state['conversation_id']}
+        if business is not None:
+            import re
+            match=re.search(r'客户(?:ID|id|编号)?[：: ]+([A-Za-z0-9][A-Za-z0-9_-]{0,63})(?![A-Za-z0-9_-])',state['raw_question'])
+            if match:
+                # Only explicit customer declarations; never an LLM-invented ID.
+                confirmed={'conversation_id':state['conversation_id']}
+                if await asyncio.to_thread(business.list_items,match[1]):confirmed['customer_id']=match[1]
+        fields['confirmed']={k:v for k,v in confirmed.items() if k!='conversation_id'}
+
         history=[{'role':'user' if m.type=='human' else 'assistant','content':m.content}
                  for m in state.get('messages',[])[:-1] if m.type in ('human','ai') and isinstance(m.content,str) and not getattr(m,'tool_calls',None)]
         from app.query_resolver import bounded_context
@@ -193,10 +202,10 @@ def build_workflow(*, model: AgentModel,
 
     async def select_node(state: WorkflowState):
         return await agent_step(_agent_context(state), model=model,
-            tools=tools_factory(state['conversation_id']), limits=limits, emit=runtime_emit)
+            tools=scoped_tools_factory(state) if scoped_tools_factory else tools_factory(state['conversation_id']), limits=limits, emit=runtime_emit)
 
     async def tools_node(state: WorkflowState):
-        return await execute_calls(_agent_context(state), tools=tools_factory(state['conversation_id']), limits=limits, emit=runtime_emit)
+        return await execute_calls(_agent_context(state), tools=scoped_tools_factory(state) if scoped_tools_factory else tools_factory(state['conversation_id']), limits=limits, emit=runtime_emit)
 
     async def answer_node(state: WorkflowState):
         return await stream_answer(_agent_context(state), model=model, limits=limits, emit=runtime_emit)

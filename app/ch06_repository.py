@@ -70,6 +70,20 @@ class InteractionRepository(WorkflowRepository):
             return _resume(request,True)
         return self._write(operation)
 
+    def get_resume(self,conversation_id,turn_id,interrupt_id,request_id,payload_digest):
+        with self.session_factory.begin() as s:
+            _active_conversation(s,conversation_id)
+            row=s.get(WorkflowResumeRequest,request_id)
+            if row is None:return None
+            if (row.conversation_id,row.turn_id,row.interrupt_id,row.payload_digest)!=(conversation_id,turn_id,interrupt_id,payload_digest):raise ValueError('Resume identity conflict')
+            return _resume(row)
+
+    def processing_request(self,conversation_id,interrupt_id):
+        with self.session_factory.begin() as s:
+            _active_conversation(s,conversation_id)
+            row=s.scalar(select(WorkflowResumeRequest).where(WorkflowResumeRequest.conversation_id==conversation_id,WorkflowResumeRequest.interrupt_id==interrupt_id,WorkflowResumeRequest.status=='processing'))
+            return row.request_id if row else None
+
     def finish_resume(self,request_id,result):
         _opaque(request_id,128)
         if not isinstance(result,dict):raise ValueError('Invalid resume result')

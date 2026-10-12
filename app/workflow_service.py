@@ -1,5 +1,7 @@
 """Reconcile MySQL history, stream the graph, and own its SQLite lifecycle."""
 import asyncio
+import hashlib
+import json
 from collections.abc import AsyncIterator
 from contextlib import aclosing, asynccontextmanager, ExitStack
 from uuid import uuid4
@@ -8,6 +10,7 @@ from time import perf_counter
 from anyio import CancelScope
 from langchain_core.messages import AIMessage, HumanMessage, RemoveMessage, SystemMessage, ToolMessage
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
+from langgraph.types import Command
 
 from app.agent_runtime import AgentLimits, READ_TOOLS
 from app.chat_service import ChatEvent
@@ -42,12 +45,106 @@ async def _settled(function, *args, **kwargs):
 
 
 class WorkflowService:
-    def __init__(self, repository, workflow_repository, graph, settings, *, log=None):
+    def __init__(self, repository, workflow_repository, graph, settings, *, log=None, interactions=None, business=None):
+        self.business = business
+        self.interactions = interactions
         self.repository = repository
         self.workflow_repository = workflow_repository
         self.graph = graph
         self.settings = settings
         self.log = log if log is not None else WorkflowLog()
+
+    @staticmethod
+    def _public_pending(row):
+        return {key:row[key] for key in ('interrupt_id','turn_id','message_id','kind','payload','status')}
+
+    async def get_pending_interaction(self,conversation_id):
+        if self.interactions is None:return None
+        if await asyncio.to_thread(self.repository.get_conversation,conversation_id) is None:raise KeyError('Conversation not found')
+        config={'configurable':{'thread_id':str(conversation_id)}}
+        snapshot=await self.graph.aget_state(config)
+        display=await asyncio.to_thread(self.interactions.pending,conversation_id)
+        if display and display['status']=='processing':
+            current_ids={point.id for point in snapshot.interrupts}
+            request_id=await asyncio.to_thread(self.interactions.processing_request,conversation_id,display['interrupt_id'])
+            if request_id and display['interrupt_id'] not in current_ids and snapshot.values.get('turn_id')==display['turn_id']:
+                if snapshot.interrupts:
+                    await _settled(self.interactions.finish_resume,request_id,{'status':'paused'})
+                elif not snapshot.next and snapshot.values.get('status')=='done':
+                    current=next((m.id for m in reversed(snapshot.values.get('messages',[])) if isinstance(m,HumanMessage)),None)
+                    if not current:raise ValueError('Original message missing')
+                    message_id,_=await self._persist_reply(conversation_id,display['turn_id'],current,snapshot.values)
+                    await _settled(self.interactions.finish_resume,request_id,{'status':'complete','message_id':message_id})
+        if not snapshot.interrupts:return None
+        point=snapshot.interrupts[0]
+        payload=point.value
+        if not isinstance(payload,dict):raise ValueError('Invalid interrupt payload')
+        row=await _settled(self.interactions.publish_wait,conversation_id,payload['turn_id'],point.id,payload['kind'],payload,snapshot.config['configurable']['checkpoint_id'])
+        if row['status']=='cancelled':return None
+        return self._public_pending(row)
+
+    async def stream_turn(self,conversation_id,message,filters=None):
+        pending=await self.get_pending_interaction(conversation_id)
+        if pending:
+            from app.workflow_interactions import resolve_execution_input
+            decision=await resolve_execution_input(message,pending['payload'])
+            if decision['kind']=='slot_reply':
+                async with aclosing(self.resume_turn(conversation_id,pending['turn_id'],pending['interrupt_id'],uuid4().hex,decision['value'])) as stream:
+                    async for event in stream:yield event
+                return
+            if decision['kind']=='new_request':await self.cancel_interaction(conversation_id,pending['interrupt_id'])
+            else:
+                yield ChatEvent('interaction_required',pending)
+                yield ChatEvent('paused',{'turn_id':pending['turn_id'],'interrupt_id':pending['interrupt_id']})
+                return
+        async with aclosing(self._stream_turn(conversation_id,message,filters)) as stream:
+            async for event in stream:yield event
+
+    async def validate_resume(self,conversation_id,turn_id,interrupt_id,request_id,value):
+        if self.interactions is None:raise ValueError('Interactions unavailable')
+        await self.get_pending_interaction(conversation_id)
+        digest=hashlib.sha256(json.dumps(value,sort_keys=True,ensure_ascii=False,allow_nan=False,separators=(',',':')).encode()).hexdigest()
+        existing=await asyncio.to_thread(self.interactions.get_resume,conversation_id,turn_id,interrupt_id,request_id,digest)
+        if existing is not None:return {'existing':existing,'digest':digest}
+        pending=await self.get_pending_interaction(conversation_id)
+        if pending is None or (pending['turn_id'],pending['interrupt_id'])!=(turn_id,interrupt_id):raise ValueError('Stale interaction')
+        if pending['status']!='waiting':raise ValueError('Resume is processing')
+        payload=pending['payload'];kind=pending['kind']
+        if not isinstance(value,dict):raise ValueError('Invalid resume value')
+        if kind=='order_selection':
+            if set(value)!={'customer_id','order_id','item_id','data_digest'} or value['customer_id']!=payload['customer_id'] or value['data_digest']!=payload['data_digest']:raise ValueError('Order selection conflict')
+            if self.business is not None and (await asyncio.to_thread(self.business.load)).digest!=value['data_digest']:raise ValueError('Order data changed; refresh selection')
+            if not any(item['order_id']==value['order_id'] and item['item_id']==value['item_id'] for item in payload['orders']):raise ValueError('Order selection conflict')
+        elif kind=='customer_input':
+            if set(value)!={'customer_id'} or not isinstance(value['customer_id'],str) or not value['customer_id'].strip() or len(value['customer_id'])>64:raise ValueError('Invalid customer ID')
+            if self.business is not None and not await asyncio.to_thread(self.business.list_items,value['customer_id']):raise ValueError('Customer has no matching orders')
+        elif kind=='clarification':
+            if set(value)!={'text'} or not isinstance(value['text'],str) or not value['text'].strip() or len(value['text'])>2000:raise ValueError('Invalid clarification')
+        snapshot=await self.graph.aget_state({'configurable':{'thread_id':str(conversation_id)}})
+        current=next((m.id for m in reversed(snapshot.values.get('messages',[])) if isinstance(m,HumanMessage)),None)
+        if not current:raise ValueError('Original message missing')
+        return {'digest':digest,'current_id':current}
+
+    async def resume_turn(self,conversation_id,turn_id,interrupt_id,request_id,value):
+        validated=await self.validate_resume(conversation_id,turn_id,interrupt_id,request_id,value)
+        claim=validated.get('existing') or await _settled(self.interactions.claim_resume,conversation_id,turn_id,interrupt_id,request_id,validated['digest'])
+        if not claim.get('claimed'):
+            result=claim.get('result') or {}
+            if claim['status']=='complete' and result.get('message_id'):
+                yield ChatEvent('completed',{'message_id':result['message_id']})
+            else:
+                yield ChatEvent('resume_status',{'request_id':request_id,'status':claim['status']})
+                yield ChatEvent('paused',{'turn_id':turn_id,'interrupt_id':interrupt_id})
+            return
+        resume={'turn_id':turn_id,'interrupt_id':interrupt_id,'request_id':request_id,'value':value,'current_id':validated['current_id']}
+        async with aclosing(self._stream_turn(conversation_id,'',resume=resume)) as stream:
+            async for event in stream:yield event
+
+    async def cancel_interaction(self,conversation_id,interrupt_id):
+        pending=await self.get_pending_interaction(conversation_id)
+        if pending is None or pending['interrupt_id']!=interrupt_id:raise ValueError('Stale interaction')
+        await _settled(self.interactions.cancel_wait,conversation_id,interrupt_id)
+        await self.graph.aupdate_state({'configurable':{'thread_id':str(conversation_id)}},{'status':'cancelled','selected_order':{},'eligibility':{},'confirmed':{}},as_node='log_turn')
 
     async def _persist_reply(self, conversation_id, turn_id, current_id, result):
         # Parent agent outputs include its input history; fixed nodes only emit final.
@@ -74,31 +171,41 @@ class WorkflowService:
             turn_id, len(suffix), result['answer'], result.get('citations', []),
             result.get('suggestions', []))
 
-    async def stream_turn(self, conversation_id: int, message: str, filters=None) -> AsyncIterator[ChatEvent]:
-        turn_id = uuid4().hex
+    async def _stream_turn(self, conversation_id: int, message: str, filters=None, *, resume=None) -> AsyncIterator[ChatEvent]:
+        turn_id = resume['turn_id'] if resume else uuid4().hex
         terminal = {'conversation_id': conversation_id, 'turn_id': turn_id, 'usage': {}}
         began = perf_counter()
         committed = False
         finished = False
         started = False
+        paused = False
         try:
             if await asyncio.to_thread(self.repository.get_conversation, conversation_id) is None:
                 raise KeyError('Conversation not found')
-            rows = await asyncio.to_thread(self.repository.load_messages, conversation_id)
-            excluded = await asyncio.to_thread(self.workflow_repository.incomplete_message_ids, conversation_id)
-            current = HumanMessage(content=message, id=turn_id + ':user')
-            context = prepare_context([r for r in rows if str(r.id) not in excluded],
-                SystemMessage(content=render_workflow_system_prompt(), id='workflow-system'), current, self.settings)
-            # The attempt may commit before cancellation is observed; cleanup always checks it.
-            started = True
-            current.id = await _settled(self.workflow_repository.append_message_once,
-                conversation_id, turn_id, 0, 'user', message)
-            inputs = {'conversation_id': conversation_id, 'turn_id': turn_id,
-                'messages': [RemoveMessage(id=REMOVE_ALL_MESSAGES), *context], 'raw_question': message,
-                'filters': filters.model_dump(exclude_none=True) if hasattr(filters, 'model_dump') else (filters or {})}
-            config = {'configurable': {'thread_id': str(conversation_id)}, 'recursion_limit': 64}
+            if resume:
+                config={'configurable':{'thread_id':str(conversation_id)},'recursion_limit':64}
+                snapshot=await self.graph.aget_state(config)
+                current=HumanMessage(content='',id=resume['current_id'])
+                inputs=Command(resume={resume['interrupt_id']:resume['value']})
+                started=True
+            else:
+                rows = await asyncio.to_thread(self.repository.load_messages, conversation_id)
+                excluded = await asyncio.to_thread(self.workflow_repository.incomplete_message_ids, conversation_id)
+                current = HumanMessage(content=message, id=turn_id + ':user')
+                context = prepare_context([r for r in rows if str(r.id) not in excluded],
+                    SystemMessage(content=render_workflow_system_prompt(), id='workflow-system'), current, self.settings)
+                # The attempt may commit before cancellation is observed; cleanup always checks it.
+                started = True
+                current.id = await _settled(self.workflow_repository.append_message_once,
+                    conversation_id, turn_id, 0, 'user', message)
+                inputs = {'conversation_id': conversation_id, 'turn_id': turn_id,
+                    'messages': [RemoveMessage(id=REMOVE_ALL_MESSAGES), *context], 'raw_question': message,
+                    'filters': filters.model_dump(exclude_none=True) if hasattr(filters, 'model_dump') else (filters or {})}
+                config = {'configurable': {'thread_id': str(conversation_id)}, 'recursion_limit': 64}
             final = None
             streamed = False
+            actions=[]
+            message_id=None
             # Closing settles graph/checkpointer tasks before request reservation is released.
             async with aclosing(self.graph.astream(inputs, config,
                     stream_mode=['custom', 'updates'], subgraphs=True)) as stream:
@@ -114,10 +221,15 @@ class WorkflowService:
                         yield ChatEvent(data['event'], data['payload'])
                     elif mode == 'updates' and not namespace:
                         for node, result in data.items():
+                            if node=='__interrupt__':
+                                paused=True
+                                continue
+                            if not isinstance(result,dict):continue
                             terminal.update({k:v for k,v in (result or {}).items() if k in
                                 ('usage','intent','route','model_calls','tool_calls','stop_reason')})
-                            if node not in ('agent', 'fallback', 'complaint', 'chitchat'):
+                            if node not in ('agent', 'aftersales', 'fallback', 'complaint', 'chitchat'):
                                 continue
+                            if node=='aftersales' and result.get('status')=='fallback':continue
                             if result.get('status') != 'done' or not result.get('answer', '').strip():
                                 raise RuntimeError('Workflow did not produce a complete answer')
                             final = result
@@ -125,6 +237,17 @@ class WorkflowService:
                             message_id, actions = await self._persist_reply(
                                 conversation_id, turn_id, current.id, result)
                             committed = True
+            if paused:
+                snapshot=await self.graph.aget_state(config)
+                if not snapshot.interrupts:raise RuntimeError('Interrupt checkpoint missing')
+                if resume:
+                    await _settled(self.interactions.finish_resume,resume['request_id'],{'status':'paused'})
+                pending=await self.get_pending_interaction(conversation_id)
+                if pending is None:raise RuntimeError('Waiting display could not be restored')
+                finished=True
+                yield ChatEvent('interaction_required',pending)
+                yield ChatEvent('paused',{'turn_id':turn_id,'interrupt_id':pending['interrupt_id']})
+                return
             # Stream exhaustion confirms ALL graph tasks and final SQLite writes succeeded.
             if final is None or not committed:
                 raise RuntimeError('Workflow ended without a persisted reply')
@@ -136,6 +259,8 @@ class WorkflowService:
             if actions:
                 yield ChatEvent('actions', {'message_id': message_id, 'actions': public_actions(actions)})
             self.log.write('turn_terminal', {**terminal, 'status':'complete', 'duration_ms':(perf_counter()-began)*1000})
+            if resume:
+                await _settled(self.interactions.finish_resume,resume['request_id'],{'status':'complete','message_id':message_id})
             finished = True
             yield ChatEvent('completed', {'message_id': message_id})
         except BaseException as error:
@@ -144,7 +269,7 @@ class WorkflowService:
                     'error_type':type(error).__name__, 'duration_ms':(perf_counter()-began)*1000})
             except Exception:
                 pass
-            if started and not finished:
+            if started and not finished and not paused and not resume:
                 status = ('incomplete' if isinstance(error, (asyncio.CancelledError, GeneratorExit))
                           else 'checkpoint_failed' if committed else 'failed')
                 # A failed database can prevent this best-effort marker; never hide the original error.
@@ -175,18 +300,36 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
         if knowledge_gate is None:
             knowledge_gate = resources.enter_context(create_live_knowledge_gate(settings, log=log))
             await _settled(knowledge_gate.retrieval.warmup)
+        from app.query_resolver import QueryResolver
+        from app.query_expansion import QueryExpander
+        from app.aftersales_workflow import build_aftersales_subgraph
+        from app.business_data import MarkdownBusinessData
+        from app.ch06_repository import InteractionRepository
+        from app.policy_retrieval import PolicyRetrieval
+        from app.knowledge_policy import load_policy, knowledge_fingerprints
+        from app.ch04_ingest import ROOT
+        from app.workflow_graph import _emit
+        business=MarkdownBusinessData(ROOT/'knowledge_db')
+        limits=AgentLimits(model_calls=settings.agent_model_calls,tool_calls=settings.agent_tool_calls,
+            turn_tokens=settings.agent_turn_tokens,response_tokens=settings.response_token_reserve,
+            input_tokens=settings.context_token_budget-settings.response_token_reserve)
+        core=None
+        if hasattr(knowledge_gate,'retrieval'):
+            policy=load_policy(ROOT/settings.ch06_knowledge_policy,knowledge_fingerprints(knowledge_gate.retrieval.corpus,settings),'policy')
+            core=build_aftersales_subgraph(business=business,expander=QueryExpander(model_service),
+                policy_retrieval=PolicyRetrieval(knowledge_gate.retrieval,policy,settings),model=model_service,limits=limits,emit=_emit)
         async def classifier(text):
             return await classify_intent(text, model=model_service)
         async def answer(keyword, filters=None):
             return await knowledge_tool_answer(knowledge_gate, keyword, filters)
         def tools_factory(conversation_id):
-            return {name: tool for name, tool in build_tools(repository, conversation_id, None,
-                knowledge_answer=answer).items() if name in READ_TOOLS}
+            return scoped_tools_factory({'conversation_id':conversation_id})
+        def scoped_tools_factory(state):
+            return {name:tool for name,tool in build_tools(repository,state['conversation_id'],None,
+                knowledge_answer=answer,business_data=business,customer_id=state.get('confirmed',{}).get('customer_id')).items() if name in READ_TOOLS}
         async with open_workflow_checkpointer(settings.workflow_checkpoint_path) as saver:
             compiled = build_workflow(model=model_service, classifier=classifier,
                 knowledge_gate=knowledge_gate, tools_factory=tools_factory,
-                limits=AgentLimits(model_calls=settings.agent_model_calls,
-                    tool_calls=settings.agent_tool_calls, turn_tokens=settings.agent_turn_tokens,
-                    response_tokens=settings.response_token_reserve,
-                    input_tokens=settings.context_token_budget-settings.response_token_reserve), log=log, checkpointer=saver)
-            yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings, log=log)
+                limits=limits,log=log,checkpointer=saver,resolver=QueryResolver(model_service),
+                aftersales=core,scoped_tools_factory=scoped_tools_factory,business=business)
+            yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings, log=log,interactions=InteractionRepository(repository.session_factory),business=business)

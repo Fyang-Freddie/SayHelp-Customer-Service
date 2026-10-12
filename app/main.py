@@ -1,5 +1,6 @@
 """Customer service streaming HTTP API with persistent conversation storage."""
 from collections.abc import AsyncIterator, Iterator
+import asyncio
 from contextlib import aclosing, asynccontextmanager
 from pathlib import Path
 from threading import RLock
@@ -24,7 +25,7 @@ from app.model_service import ModelService
 from app.prompts import render_workflow_system_prompt
 from app.ticket_actions import TicketActions
 from app.repository import Repository
-from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest, PinRequest, TicketConfirmationRequest
+from app.schemas import AfterSalesExtraction, ChatRequest, ConversationId, ExtractRequest, PinRequest, TicketConfirmationRequest, InteractionResumeRequest
 
 PreparedChat = tuple[int, str, object]
 
@@ -106,13 +107,22 @@ def create_app(
             raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
 
     @app.get('/v1/conversations/{conversation_id}/messages')
-    def conversation_messages(conversation_id: ConversationId) -> dict:
+    async def conversation_messages(conversation_id: ConversationId) -> dict:
         try:
             if repository.get_conversation(int(conversation_id)) is None:
                 raise HTTPException(status_code=404, detail='Conversation not found')
-            return {'conversation_id': conversation_id,
-                    'messages': public_messages(repository.load_messages(int(conversation_id)),
-                        workflow_repository.load_actions(int(conversation_id)))}
+            service=app.state.workflow_service
+            with reservation_lock:
+                busy=int(conversation_id) in active
+                if not busy:active.add(int(conversation_id))
+            try:
+                pending=None if busy else await service.get_pending_interaction(int(conversation_id))
+                interactions=await asyncio.to_thread(service.interactions.load_interactions,int(conversation_id)) if service.interactions else {}
+                return {'conversation_id':conversation_id,'pending_interaction':pending,
+                        'messages':public_messages(repository.load_messages(int(conversation_id)),workflow_repository.load_actions(int(conversation_id)),interactions=interactions)}
+            finally:
+                if not busy:
+                    with reservation_lock:active.discard(int(conversation_id))
         except SQLAlchemyError:
             raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
 
@@ -188,11 +198,13 @@ def create_app(
     ) -> AsyncIterator[ServerSentEvent]:
         conversation_id, message, filters = prepared
         message_id = None
+        paused = False
         wire_id = str(conversation_id)
         yield ServerSentEvent(event='session', data={'conversation_id': wire_id})
         try:
             async with aclosing(app.state.workflow_service.stream_turn(conversation_id, message, filters)) as turn:
                 async for event in turn:
+                    if event.kind == 'paused':paused=True
                     if event.kind == 'completed':
                         message_id = event.data['message_id']
                     else:
@@ -200,10 +212,55 @@ def create_app(
         except Exception:
             yield ServerSentEvent(event='error', data={'message': 'Upstream chat failed'})
             return
+        if paused:return
         if message_id is None:
             yield ServerSentEvent(event='error', data={'message': 'Workflow did not complete'})
             return
         yield ServerSentEvent(event='done', data={'conversation_id': wire_id, 'message_id': message_id})
+
+    def reserve_interaction(conversation_id: ConversationId):
+        cid=int(conversation_id);reserved=False
+        try:
+            with reservation_lock:
+                if cid in active:raise HTTPException(status_code=409,detail='Conversation is active')
+                if repository.get_conversation(cid) is None:raise HTTPException(status_code=404,detail='Conversation not found')
+                if len(active)>=settings.max_conversations:raise HTTPException(status_code=503,detail='Conversation capacity reached')
+                active.add(cid);reserved=True
+            yield cid
+        except SQLAlchemyError:raise HTTPException(status_code=503,detail='Conversation storage unavailable') from None
+        finally:
+            if reserved:
+                with reservation_lock:active.discard(cid)
+
+    async def prepare_resume(interrupt_id: str, request: InteractionResumeRequest,
+            cid: Annotated[int,Depends(reserve_interaction,scope='request')]):
+        try:
+            await app.state.workflow_service.validate_resume(cid,request.turn_id,interrupt_id,request.request_id,request.value)
+            return cid,interrupt_id,request
+        except KeyError:raise HTTPException(status_code=404,detail='Conversation or interaction not found') from None
+        except ValueError:raise HTTPException(status_code=409,detail='Interaction or resume payload conflicts') from None
+        except (SQLAlchemyError,TimeoutError):raise HTTPException(status_code=503,detail='Interaction storage unavailable') from None
+
+    @app.post('/v1/conversations/{conversation_id}/interactions/{interrupt_id}/resume',response_class=EventSourceResponse)
+    async def resume_interaction(prepared: Annotated[tuple,Depends(prepare_resume,scope='request')]) -> AsyncIterator[ServerSentEvent]:
+        cid,interrupt_id,request=prepared
+        yield ServerSentEvent(event='session',data={'conversation_id':str(cid)})
+        try:
+            async with aclosing(app.state.workflow_service.resume_turn(cid,request.turn_id,interrupt_id,request.request_id,request.value)) as stream:
+                async for event in stream:
+                    if event.kind=='completed':yield ServerSentEvent(event='done',data={'conversation_id':str(cid),**event.data})
+                    else:yield ServerSentEvent(event=event.kind,data=event.data)
+        except Exception:
+            yield ServerSentEvent(event='error',data={'message':'Resume result unavailable; refresh or retry the same request'})
+
+    @app.post('/v1/conversations/{conversation_id}/interactions/{interrupt_id}/cancel')
+    async def cancel_interaction(interrupt_id: str,cid: Annotated[int,Depends(reserve_interaction,scope='request')]):
+        try:
+            await app.state.workflow_service.cancel_interaction(cid,interrupt_id)
+            return {'status':'cancelled','interrupt_id':interrupt_id}
+        except KeyError:raise HTTPException(status_code=404,detail='Conversation or interaction not found') from None
+        except ValueError:raise HTTPException(status_code=409,detail='Interaction is no longer cancellable') from None
+        except (SQLAlchemyError,TimeoutError):raise HTTPException(status_code=503,detail='Cancellation unavailable') from None
 
     @app.post('/v1/aftersales/extract')
     async def extract_after_sales(request: ExtractRequest) -> AfterSalesExtraction:

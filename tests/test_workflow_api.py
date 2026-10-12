@@ -11,7 +11,9 @@ from test_workflow_service import Gate, Model, settings
 
 def test_lifespan_uses_workflow_and_restores_stable_actions(sessions, tmp_path):
     class ComplaintModel(Model):
-        async def classify_intent(self, text): return AIMessage(content='{"intent":"投诉"}')
+        async def classify_intent(self, text):
+            from app.ch06_types import IntentDecision,IntentOutcome
+            return IntentOutcome(IntentDecision(intent='投诉',confidence=1.0),'accepted','test',{})
     app = create_app(settings(workflow_checkpoint_path=str(tmp_path/'api.sqlite')), ComplaintModel(), sessions, knowledge_gate=Gate())
     async def run():
         async with app.router.lifespan_context(app):

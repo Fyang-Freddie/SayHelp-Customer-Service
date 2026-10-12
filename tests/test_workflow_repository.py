@@ -22,6 +22,8 @@ def sessions(database_url):
         initialize = None
     if initialize is not None:
         initialize(database_url)
+    from app.init_ch06_db import initialize_ch06_database
+    initialize_ch06_database(database_url)
     factory = make_session_factory(database_url)
     yield factory
     factory.kw['bind'].dispose()

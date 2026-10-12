@@ -25,6 +25,11 @@ def settings(**kwargs):
 
 
 class Model:
+    async def resolve_query(self,messages):
+        import json
+        raw=json.loads(messages[-1].content)['raw']
+        return AIMessage(content=json.dumps({'query':raw,'changed':False,'unresolved_references':[]},ensure_ascii=False))
+
     def __init__(self): self.inputs = []
     async def select(self, messages, tools, **kwargs):
         self.inputs.append(messages)

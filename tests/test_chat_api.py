@@ -51,6 +51,11 @@ async def post(app, payload):
 
 
 class FakeModel:
+    async def resolve_query(self,messages):
+        import json
+        raw=json.loads(messages[-1].content)['raw']
+        return AIMessage(content=json.dumps({'query':raw,'changed':False,'unresolved_references':[]},ensure_ascii=False))
+
     async def classify_intent(self, text):
         from app.ch06_types import IntentDecision, IntentOutcome
         return IntentOutcome(IntentDecision(intent='订单',confidence=1.0), 'accepted', 'test', {'订单':1.0})
@@ -431,9 +436,11 @@ def test_app_lifespan_warms_and_closes_owned_gate(monkeypatch, sessions, fail_wa
     @contextmanager
     def owned(*args, **kwargs):
         stages.append('open')
-        try: yield SimpleNamespace(retrieval=SimpleNamespace(warmup=warmup))
+        try: yield SimpleNamespace(retrieval=SimpleNamespace(warmup=warmup,corpus=object()))
         finally: stages.append('close')
     monkeypatch.setattr('app.workflow_service.create_live_knowledge_gate', owned)
+    monkeypatch.setattr('app.knowledge_policy.knowledge_fingerprints',lambda *a:{})
+    monkeypatch.setattr('app.knowledge_policy.load_policy',lambda *a:object())
     app = create_app(settings(), FakeModel(), sessions)
     assert stages == []
     async def lifecycle():
