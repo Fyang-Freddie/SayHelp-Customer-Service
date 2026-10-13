@@ -346,3 +346,19 @@ commits. Detailed evidence is in [dev-notes/ch03.md](dev-notes/ch03.md).
 - `DELETE /v1/conversations/{id}`，成功及重复删除均返回 204。逻辑删除使列表、读取及续聊不可见，消息、工单与低置信度记录保留作追溯。
 - `GET /v1/conversations?limit=30&before=...` 中 before 取上一页 next_cursor，旧数字游标需刷新后重新加载。
 - 生成中的会话置顶/删除返回 409，存储失败返回 503。必须保持 **单进程 `--workers 1`**：聊天预留与历史管理共用进程内锁；多 worker 部署需要先实现跨进程协调。
+
+### 第六章：意图分流与退款申请（验收中）
+
+当前版本的 Jev 单标签意图、真实订单卡片、LangGraph 暂停恢复和本地待处理退款申请已接入。**独立验收仍有失败，暂不作为正式发布版本。** 结果见 [eval/ch06/acceptance-report.md](eval/ch06/acceptance-report.md)，开发记录见 [dev-notes/ch06.md](dev-notes/ch06.md)。
+
+准备本地 MySQL 与 Milvus，先对现有业务库做备份；服务端 `.env` 至少配置原有聊天上游、数据库以及 `TYPESAFE_API_KEY` 与 `JEV_MODEL`。Jev 密钥不得进入浏览器或 Git。使用已有的 Python 环境，在仓库根目录运行：
+
+```powershell
+python -m app.init_ch05_db
+python -m app.init_ch06_db
+python scripts/demo_ch06.py --case order-picker --live --init-db --count-evaluation
+```
+
+最后一条启动 `http://127.0.0.1:8096/` 的单 worker 浏览器演示。`--case` 可选 `context-switch`、`order-picker`、`refund-form`，只标记手动演示场景，脚本不会自动提交退款申请；不传 `--live` 只打印 dry-run 提示。用 `--env-file D:/.../.env` 指向工作树外的服务端配置时，命令中的路径改为实际位置。首次加载本地向量模型可能较久。不要启动多个 worker：当前聊天会话锁在进程内。
+
+手动验收：从无订单号“我想申请退款”开始，回复自己声明的客户 ID，点击其订单商品卡片，检查政策来源与资格答复；eligible 才有固定原因下拉。提交后生成的只是**待处理申请**，不是转账或退款到账。也可用“客户 ID + 订单号查物流 → 这个能退吗 → 先不退了继续查物流”检查多轮切换。只要政策证据不足，核心流程会明确兜底，不会批准申请。

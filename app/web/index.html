@@ -269,6 +269,20 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
+
+    .interaction-panel,.refund-panel {margin-top:14px;padding:16px;border:1px solid #dce5df;border-radius:14px;background:#f6faf7;color:#273e32;max-width:620px}
+    .interaction-heading {font-weight:650;margin:0 0 8px;font-size:14px}
+    .interaction-context {font-size:12px;color:#607366;margin:0 0 12px;line-height:1.6}
+    .order-card {display:block;width:100%;text-align:left;margin:8px 0;padding:14px;border:1px solid #d3dfd7;border-radius:10px;background:white;color:inherit;cursor:pointer;transition:border-color .15s,background .15s}
+    .order-card:hover:not(:disabled) {border-color:#498460;background:#eef7f0}
+    .order-card strong {display:block;font-size:14px;margin-bottom:5px}
+    .order-card small {display:block;color:#68786d;line-height:1.7;overflow-wrap:anywhere}
+    .order-card:disabled {opacity:.6;cursor:default}
+    .interaction-cancel {border:0;background:none;color:#68786d;text-decoration:underline;cursor:pointer;padding:6px 0}
+    .refund-panel select {display:block;width:100%;padding:10px;margin:10px 0;border:1px solid #cbd8ce;border-radius:8px;background:white;color:inherit}
+    .refund-submit {border:0;border-radius:8px;background:#326c4a;color:white;padding:10px 16px;cursor:pointer}
+    .refund-submit:disabled {opacity:.5;cursor:default}
+    .refund-status {font-size:13px;line-height:1.7;margin-top:10px;overflow-wrap:anywhere}
   </style>
 </head>
 <body>
@@ -384,6 +398,8 @@
       let chatAbort = null;
       const deletedConversations = new Set();
       const actionStates = new Map();
+      const resumeKeys = new Map();
+      const refundStates = new Map();
       const ticketDialog = document.getElementById("ticketDialog");
       const ticketDescription = document.getElementById("ticketDescription");
       const ticketType = document.getElementById("ticketType");
@@ -488,6 +504,82 @@
           if (ticketContext?.state === state) updateTicketDialog(ticketContext);
         }
       });
+
+      function renderInteraction(view, interaction, ownerId) {
+        if (!interaction || !ownerId) return;
+        view.wrap.querySelector(".interaction-panel")?.remove();
+        const panel=document.createElement("section");panel.className="interaction-panel";
+        const heading=document.createElement("p");heading.className="interaction-heading";
+        const payload=interaction.payload || {};
+        heading.textContent=interaction.status==="waiting" ? (interaction.kind==="order_selection" ? "选择要处理的订单商品" : "等待你补充信息") : interaction.status==="processing" ? "正在处理你的选择" : "本次选择已结束";
+        panel.append(heading);
+        if (payload.query) {const detail=document.createElement("p");detail.className="interaction-context";detail.textContent="问题："+payload.query+(payload.intent?.intent ? " · "+payload.intent.intent : "");panel.append(detail);}
+        const epoch=conversationEpoch;
+        const current=()=>epoch===conversationEpoch && ownerId===conversationId && panel.isConnected;
+        if (interaction.kind==="order_selection") {
+          for (const item of payload.orders || []) {
+            const card=document.createElement("button");card.type="button";card.className="order-card";
+            card.disabled=interaction.status!=="waiting";
+            const title=document.createElement("strong");title.textContent=item.product_name+" · "+item.variant;
+            const description=document.createElement("small");description.textContent="订单 "+item.order_id+" / "+item.item_id+"　"+item.quantity+" 件　实付 ¥"+item.paid_amount;
+            const status=document.createElement("small");status.textContent=item.order_status+" · "+item.aftersales_status+" · 下单 "+(item.ordered_at || "未知").replace("T"," ");
+            card.append(title,description,status);
+            card.addEventListener("click",async()=>{
+              if (!current() || busy || card.disabled) return;
+              const value={customer_id:payload.customer_id,order_id:item.order_id,item_id:item.item_id,data_digest:payload.data_digest};
+              const key=interaction.interrupt_id+JSON.stringify(value);
+              if (!resumeKeys.has(key)) resumeKeys.set(key,crypto.randomUUID());
+              panel.querySelectorAll("button").forEach(button=>button.disabled=true);
+              await sendMessage("",{url:"/v1/conversations/"+encodeURIComponent(ownerId)+"/interactions/"+encodeURIComponent(interaction.interrupt_id)+"/resume",body:{turn_id:interaction.turn_id,request_id:resumeKeys.get(key),value}});
+              if (current()) await openConversation(ownerId);
+            });
+            panel.append(card);
+          }
+        } else if (interaction.status==="waiting") {
+          const hint=document.createElement("p");hint.className="interaction-context";hint.textContent="在下方输入框回复即可继续。";panel.append(hint);
+        }
+        if (interaction.status==="waiting") {
+          const cancel=document.createElement("button");cancel.type="button";cancel.className="interaction-cancel";cancel.textContent="取消本次操作";
+          cancel.addEventListener("click",async()=>{
+            if (!current() || busy) return;cancel.disabled=true;
+            try {const response=await fetch("/v1/conversations/"+encodeURIComponent(ownerId)+"/interactions/"+encodeURIComponent(interaction.interrupt_id)+"/cancel",{method:"POST"});if(!response.ok)throw new Error("暂时无法取消，请刷新后重试。");if(current())await openConversation(ownerId);}
+            catch(error){if(current()){addNotice(error.message);cancel.disabled=false;}}
+          });panel.append(cancel);
+        }
+        view.wrap.append(panel);
+      }
+
+      function renderRefundForm(view, form, ownerId) {
+        if (!form || !ownerId) return;
+        const panel=document.createElement("form");panel.className="refund-panel";
+        const heading=document.createElement("p");heading.className="interaction-heading";heading.textContent="提交退款申请";
+        const summary=document.createElement("p");summary.className="interaction-context";summary.textContent=form.item.product_name+" · "+form.item.variant+"\n"+form.item.order_id+" / "+form.item.item_id+"　"+form.item.quantity+" 件　申请金额 ¥"+form.item.paid_amount;
+        const select=document.createElement("select");select.required=true;select.setAttribute("aria-label","退款原因");
+        const empty=document.createElement("option");empty.value="";empty.textContent="请选择退款原因";select.append(empty);
+        for(const reason of form.reasons || []){const option=document.createElement("option");option.value=reason.code;option.textContent=reason.label;select.append(option);}
+        const submit=document.createElement("button");submit.type="submit";submit.className="refund-submit";submit.textContent="确认提交申请";
+        const status=document.createElement("div");status.className="refund-status";status.setAttribute("aria-live","polite");status.textContent="提交后等待处理，不代表资金已退回。";
+        const key=ownerId+":"+form.action_id;
+        if(!refundStates.has(key))refundStates.set(key,{requestId:crypto.randomUUID(),reason:null,pending:false,result:null});
+        const state=refundStates.get(key);const epoch=conversationEpoch;
+        if(form.receipt){state.result=form.receipt;state.reason=form.receipt.reason_code;}
+        if(state.reason)select.value=state.reason;
+        const current=()=>epoch===conversationEpoch && ownerId===conversationId && panel.isConnected;
+        if(form.status!=="active"){submit.disabled=true;select.disabled=true;status.textContent=form.status==="submitted" ? "退款申请已提交，等待处理。" : "此申请入口已失效，请重新咨询确认。";}
+        if(state.result){submit.disabled=true;select.disabled=true;status.textContent="申请号 "+state.result.refund_no+" · 退款申请已提交，等待处理。";}
+        panel.addEventListener("submit",async event=>{
+          event.preventDefault();if(!current() || busy || state.pending || state.result || form.status!=="active" || !select.value)return;
+          if(state.reason && state.reason!==select.value)state.requestId=crypto.randomUUID();state.reason=select.value;
+          state.pending=true;submit.disabled=true;select.disabled=true;setBusy(true);status.textContent="正在复核并提交申请…";
+          try{
+            const response=await fetch("/v1/conversations/"+encodeURIComponent(ownerId)+"/refunds",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action_id:form.action_id,reason_code:state.reason,request_id:state.requestId})});
+            if(!response.ok)throw new Error(response.status===409 ? "需要重新确认退款条件，请继续对话。" : "结果暂未确认，可使用相同原因重试或刷新查看。");
+            state.result=await response.json();if(current())status.textContent="申请号 "+state.result.refund_no+" · "+state.result.message;
+          }catch(error){if(current())status.textContent=error.message;}
+          finally{state.pending=false;if(current()){setBusy(false);submit.disabled=Boolean(state.result);select.disabled=Boolean(state.result);}}
+        });
+        panel.append(heading,summary,select,submit,status);view.wrap.append(panel);
+      }
 
       function rememberConversation(id) {
         try { localStorage.setItem("sayhelp.activeConversation", id || "new"); } catch (_) {}
@@ -700,6 +792,8 @@
               view.messageId = item.id;
               decorateAnswer(view, item.content, item.citations?.length ? item.citations : (item.sources || []));
               renderActions(view, item.actions, conversationId);
+              if(item.interaction)renderInteraction(view,item.interaction,conversationId);
+              if(item.refund_form)renderRefundForm(view,item.refund_form,conversationId);
             }
           }
           scrollToBottom(true);
@@ -712,7 +806,7 @@
       }
 
       function sourceDocumentUrl(source) {
-        const names = new Set(["after-sales-manual.md", "product-faq.md", "product-specs.md", "returns-policy.md"]);
+        const names = new Set(["after-sales-manual.md", "product-specifications.md", "returns-policy.md"]);
         const file = typeof source.source_file === "string" ? source.source_file.replace(/^knowledge_db\//, "") : "";
         if (!names.has(file)) return null;
         const expected = "/v1/knowledge/documents/" + encodeURIComponent(file);
@@ -924,12 +1018,12 @@
         return { name, payload: JSON.parse(data.join("\n")) };
       }
 
-      async function sendMessage(rawText) {
+      async function sendMessage(rawText, resumeRequest = null) {
         const text = rawText.trim();
-        if (!text || busy) return;
+        if ((!text && !resumeRequest) || busy) return;
         welcome.hidden = true;
         followLatest = true;
-        addMessage("user", text);
+        if (!resumeRequest) addMessage("user", text);
         input.value = "";
         input.style.height = "auto";
         setBusy(true);
@@ -950,13 +1044,16 @@
         const renderer = makeRenderer(bubble, isCurrent);
         let receivedToken = false;
         let done = false;
+        let paused = false;
+        let pendingInteraction = null;
+        let refundForm = null;
         let errorText = "";
 
         try {
-          const response = await fetch("/v1/chat/stream", {
+          const response = await fetch(resumeRequest?.url || "/v1/chat/stream", {
             method: "POST",
             headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
-            body: JSON.stringify({ message: text, conversation_id: conversationId }),
+            body: JSON.stringify(resumeRequest?.body || { message: text, conversation_id: conversationId }),
             signal: controller.signal
           });
           if (!response.ok) {
@@ -996,6 +1093,15 @@
               answerSources = Array.isArray(evidence) ? evidence : [];
             } else if (item.name === "actions") {
               answerActions = item.payload;
+            } else if (item.name === "interaction_required") {
+              pendingInteraction=item.payload;indicator.remove();bubble.textContent=item.payload.payload?.message || "请补充信息后继续。";receivedToken=true;
+            } else if (item.name === "paused") {
+              paused=true;trace.hidden=false;trace.textContent="等待你的选择或回复";
+            } else if (item.name === "refund_form") {
+              refundForm=item.payload;
+            } else if (item.name === "workflow_stage") {
+              const labels={order:"正在读取所选订单…",expansion:"正在准备政策检索…",policy:"正在检索退款与售后条款…",eligibility:"正在结合订单核对条件…"};
+              trace.hidden=false;trace.textContent=labels[item.payload.stage] || "正在处理…";
             } else if (item.name === "token") {
               if (!receivedToken) {
                 receivedToken = true;
@@ -1024,10 +1130,12 @@
           }
           buffer += decoder.decode();
           if (buffer.trim()) handleFrame(buffer.replace(/\r\n/g, "\n").trim());
-          if (!done) throw new Error("连接提前中断，请重试。");
+          if (!done && !paused) throw new Error("连接提前中断，请重试。");
           await renderer.drain();
           if (!isCurrent()) return;
           decorateAnswer(view, bubble.textContent, answerSources);
+          if(pendingInteraction)renderInteraction(view,pendingInteraction,conversationId);
+          if(refundForm)renderRefundForm(view,refundForm,conversationId);
           if (answerActions && answerActions.message_id === finalMessageId) {
             view.messageId = finalMessageId;
             renderActions(view, answerActions.actions, conversationId);

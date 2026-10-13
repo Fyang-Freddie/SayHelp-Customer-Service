@@ -328,7 +328,7 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
             turn_tokens=settings.agent_turn_tokens,response_tokens=settings.response_token_reserve,
             input_tokens=settings.context_token_budget-settings.response_token_reserve)
         core=None
-        if hasattr(knowledge_gate,'retrieval'):
+        if hasattr(getattr(knowledge_gate,'retrieval',None),'corpus'):
             policy=load_policy(ROOT/settings.ch06_knowledge_policy,knowledge_fingerprints(knowledge_gate.retrieval.corpus,settings),'policy')
             core=build_aftersales_subgraph(business=business,expander=QueryExpander(model_service),
                 policy_retrieval=PolicyRetrieval(knowledge_gate.retrieval,policy,settings),model=model_service,limits=limits,emit=_emit)
