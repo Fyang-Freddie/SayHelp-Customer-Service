@@ -5,6 +5,7 @@ import os
 import math
 import json
 import re
+import logging
 from pathlib import Path
 
 from dotenv import dotenv_values
@@ -37,6 +38,13 @@ class Settings:
     agent_turn_tokens: int = 12000
     context_token_budget: int = 4096
     response_token_reserve: int = 512
+    max_user_input_tokens: int = 2000
+    max_agent_steps: int = 3
+    tool_result_max_tokens: int = 1200
+    rerank_top_k: int = 5
+    summary_token_reserve: int = 512
+    history_target_turns: int = 32
+    history_steady_tokens: int = 1024
     max_conversations: int = 100
     max_turns_per_conversation: int = 20
     milvus_uri: str = 'http://127.0.0.1:19530'
@@ -101,13 +109,21 @@ class Settings:
         base_url = required("CHAT_BASE_URL")
         model = required("CHAT_MODEL")
         api_key = required("CHAT_API_KEY")
-        budget = positive_int("CONTEXT_TOKEN_BUDGET", 4096)
-        reserve = positive_int("RESPONSE_TOKEN_RESERVE", 512)
+        def context_name(public, legacy):
+            if value(legacy) is not None:
+                logging.getLogger(__name__).info('context_config legacy=%s selected=%s',
+                    legacy, public if value(public) is not None else legacy)
+            return public if value(public) is not None else legacy
+        budget = positive_int(context_name('MODEL_CONTEXT_WINDOW', 'CONTEXT_TOKEN_BUDGET'), 65536)
+        reserve = positive_int(context_name('MAX_OUTPUT_TOKENS', 'RESPONSE_TOKEN_RESERVE'), 2000)
+        steps = positive_int('MAX_AGENT_STEPS', 3)
+        if steps > 5:
+            raise ValueError('MAX_AGENT_STEPS must be at most 5 (plus final generation)')
         if reserve >= budget:
             raise ValueError("RESPONSE_TOKEN_RESERVE must be below CONTEXT_TOKEN_BUDGET")
 
         token_name = agent_name('AGENT_TURN_TOKEN_BUDGET', 'AGENT_TURN_TOKENS')
-        turn_tokens = positive_int(token_name, 12000)
+        turn_tokens = positive_int(token_name, (steps + 5) * budget)
         if turn_tokens <= reserve:
             raise ValueError(f'{token_name} must exceed RESPONSE_TOKEN_RESERVE')
         checkpoint_path = value('WORKFLOW_CHECKPOINT_PATH') or '.runtime/ch05/checkpoints.sqlite'
@@ -132,6 +148,13 @@ class Settings:
             agent_turn_tokens=turn_tokens,
             context_token_budget=budget,
             response_token_reserve=reserve,
+            max_user_input_tokens=positive_int('MAX_USER_INPUT_TOKENS', 2000),
+            max_agent_steps=steps,
+            tool_result_max_tokens=positive_int('TOOL_RESULT_MAX_TOKENS', 1200),
+            rerank_top_k=positive_int('RERANK_TOP_K', 5),
+            summary_token_reserve=positive_int('SUMMARY_TOKEN_RESERVE', 512),
+            history_target_turns=positive_int('HISTORY_TARGET_TURNS', 32),
+            history_steady_tokens=positive_int('HISTORY_STEADY_TOKENS', 1024),
             max_conversations=positive_int("MAX_CONVERSATIONS", 100),
             max_turns_per_conversation=positive_int("MAX_TURNS_PER_CONVERSATION", 20),
             database_url=required("DATABASE_URL"),

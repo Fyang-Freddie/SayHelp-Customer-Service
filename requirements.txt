@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-langchain-core
+langchain-core==1.6.6
 langchain-openai
 pydantic>=2
 python-dotenv
