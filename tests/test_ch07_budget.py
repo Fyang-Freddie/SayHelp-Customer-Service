@@ -45,6 +45,8 @@ def test_startup_budget_rejects_zero_history():
     from app.history import InputBudgetExceeded
     with pytest.raises(InputBudgetExceeded, match='上下文预算不足'):
         validate_startup(budget(window=8000))
+    with pytest.raises(InputBudgetExceeded, match='上下文预算不足'):
+        validate_startup(budget(summary=1512))
 
 
 def test_evaluation_budget_is_atomic_and_survives_reopen(tmp_path):

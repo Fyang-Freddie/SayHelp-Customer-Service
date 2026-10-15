@@ -31,8 +31,10 @@ def calculate_budget(*, window: int, prefix: int, evidence: int, summary: int,
                         safety, peak, history, layer1, history-layer1)
 
 
-def validate_startup(ledger: BudgetLedger) -> None:
-    if ledger.history == 0:
+def validate_startup(ledger: BudgetLedger, steady: int = 1024) -> None:
+    if type(steady) is not int or steady<1:
+        raise ValueError('Steady turn estimate must be positive')
+    if ledger.history < steady:
         raise InputBudgetExceeded('上下文预算不足: ' + str(asdict(ledger)))
 
 
