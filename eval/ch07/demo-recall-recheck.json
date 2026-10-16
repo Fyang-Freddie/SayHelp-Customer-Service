@@ -1,0 +1,15 @@
+{
+  "conversation_id": "22",
+  "scope": "Real service/graph follow-up on original checkpoint; HTTP cookie path not repeated",
+  "original_report": "demo-acceptance.json",
+  "question": "最开始那个订单后来怎么说？请复述订单号和我当时提出的诉求。",
+  "answer": "根据当前会话背景记录：曾出现订单号 TB202611000001，但该编号来自历史摘要，尚需您确认，不能视为已核实的订单事实；本轮我未查询订单状态。您当时提出的核心诉求是：订单缺少配件，要求核实并告知后续；您明确不申请退款、不要求承诺已补发，并要求区分“已核实”和“待确认”，保留原始沟通记录，有结果再明确告知；无法确认时直接说明仍在核实，不要给无依据的时间承诺，也不要自动替您退款。您还多次投诉重复询问、未明确联系时间、未反馈核实结果、等待答复等。目前这些处理结果均待核实，我无法确认订单后续状态。请确认订单号是否为 TB202611000001，或提供正确订单号，我再为您查询；如需人工跟进，请选择转人工按钮。",
+  "checkpoint_messages": 54,
+  "business_messages": 53,
+  "complete_business_messages": 50,
+  "summary_count": 2,
+  "downgrades": 14,
+  "model_logs": 6,
+  "recall_correct": true,
+  "passed": true
+}

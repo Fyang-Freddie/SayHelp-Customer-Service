@@ -27,6 +27,12 @@ class Repository:
             session.flush()
             return row.id
 
+    def assert_owner(self,id:int,visitor_id:str)->None:
+        with self.session_factory() as session:
+            found=session.scalar(select(Conversation.id).where(Conversation.id==id,
+                Conversation.user_id==visitor_id,Conversation.deleted_at.is_(None)))
+            if found is None:raise KeyError('Conversation not found')
+
     def get_conversation(self, id: int) -> Conversation | None:
         with self.session_factory() as session:
             return session.scalar(select(Conversation).options(undefer('*')).where(Conversation.id == id, Conversation.deleted_at.is_(None)))
@@ -82,7 +88,7 @@ class Repository:
             if row.deleted_at is None:
                 row.deleted_at = func.now()
 
-    def list_conversations(self, *, limit: int = 30, cursor: str | None = None) -> dict:
+    def list_conversations(self, *, limit: int = 30, cursor: str | None = None,user_id:str|None=None) -> dict:
         if type(limit) is not int or not 1 <= limit <= 100:
             raise ValueError('History limit must be between 1 and 100')
         key = decode_cursor(cursor) if cursor is not None else None
@@ -94,12 +100,14 @@ class Repository:
         # Activity never changes the order within the pinned group.
         normal_activity = case((Conversation.is_pinned == 0, activity.c.cursor), else_=0)
         statement = (select(Conversation, first_question, activity.c.cursor, activity.c.last_activity)
-                     .options(undefer('*')).join(activity, activity.c.conversation_id == Conversation.id)
+                     .options(undefer('*')).join(activity, activity.c.conversation_id == Conversation.id,isouter=user_id is not None)
                      .where(Conversation.deleted_at.is_(None))
                      .order_by(Conversation.is_pinned.desc(), Conversation.pinned_at.desc(),
                                normal_activity.desc(), Conversation.id.desc()).limit(limit + 1))
         if key is not None:
-            if key['pin_group'] == 1:
+            if user_id is not None:
+                remaining=Conversation.id<key['id']
+            elif key['pin_group'] == 1:
                 remaining = or_(Conversation.is_pinned == 0, and_(Conversation.is_pinned == 1,
                     or_(Conversation.pinned_at < key['pinned_at'],
                         and_(Conversation.pinned_at == key['pinned_at'], Conversation.id < key['id']))))
@@ -107,15 +115,24 @@ class Repository:
                 remaining = and_(Conversation.is_pinned == 0, or_(activity.c.cursor < key['activity_id'],
                     and_(activity.c.cursor == key['activity_id'], Conversation.id < key['id'])))
             statement = statement.where(remaining)
+        if user_id is not None:
+            statement=statement.where(Conversation.user_id==user_id).order_by(None).order_by(Conversation.id.desc())
         with self.session_factory() as session:
             rows = session.execute(statement).all()
             visible = rows[:limit]
+            summarized=set()
+            if user_id is not None and visible:
+                from app.ch07_db import ConversationSummary
+                summarized=set(session.scalars(select(ConversationSummary.conversation_id).where(
+                    ConversationSummary.conversation_id.in_([row.id for row,_,_,_ in visible])).distinct()))
             next_cursor = None
             if len(rows) > limit:
                 row, _, activity_id, _ = visible[-1]
-                next_cursor = encode_cursor(int(row.is_pinned), row.pinned_at, activity_id, row.id)
+                next_cursor = (encode_cursor(0,None,row.id,row.id) if user_id is not None else
+                    encode_cursor(int(row.is_pinned), row.pinned_at, activity_id, row.id))
             return {'conversations': [{'id': str(row.id), 'title': (title or '新对话')[:64],
-                     'status': row.status, 'updated_at': updated.isoformat(),
+                     'has_summary':row.id in summarized,
+                     'status': row.status, 'updated_at': (updated or row.created_at).isoformat(),
                      'is_pinned': bool(row.is_pinned),
                      'pinned_at': row.pinned_at.isoformat() if row.pinned_at else None}
                      for row, title, activity_id, updated in visible], 'next_cursor': next_cursor}

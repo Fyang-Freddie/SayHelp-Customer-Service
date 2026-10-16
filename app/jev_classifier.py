@@ -62,8 +62,10 @@ class JevIntentClassifier:
         body={'model':settings.jev_model,'state':query,'questions':{'intent':{'type':'choice','instructions':INSTRUCTIONS,'criteria':CRITERIA}}}
         try:
             async def call(client):
-                return await client.post(base+'/systemone',json=body,
-                    headers={'Authorization':'Bearer '+settings.jev_api_key},timeout=timeout,follow_redirects=False)
+                from app.ch07_evaluation import evaluation_call
+                with evaluation_call('jev'):
+                    return await client.post(base+'/systemone',json=body,
+                        headers={'Authorization':'Bearer '+settings.jev_api_key},timeout=timeout,follow_redirects=False)
             if self.client is None:
                 async with httpx.AsyncClient() as client: response=await call(client)
             else: response=await call(self.client)

@@ -21,6 +21,9 @@ from app.evaluation.calibration import STRATEGIES,choose_threshold,fingerprints
 
 
 async def calibrate(settings,dataset):
+    # Reject acceptance data before interpreting annotations from an older corpus.
+    if json.loads(Path(dataset).read_text(encoding='utf-8')).get('split')!='calibration':
+        raise ValueError('Only independent calibration12 may choose thresholds')
     cases=load_cases(dataset)
     if len(cases)!=12 or any(c._split!='calibration' for c in cases): raise ValueError('Only independent calibration12 may choose thresholds')
     sf=make_session_factory(settings.database_url)

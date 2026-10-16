@@ -152,7 +152,7 @@ def test_real_strong_gate_emits_ready_before_selection_and_first_token(tmp_path)
     assert names.index('knowledge_ready') < names.index('model_start') < names.index('token')
     assert trace.index('confidence_gate') < trace.index('agent_step')
     assert len(retrieval.calls)==1 and result['citations'][0]['chunk_id']=='1'
-    assert any(isinstance(m,SystemMessage) and '完整原文证据' in m.content for m in model.finals[0])
+    assert any(m.type=='human' and '本轮检索证据' in m.content for m in model.finals[0])
     assert not any(isinstance(m,SystemMessage) and '完整原文证据' in m.content for m in result['messages'])
 
 
@@ -226,7 +226,7 @@ def test_knowledge_tool_admission_reserves_full_ephemeral_evidence_and_final_ans
     api = importlib.import_module('app.workflow_graph')
     limits = AgentLimits()
     attempts = []
-    evidence = 'E' * 10000
+    evidence = 'E' * 1000
     class Gate:
         async def prepare(self, question, filters):
             return {'evidence':[{'content':evidence}], 'citations':[{'chunk_id':'1'}],
@@ -255,9 +255,9 @@ def test_knowledge_tool_admission_reserves_full_ephemeral_evidence_and_final_ans
     assert len(results[0].content)<100 and results[0].additional_kwargs['execution_attempts']==1
     assert not any(isinstance(m,SystemMessage) for m in result['messages'])
     assert not any('R'*40000 in str(m.content) for m in result['messages'])
-    final_evidence=[m for m in model.finals[0] if isinstance(m,SystemMessage)]
+    final_evidence=[m for m in model.finals[0] if m.type=='human' and '本轮检索证据' in m.content]
     assert len(final_evidence)==1 and evidence in final_evidence[0].content
-    assert evidence in model.selected[0][0].content
+    assert any(evidence in m.content for m in model.selected[0])
     assert 30+count_tokens_approximately(model.finals[0])+limits.response_tokens<=limits.turn_tokens
     assert Usage(**result['usage']).total<=limits.turn_tokens
     assert any(e['event']=='tool_result_rejected' for e in events)

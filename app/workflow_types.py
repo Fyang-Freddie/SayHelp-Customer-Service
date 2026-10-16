@@ -56,9 +56,11 @@ class AgentResult:
 
 
 class WorkflowState(TypedDict, total=False):
+    conversation_recap: bool
     conversation_id: int
     turn_id: str
     messages: Annotated[list[BaseMessage], add_messages]
+    history_message_ids: list[str]
     raw_question: str
     resolved_question: str
     intent: str
@@ -72,6 +74,7 @@ class WorkflowState(TypedDict, total=False):
     model_calls: int
     tool_calls: int
     usage: dict
+    agent_steps: int
     suggestions: list[ActionSuggestion]
     answer: str
     status: str

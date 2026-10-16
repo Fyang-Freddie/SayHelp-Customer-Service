@@ -34,7 +34,8 @@ class ProviderDouble:
 
 @pytest.fixture
 def real_factories_with_test_dependencies(monkeypatch):
-    settings = Settings('https://example.test/v1', 'configured-model', 'offline', database_url='sqlite://')
+    settings = Settings('https://example.test/v1', 'configured-model', 'offline', database_url='sqlite://',
+                        context_token_budget=18000, agent_turn_tokens=100000)
     observed = []
     provider = ProviderDouble()
     monkeypatch.setattr(demo.Settings, 'from_env', lambda: settings)
@@ -83,8 +84,8 @@ def test_demo_has_no_runtime_simulation_switch():
     assert not hasattr(demo, 'SimulationRetrieval')
 
 
-def test_both_prompts_explain_unavailable_business_data():
+def test_prompts_explain_unavailable_data_without_denying_connected_tools():
     from app.prompts import render_service_system_prompt, render_workflow_system_prompt
     for prompt in (render_service_system_prompt(), render_workflow_system_prompt()):
-        assert '数据源尚未接入' in prompt
+        assert 'available=false' in prompt
         assert '随机模拟' not in prompt and '模拟证据' not in prompt

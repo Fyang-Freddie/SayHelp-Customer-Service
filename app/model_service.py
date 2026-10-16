@@ -14,13 +14,14 @@ from app.schemas import AfterSalesExtraction
 
 class ModelService:
     def __init__(self, settings: Settings) -> None:
+        self._settings=settings
         self._response_token_reserve = settings.response_token_reserve
         self._model = ChatOpenAI(
             base_url=settings.chat_base_url,
             model=settings.chat_model,
             api_key=settings.chat_api_key,
             timeout=180,
-            max_retries=1,
+            max_retries=0,
         )
 
         from app.intent import IntentClassifier
@@ -30,12 +31,46 @@ class ModelService:
             base_url=settings.chat_base_url, model=settings.chat_model,
             api_key=settings.chat_api_key, timeout=180, max_retries=0,
         )
+        from app.ch07_evaluation import configured_meter, MeteredModel
+        meter=configured_meter()
+        if meter is not None:
+            self._model=MeteredModel(self._model,meter)
+            self._agent_model=MeteredModel(self._agent_model,meter)
 
     async def classify_intent(self, text: str):
         """Compatibility facade for the independent Jev decision node."""
         return await self._intent_classifier.classify(text)
 
+    def _validate_context(self,messages,tools,output):
+        if getattr(getattr(self,'_settings',None),'layered_context',False):
+            from app.context_budget import validate_request
+            validate_request(messages,tools,output,self._settings.context_token_budget)
+
+    async def summarize(self, *, background, turns):
+        from app.summary_prompts import summary_messages
+        from app.context_budget import validate_request
+        messages=summary_messages(background,turns)
+        validate_request(messages,[],512,self._settings.context_token_budget)
+        response=await self._agent_model.ainvoke(messages,max_tokens=512,temperature=0)
+        return response.content
+
+    async def recap_reply(self,messages,*,max_tokens=512):
+        from app.context_recap import RecapAnswer
+        from app.jev_classifier import strict_json
+        self._validate_context(messages,[],max_tokens)
+        structured=self._agent_model.with_structured_output(RecapAnswer,
+            method='json_mode',include_raw=True,temperature=0,max_tokens=max_tokens)
+        result=await structured.ainvoke(messages)
+        raw=result['raw']
+        if not isinstance(raw,AIMessage) or not isinstance(raw.content,str):
+            raise ValueError('Invalid recap model output')
+        answer=RecapAnswer.model_validate(strict_json(raw.content)).answer.strip()
+        if not answer or 'DSML' in answer or 'invoke name=' in answer:
+            raise ValueError('Invalid recap model output')
+        return AIMessage(content=answer,usage_metadata=raw.usage_metadata)
+
     async def resolve_query(self, messages: list) -> AIMessage:
+        self._validate_context(messages,[],1024)
         from app.ch06_types import Resolution
         structured = self._agent_model.with_structured_output(
             Resolution, method='json_mode', include_raw=True, temperature=0, max_tokens=1024)
@@ -44,6 +79,7 @@ class ModelService:
         return result['raw']
 
     async def expand_query(self, messages: list) -> AIMessage:
+        self._validate_context(messages,[],1024)
         from app.ch06_types import Expansion
         structured = self._agent_model.with_structured_output(
             Expansion, method='json_mode', include_raw=True, temperature=0, max_tokens=1024)
@@ -51,6 +87,7 @@ class ModelService:
         return result['raw']
 
     async def _ch06_structured(self,schema,messages,max_tokens):
+        self._validate_context(messages,[],max_tokens)
         from app.jev_classifier import strict_json
         from app.query_resolver import QueryResolutionError
         from app.workflow_types import Usage
@@ -82,6 +119,7 @@ class ModelService:
 
     async def select(self, messages: list, tools: list, *, max_tokens: int) -> AIMessage:
         """Chapter 5 internal selection, with a per-request output budget."""
+        self._validate_context(messages,tools,max_tokens)
         selection = await self._agent_model.bind_tools(tools).ainvoke(messages, max_tokens=max_tokens)
         if not isinstance(selection, AIMessage):
             raise TypeError("Tool selection must return an AIMessage")
@@ -89,6 +127,7 @@ class ModelService:
 
     async def stream_reply(self, messages: list, *, max_tokens: int) -> AsyncIterator[AIMessageChunk]:
         """Unbound terminal generation retaining provider usage chunks."""
+        self._validate_context(messages,[],max_tokens)
         async for chunk in self._agent_model.astream(messages, max_tokens=max_tokens, stream_usage=True):
             yield chunk
 

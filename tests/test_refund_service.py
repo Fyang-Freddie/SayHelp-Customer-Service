@@ -17,6 +17,14 @@ class Model:
         self.calls+=1
         return Eligibility(status=self.status,explanation='复核结论',evidence_ids=['1'],missing_facts=['检测报告'] if self.status=='needs_information' else []),Usage(5,5)
 
+
+def test_history_without_refund_forms_does_not_load_refund_dependencies():
+    from types import SimpleNamespace
+    from app.refund_service import RefundService
+    def unavailable():raise AssertionError('no refund form needs policy sources')
+    service=RefundService(SimpleNamespace(load_forms=lambda cid:{}),None,None,None,unavailable)
+    assert service.load_forms(1)=={}
+
 def setup(sessions):
     repo=RefundRepository(sessions);model=Model();data=Data([])
     cls=importlib.import_module('app.refund_service').RefundService

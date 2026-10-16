@@ -1,0 +1,61 @@
+{
+  "chars_per_token": 1.0,
+  "results": [
+    {
+      "case": 1,
+      "estimated": 3702,
+      "provider_input": 1259,
+      "ratio": 2.9404,
+      "model": "deepseek-flash"
+    },
+    {
+      "case": 2,
+      "estimated": 3733,
+      "provider_input": 1273,
+      "ratio": 2.9324,
+      "model": "deepseek-flash"
+    },
+    {
+      "case": 3,
+      "estimated": 3875,
+      "provider_input": 1369,
+      "ratio": 2.8305,
+      "model": "deepseek-flash"
+    },
+    {
+      "case": 4,
+      "estimated": 4275,
+      "provider_input": 1577,
+      "ratio": 2.7108,
+      "model": "deepseek-flash"
+    },
+    {
+      "case": 5,
+      "estimated": 5107,
+      "provider_input": 2281,
+      "ratio": 2.2389,
+      "model": "deepseek-flash"
+    },
+    {
+      "case": 6,
+      "estimated": 5171,
+      "provider_input": 1578,
+      "ratio": 3.2769,
+      "model": "deepseek-flash"
+    },
+    {
+      "case": 7,
+      "estimated": 5699,
+      "provider_input": 2357,
+      "ratio": 2.4179,
+      "model": "deepseek-flash"
+    },
+    {
+      "case": 8,
+      "estimated": 6299,
+      "provider_input": 2557,
+      "ratio": 2.4634,
+      "model": "deepseek-flash"
+    }
+  ]
+}

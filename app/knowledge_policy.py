@@ -10,7 +10,14 @@ ROOT=Path(__file__).resolve().parents[1]
 def knowledge_fingerprints(corpus,settings):
     path=ROOT/'eval/ch06/policy-cases.json'
     cases=json.loads(path.read_text(encoding='utf-8'))
-    expected=fingerprints(corpus,settings,path)
+    # The chapter-six evidence-selection calibration has its own unchanged
+    # budget; the chapter-seven conversation window is a separate constraint.
+    from types import SimpleNamespace
+    calibration_settings=(SimpleNamespace(chat_model=settings.chat_model,
+        context_token_budget=settings.knowledge_context_token_budget,
+        response_token_reserve=settings.knowledge_response_token_reserve)
+        if getattr(settings,'layered_context',False) else settings)
+    expected=fingerprints(corpus,calibration_settings,path)
     expected.update(calibration_digest=hashlib.sha256(json.dumps([c for c in cases if c['split']=='calibration'],ensure_ascii=False,sort_keys=True).encode()).hexdigest(),
         expansion_prompt=hashlib.sha256(EXPANSION_SYSTEM.encode()).hexdigest(),
         query_mode='policy:original+3-expansions/source-filter/RRF/one-rerank;faq:original-only',

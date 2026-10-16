@@ -38,6 +38,8 @@ class Settings:
     agent_turn_tokens: int = 12000
     context_token_budget: int = 4096
     response_token_reserve: int = 512
+    knowledge_context_token_budget: int = 4096
+    knowledge_response_token_reserve: int = 512
     max_user_input_tokens: int = 2000
     max_agent_steps: int = 3
     tool_result_max_tokens: int = 1200
@@ -45,6 +47,7 @@ class Settings:
     summary_token_reserve: int = 512
     history_target_turns: int = 32
     history_steady_tokens: int = 1024
+    layered_context: bool = False  # Legacy programmatic fixtures opt in explicitly; production from_env always enables it.
     max_conversations: int = 100
     max_turns_per_conversation: int = 20
     milvus_uri: str = 'http://127.0.0.1:19530'
@@ -148,6 +151,8 @@ class Settings:
             agent_turn_tokens=turn_tokens,
             context_token_budget=budget,
             response_token_reserve=reserve,
+            knowledge_context_token_budget=positive_int('KNOWLEDGE_CONTEXT_TOKEN_BUDGET',4096),
+            knowledge_response_token_reserve=positive_int('KNOWLEDGE_RESPONSE_TOKEN_RESERVE',512),
             max_user_input_tokens=positive_int('MAX_USER_INPUT_TOKENS', 2000),
             max_agent_steps=steps,
             tool_result_max_tokens=positive_int('TOOL_RESULT_MAX_TOKENS', 1200),
@@ -155,6 +160,7 @@ class Settings:
             summary_token_reserve=positive_int('SUMMARY_TOKEN_RESERVE', 512),
             history_target_turns=positive_int('HISTORY_TARGET_TURNS', 32),
             history_steady_tokens=positive_int('HISTORY_STEADY_TOKENS', 1024),
+            layered_context=True,
             max_conversations=positive_int("MAX_CONVERSATIONS", 100),
             max_turns_per_conversation=positive_int("MAX_TURNS_PER_CONVERSATION", 20),
             database_url=required("DATABASE_URL"),

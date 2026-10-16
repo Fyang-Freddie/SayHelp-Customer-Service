@@ -105,7 +105,7 @@ def test_chapter5_http_503_has_one_physical_attempt(monkeypatch, phase):
             with httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(503)), trust_env=False) as sync:
                 monkeypatch.setattr(module, 'ChatOpenAI', lambda **kwargs: ChatOpenAI(**kwargs, http_async_client=client, http_client=sync, http_socket_options=()))
                 service = module.ModelService(Settings('https://example.test/v1','offline','offline'))
-                assert service._model.max_retries == 1
+                assert service._model.max_retries == 0
                 with pytest.raises(Exception):
                     if phase == 'select':
                         await service.select([HumanMessage(content='offline')], [], max_tokens=10)

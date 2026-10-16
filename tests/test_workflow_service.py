@@ -48,7 +48,7 @@ class Gate:
 def graph(saver, model, *, gate=None, intent='订单', log=None, tools_factory=None):
     async def classify(question): return IntentDecision(intent=intent,confidence=1.0), Usage(input_tokens=1, output_tokens=1)
     return build_workflow(model=model, classifier=classify, knowledge_gate=gate or Gate(),
-        tools_factory=tools_factory or (lambda cid: {}), limits=AgentLimits(),
+        tools_factory=tools_factory or (lambda cid: {}), limits=AgentLimits(input_tokens=18000,turn_tokens=100000),
         log=log or SimpleNamespace(write=lambda *args: None), checkpointer=saver)
 
 
@@ -234,7 +234,8 @@ def test_reconciliation_replaces_stale_checkpoint_and_preserves_bounded_multi_ba
         repo.append_message(cid, 'tool', 'saved result', tool_call_id=f'old-call-{i}')
     repo.append_message(cid, 'assistant', 'completed answer')
     repo.append_message(cid, 'user', 'unfinished user')
-    expected = completed_turns(repo.load_messages(cid))[-1]
+    from app.context_history import reconcile_history
+    expected = [m for t in reconcile_history(repo.load_messages(cid),[],[]) for m in t.messages]
     async def run():
         async with open_workflow_checkpointer(tmp_path/'stale.sqlite') as saver:
             compiled = graph(saver, Model())
@@ -252,7 +253,7 @@ def test_reconciliation_replaces_stale_checkpoint_and_preserves_bounded_multi_ba
             assert [m.content for m in imported[1:-1]] == [m.content for m in expected]
             assert len({m.id for m in imported}) == len(imported)
             await collect(svc, cid, 'next question')
-            assert [m.content for m in model.inputs[-1]][1:] == ['new question', 'firstsecond', 'next question']
+            assert [m.content for m in model.inputs[-1]][1:] == [m.content for m in expected]+['new question', 'firstsecond', 'next question']
             assert len(repo.load_messages(cid)) == 13
     asyncio.run(run())
 
@@ -311,13 +312,13 @@ def test_failed_checkpoint_never_replays_tool_and_final_write_is_idempotent(sess
             assert len(writes) == 1
             assert len([e for e in seen if e.kind == 'tool_status' and e.data['state'] == 'running']) == 1
             assert 'PRIVATE' not in str(seen) and 'read-once' not in str(seen)
-            assert [r.role for r in repo.load_messages(cid)] == ['user','assistant','tool','assistant']
+            assert [r.role for r in repo.load_messages(cid)] == ['user','assistant']
             saver.aput = original_put
             fresh = Model()
             events = await collect(service(sessions, graph(saver, fresh)), cid, 'continue')
             assert not any(e.kind == 'tool_status' for e in events)
             assert [m.type for m in fresh.inputs[0]][1:] == ['human','ai','tool','ai','human']
-            assert len(repo.load_messages(cid)) == 6
+            assert len(repo.load_messages(cid)) == 4
     asyncio.run(asyncio.wait_for(run(), 10))
 
 

@@ -16,6 +16,7 @@ from app.agent_runtime import AgentLimits, READ_TOOLS
 from app.chat_service import ChatEvent
 from app.chat_views import public_actions
 from app.history import prepare_context
+from app.context_history import reconcile_history
 from app.intent import classify_intent
 from app.prompts import render_workflow_system_prompt
 from app.tools import build_tools
@@ -45,7 +46,8 @@ async def _settled(function, *args, **kwargs):
 
 
 class WorkflowService:
-    def __init__(self, repository, workflow_repository, graph, settings, *, log=None, interactions=None, business=None, refunds=None):
+    def __init__(self, repository, workflow_repository, graph, settings, *, log=None, interactions=None, business=None, refunds=None, context_runtime=None):
+        self.context_runtime=context_runtime
         self.refunds = refunds
         self.business = business
         self.interactions = interactions
@@ -156,20 +158,8 @@ class WorkflowService:
         suffix = messages[start:]
         if not suffix or not isinstance(suffix[-1], AIMessage) or suffix[-1].tool_calls:
             raise RuntimeError('Workflow has no complete final message')
-        for position, message in enumerate(suffix[:-1], 1):
-            if isinstance(message, AIMessage):
-                calls = [*message.tool_calls, *message.invalid_tool_calls]
-                if not calls:
-                    raise RuntimeError('Unexpected intermediate answer')
-                await _settled(self.workflow_repository.append_message_once,
-                    conversation_id, turn_id, position, 'assistant', message.content,
-                    tool_calls=calls)
-            elif isinstance(message, ToolMessage):
-                await _settled(self.workflow_repository.append_message_once,
-                    conversation_id, turn_id, position, 'tool', message.content,
-                    tool_call_id=message.tool_call_id)
-            else:
-                raise RuntimeError('Unexpected workflow history message')
+        # Intermediate requests/results remain in the full checkpoint, not MySQL.
+        # Keep the final position stable across completion-receipt retries.
         return await _settled(self.workflow_repository.commit_reply, conversation_id,
             turn_id, len(suffix), result['answer'], result.get('citations', []),
             result.get('suggestions', []))
@@ -188,6 +178,9 @@ class WorkflowService:
             if resume:
                 config={'configurable':{'thread_id':str(conversation_id)},'recursion_limit':64}
                 snapshot=await self.graph.aget_state(config)
+                if self.context_runtime:
+                    view=await self.context_runtime.history_view(snapshot.values)
+                    self.context_runtime.log.history(conversation_id,turn_id,view)
                 current=HumanMessage(content='',id=resume['current_id'])
                 inputs=Command(resume={resume['interrupt_id']:resume['value']})
                 started=True
@@ -195,14 +188,32 @@ class WorkflowService:
                 rows = await asyncio.to_thread(self.repository.load_messages, conversation_id)
                 excluded = await asyncio.to_thread(self.workflow_repository.incomplete_message_ids, conversation_id)
                 current = HumanMessage(content=message, id=turn_id + ':user')
-                context = prepare_context([r for r in rows if str(r.id) not in excluded],
-                    SystemMessage(content=render_workflow_system_prompt(), id='workflow-system'), current, self.settings)
+                config = {'configurable': {'thread_id': str(conversation_id)}, 'recursion_limit': 64}
+                snapshot = await self.graph.aget_state(config) if hasattr(self.graph,'aget_state') else None
+                prior = snapshot.values.get('messages',[]) if snapshot is not None else []
+                turns = reconcile_history([r for r in rows if str(r.id) not in excluded],prior,[])
+                known = {str(m.id) for m in prior}
+                # A user row alone does not prove that its committed reply reached
+                # the checkpoint: MySQL may have committed before SQLite failed.
+                missing = any(str(m.id) not in known for t in turns for m in t.messages)
+                if missing:
+                    restored = [m for t in turns for m in t.messages]
+                    restored_ids={str(m.id) for m in restored}
+                    # Retain unfinished checkpoint-only messages during a one-time import.
+                    orphan=[m for m in prior if m.type!='system' and str(m.id) not in restored_ids]
+                    context=([RemoveMessage(id=REMOVE_ALL_MESSAGES)] if prior else [])+restored+orphan
+                else:
+                    # aget_state may expose pending writes from a failed superstep.
+                    # Re-submit durable turns by stable ID so add_messages confirms
+                    # them without duplicating or discarding checkpoint history.
+                    context=[m for t in turns for m in t.messages]
                 # The attempt may commit before cancellation is observed; cleanup always checks it.
                 started = True
                 current.id = await _settled(self.workflow_repository.append_message_once,
                     conversation_id, turn_id, 0, 'user', message)
                 inputs = {'conversation_id': conversation_id, 'turn_id': turn_id,
-                    'messages': [RemoveMessage(id=REMOVE_ALL_MESSAGES), *context], 'raw_question': message,
+                    'messages': [*context, current], 'raw_question': message,
+                    'history_message_ids':[str(m.id) for t in turns for m in t.messages],
                     'filters': filters.model_dump(exclude_none=True) if hasattr(filters, 'model_dump') else (filters or {})}
                 config = {'configurable': {'thread_id': str(conversation_id)}, 'recursion_limit': 64}
             final = None
@@ -232,7 +243,7 @@ class WorkflowService:
                             if not isinstance(result,dict):continue
                             terminal.update({k:v for k,v in (result or {}).items() if k in
                                 ('usage','intent','route','model_calls','tool_calls','stop_reason')})
-                            if node not in ('agent', 'aftersales', 'fallback', 'complaint', 'chitchat'):
+                            if node not in ('agent', 'aftersales', 'fallback', 'complaint', 'chitchat','recap'):
                                 continue
                             if node=='aftersales' and result.get('status')=='fallback':continue
                             if result.get('status') != 'done' or not result.get('answer', '').strip():
@@ -324,9 +335,11 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
         from app.ch04_ingest import ROOT
         from app.workflow_graph import _emit
         business=MarkdownBusinessData(ROOT/'knowledge_db')
-        limits=AgentLimits(model_calls=settings.agent_model_calls,tool_calls=settings.agent_tool_calls,
+        limits=AgentLimits(model_calls=(settings.max_agent_steps+2 if settings.layered_context else settings.agent_model_calls),tool_calls=settings.agent_tool_calls,
+            max_agent_steps=settings.max_agent_steps if settings.layered_context else None,
             turn_tokens=settings.agent_turn_tokens,response_tokens=settings.response_token_reserve,
-            input_tokens=settings.context_token_budget-settings.response_token_reserve)
+            input_tokens=settings.context_token_budget-settings.response_token_reserve,
+            tool_result_tokens=settings.tool_result_max_tokens)
         core=None
         if hasattr(getattr(knowledge_gate,'retrieval',None),'corpus'):
             policy=load_policy(ROOT/settings.ch06_knowledge_policy,knowledge_fingerprints(knowledge_gate.retrieval.corpus,settings),'policy')
@@ -352,8 +365,38 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
             return {name:tool for name,tool in build_tools(repository,state['conversation_id'],None,
                 knowledge_answer=answer,business_data=business,customer_id=state.get('confirmed',{}).get('customer_id')).items() if name in READ_TOOLS}
         async with open_workflow_checkpointer(settings.workflow_checkpoint_path) as saver:
+            context_runtime=None
+            worker=None
+            if settings.layered_context:
+                from app.context_repository import ContextRepository
+                from app.context_runtime import ContextRuntime
+                from app.context_summary import SummaryWorker
+                from app.context_budget import settings_budget,estimate_tokens,validate_startup
+                from app.agent_runtime import _schemas
+                schemas=_schemas(tools_factory(0))[0]
+                ledger=settings_budget(settings,prefix=estimate_tokens([SystemMessage(render_workflow_system_prompt())],schemas))
+                validate_startup(ledger,settings.history_steady_tokens)
+                context_repository=ContextRepository(repository.session_factory)
+                worker=SummaryWorker(context_repository,model_service)
+                context_runtime=ContextRuntime(repository,WorkflowRepository(repository.session_factory),
+                    context_repository,worker,settings,schemas=schemas)
             compiled = build_workflow(model=model_service, classifier=classifier,
                 knowledge_gate=knowledge_gate, tools_factory=tools_factory,
                 limits=limits,log=log,checkpointer=saver,resolver=QueryResolver(model_service),
-                aftersales=core,scoped_tools_factory=scoped_tools_factory,business=business)
-            yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings, log=log,interactions=InteractionRepository(repository.session_factory),business=business,refunds=refunds)
+                aftersales=core,scoped_tools_factory=scoped_tools_factory,business=business,context_runtime=context_runtime)
+            recovery_task=None
+            if worker:
+                worker.recover_callback=lambda:context_runtime.recover(compiled)
+                await worker.recover()
+                async def recovery_loop():
+                    while True:
+                        await asyncio.sleep(30)
+                        await worker.recover()
+                recovery_task=asyncio.create_task(recovery_loop())
+            try:
+                yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings, log=log,interactions=InteractionRepository(repository.session_factory),business=business,refunds=refunds,context_runtime=context_runtime)
+            finally:
+                if recovery_task:
+                    recovery_task.cancel()
+                    await asyncio.gather(recovery_task,return_exceptions=True)
+                if worker:await worker.close()

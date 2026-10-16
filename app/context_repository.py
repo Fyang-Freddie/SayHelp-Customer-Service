@@ -2,14 +2,26 @@
 from datetime import datetime, timedelta, UTC
 from uuid import uuid4
 from sqlalchemy import select, func
+from sqlalchemy.orm import aliased
 from app.ch07_db import ConversationContext, ConversationSummary
 from app.context_types import ContextSnapshot, SummaryClaim
 from app.db import Message
+from app.db import Conversation
 
 
 class ContextRepository:
     def __init__(self, session_factory):
         self.session_factory=session_factory
+
+    def expired_conversations(self,limit=100):
+        active=aliased(Conversation)
+        with self.session_factory() as session:
+            return list(session.scalars(select(ConversationContext.id).join(
+                active,active.id==ConversationContext.id).where(
+                active.deleted_at.is_(None),
+                ConversationContext.summary_lease_token.is_not(None),
+                ConversationContext.summary_lease_until<=datetime.now(UTC).replace(tzinfo=None))
+                .order_by(ConversationContext.summary_lease_until).limit(limit)))
 
     def _row(self, session, cid, lock=False):
         row=session.get(ConversationContext,cid,with_for_update=lock)
@@ -45,7 +57,8 @@ class ContextRepository:
                 row.context_version+=1
             return True
 
-    def claim(self, conversation_id: int, from_msg_id: int, upto_msg_id: int, digest: str) -> SummaryClaim | None:
+    def claim(self, conversation_id: int, from_msg_id: int, upto_msg_id: int, digest: str,
+              *,excluded_message_ids=()) -> SummaryClaim | None:
         with self.session_factory.begin() as session:
             row=self._row(session,conversation_id,True)
             now=datetime.now(UTC).replace(tzinfo=None)
@@ -56,7 +69,8 @@ class ContextRepository:
             if end.tool_calls or not row.layer1_from_msg_id or not from_msg_id<=upto_msg_id<row.layer1_from_msg_id:
                 raise ValueError('Summary must cover complete layer 2 turns')
             first=session.scalar(select(Message.id).where(Message.conversation_id==conversation_id,
-                Message.role=='user',Message.id>(row.summary_upto_msg_id or 0)).order_by(Message.id).limit(1))
+                Message.role=='user',Message.id>(row.summary_upto_msg_id or 0),
+                Message.id.not_in([int(id) for id in excluded_message_ids])).order_by(Message.id).limit(1))
             if first!=from_msg_id: raise ValueError('Summary would skip uncovered history')
             token=uuid4().hex
             expires=now+timedelta(seconds=120)

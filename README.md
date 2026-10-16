@@ -362,3 +362,31 @@ python scripts/demo_ch06.py --case order-picker --live --init-db --count-evaluat
 最后一条启动 `http://127.0.0.1:8096/` 的单 worker 浏览器演示。`--case` 可选 `context-switch`、`order-picker`、`refund-form`，只标记手动演示场景，脚本不会自动提交退款申请；不传 `--live` 只打印 dry-run 提示。用 `--env-file D:/.../.env` 指向工作树外的服务端配置时，命令中的路径改为实际位置。首次加载本地向量模型可能较久。不要启动多个 worker：当前聊天会话锁在进程内。
 
 手动验收：从无订单号“我想申请退款”开始，回复自己声明的客户 ID，点击其订单商品卡片，检查政策来源与资格答复；eligible 才有固定原因下拉。提交后生成的只是**待处理申请**，不是转账或退款到账。也可用“客户 ID + 订单号查物流 → 这个能退吗 → 先不退了继续查物流”检查多轮切换。只要政策证据不足，核心流程会明确兜底，不会批准申请。
+
+### 第七章：当前会话上下文与多会话侧栏
+
+服务端将完整原文保留在 MySQL `conversations`/`messages` 和 LangGraph checkpoint；发给聊天模型的是按预算整理的三层视图。`summary_upto_msg_id` 与 `layer1_from_msg_id` 是单调边界，旧轮次的摘要追加到独立表。摘要在后台运行，当前回复不等待摘要。`GET /api/conversations` 与 `GET /api/conversations/{id}/messages` 使用浏览器访客 cookie 校验归属。旧会话原文可从侧栏回载并继续聊天。上线前运行加法迁移，且继续使用单进程服务以保持现有会话锁语义。
+
+```powershell
+python -m app.init_ch07_db
+python scripts/check_ch07_budget.py --profile default --json
+python scripts/check_ch07_budget.py --profile demo --json
+python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001 --workers 1
+```
+
+窗口账本为 `H = min(N×T, max(0, W-F-R-S-O-U-G-P))`，其中 `G=ceil(0.05W)`、`P=K×(A+X+B)`。`W` 是模型窗口，`F` 是实际固定 system 文本与有序工具 schema 的估算，`R` 是本轮证据预留，`S` 是摘要预留，`O` 是输出预留，`U` 是当前用户输入，`K` 是最多选择步数，`A` 是每步选择输出，`X` 是整批工具结果上限，`B` 是协议余量。`N×T` 表示想保留轮数乘以每轮稳态占用；层 1 获得 `floor(0.7H)`，层 2 获得余下部分。统一以 `count_tokens_approximately(chars_per_token=1.0, extra_tokens_per_message=3.0)` 计数；实际请求在调用前再次验证，启动时历史不足一轮即报“上下文预算不足”。预算 CLI 根据当前提示词和 schema 重算，不把上游模型容量验证伪装为已完成。
+
+默认窗口 `MODEL_CONTEXT_WINDOW=65536`。演示配置为 `MODEL_CONTEXT_WINDOW=18000 MAX_OUTPUT_TOKENS=2000 MAX_USER_INPUT_TOKENS=2000 MAX_AGENT_STEPS=3 TOOL_RESULT_MAX_TOKENS=1200 RERANK_TOP_K=5`。知识证据的冻结校准预算另由 `KNOWLEDGE_CONTEXT_TOKEN_BUDGET=4096` 与 `KNOWLEDGE_RESPONSE_TOKEN_RESERVE=512` 保持；更改它们会触发知识策略指纹校验，不会隐式放宽门槛。
+
+真实验收脚本读取现有服务端配置和冻结的 24 轮样例，发起真实模型、Jev、MySQL 与 Milvus 请求，并使用持久化额度账本。预先启动 MySQL 和 Milvus；以下 `--env-file` 改成你的实际服务端配置路径，绝不把 `.env` 提交到 Git。`--dry-run` 不发送请求。
+
+```powershell
+python scripts/demo_ch07.py --profile default --dry-run
+python scripts/demo_ch07.py --profile demo --dry-run
+python scripts/demo_ch07.py --profile default --live --init-db --env-file D:/path/to/.env
+python scripts/demo_ch07.py --profile demo --live --init-db --env-file D:/path/to/.env
+rg 'model_ctx|history_ctx|summary|层1' log/app.log
+python -m pytest -q
+```
+
+`model_ctx` 记录实际送出的逐条消息、全文摘要、工具定义与 token 估算；`history_ctx` 每轮记录指代消解和意图分流共用的历史，闲聊兜底轮也能查到。日志可能含用户提供的订单号等原话，留在忽略目录 `log/app.log`，不要提交。当前验证数据和限制见 [第七章验收记录](eval/ch07/acceptance-report.md)，开发过程见 [dev-notes/ch07.md](dev-notes/ch07.md)。

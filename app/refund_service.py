@@ -22,9 +22,11 @@ class RefundService:
         return {'action_id':row['action_id'],'kind':'refund','status':row['status'],'item':row['item'],'reasons':self.business.refund_reasons()}
 
     def load_forms(self,conversation_id):
+        forms=self.repository.load_forms(conversation_id)
+        if not forms:return {}
         versions=self.versions();reasons=self.business.refund_reasons()
         result={}
-        for message_id,row in self.repository.load_forms(conversation_id).items():
+        for message_id,row in forms.items():
             status=row['status'] if row['fingerprints']==versions else 'stale'
             result[message_id]={'action_id':row['action_id'],'kind':'refund','status':status,'item':row['item'],'reasons':reasons,'receipt':row.get('receipt')}
         return result

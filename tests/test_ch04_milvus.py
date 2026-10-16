@@ -131,7 +131,8 @@ def test_real_milvus_exact_model_filters_schema_and_rrf(live):
     client,name,_=live
     store=store_class()('unused',collection_name=name,client=client)
     store.ensure_collection(); store.ensure_collection()
-    body=(Path(__file__).resolve().parents[1]/'knowledge_db/product-specs.md').read_text(encoding='utf-8')
+    # Stable lexical probes: this schema/filter test must not depend on a retired catalog.
+    body='# 商品规格\n## MH-LP50\nMH-LP50 尺寸 50 厘米。\n## MH-LP100\nMH-LP100 尺寸 100 厘米。'
     chunks=chunk_markdown(body,content_type='manual')
     selected=[c for c in chunks if 'MH-LP50' in c.section_path or 'MH-LP100' in c.section_path]
     assert len(selected)==2

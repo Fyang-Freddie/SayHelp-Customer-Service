@@ -17,7 +17,7 @@ from test_db import database_url
 from test_workflow_repository import sessions
 from test_ch04_ingest import corpus
 from test_rag_chat import Retrieval
-from test_chat_api import post, parse_events, settings
+from test_chat_api import post, parse_events, settings, FakeModel
 from test_chat_views import get
 
 
@@ -26,9 +26,11 @@ def application(sessions, corpus, tmp_path, *, weak=False):
     retrieval = Retrieval(ingest.ingest_corpus(sessions, manifest))
     repo = Repository(sessions)
     cid = repo.create_conversation('guest')
-    class Model:
+    class Model(FakeModel):
         def __init__(self): self.prompts = []
-        async def classify_intent(self, text): return AIMessage(content='{"intent":"商品咨询"}')
+        async def classify_intent(self, text):
+            from app.ch06_types import IntentDecision, IntentOutcome
+            return IntentOutcome(IntentDecision(intent='商品咨询',confidence=1.0),'accepted','test',{})
         async def select(self, messages, tools, **kwargs):
             self.prompts.append(messages)
             return AIMessage(content='private draft')

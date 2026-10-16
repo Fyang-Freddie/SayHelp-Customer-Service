@@ -7,7 +7,7 @@ from threading import RLock
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, Response
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -64,16 +64,20 @@ def create_app(
                 session_factory.kw['bind'].dispose()
 
     app = FastAPI(lifespan=lifespan)
+    from app.conversation_identity import VisitorMiddleware
+    app.add_middleware(VisitorMiddleware,repository=repository,enabled=settings.layered_context)
 
     @app.get('/', include_in_schema=False)
     async def chat_page() -> FileResponse:
         return FileResponse(Path(__file__).parent / 'web' / 'index.html', media_type='text/html')
 
+    @app.get('/api/conversations')
     @app.get('/v1/conversations')
-    def conversation_list(limit: Annotated[int, Query(ge=1, le=100)] = 30,
+    def conversation_list(http:Request,limit: Annotated[int, Query(ge=1, le=100)] = 30,
                           before: Annotated[str | None, Query(max_length=512)] = None) -> dict:
         try:
-            return repository.list_conversations(limit=limit, cursor=before)
+            return repository.list_conversations(limit=limit, cursor=before,
+                user_id=http.state.visitor_id if settings.layered_context or http.url.path.startswith('/api/') else None)
         except ValueError:
             raise HTTPException(status_code=422, detail='Invalid history cursor; refresh the history list') from None
         except SQLAlchemyError:
@@ -106,6 +110,7 @@ def create_app(
         except SQLAlchemyError:
             raise HTTPException(status_code=503, detail='Conversation storage unavailable') from None
 
+    @app.get('/api/conversations/{conversation_id}/messages')
     @app.get('/v1/conversations/{conversation_id}/messages')
     async def conversation_messages(conversation_id: ConversationId) -> dict:
         try:
@@ -163,15 +168,23 @@ def create_app(
         except (OSError, UnicodeError):
             raise HTTPException(status_code=404, detail='Knowledge document not found') from None
 
-    def prepare_chat(request: ChatRequest) -> Iterator[PreparedChat]:
+    def prepare_chat(request: ChatRequest,http:Request) -> Iterator[PreparedChat]:
         system = SystemMessage(content=render_workflow_system_prompt())
         current = HumanMessage(content=request.message)
         conversation_id = int(request.conversation_id) if request.conversation_id is not None else None
         reserved = False
         try:
             # Reject an oversized new turn before creating its conversation row.
-            prepare_context([], system, current, settings)
+            if settings.layered_context:
+                from app.context_budget import estimate_tokens
+                if estimate_tokens([current])>settings.max_user_input_tokens:
+                    raise InputBudgetExceeded('当前输入超过 MAX_USER_INPUT_TOKENS')
+            else:
+                prepare_context([], system, current, settings)
             with reservation_lock:
+                if conversation_id is not None and settings.layered_context:
+                    try:repository.assert_owner(conversation_id,http.state.visitor_id)
+                    except KeyError:raise HTTPException(status_code=404,detail='Conversation not found') from None
                 if conversation_id is not None and repository.get_conversation(conversation_id) is None:
                     raise HTTPException(status_code=404, detail='Conversation not found')
                 if conversation_id in active:
@@ -179,10 +192,11 @@ def create_app(
                 if len(active) >= settings.max_conversations:
                     raise HTTPException(status_code=503, detail='Conversation capacity reached')
                 if conversation_id is None:
-                    conversation_id = repository.create_conversation('guest-' + uuid4().hex)
+                    conversation_id = repository.create_conversation(http.state.visitor_id if settings.layered_context else 'guest-' + uuid4().hex)
                 active.add(conversation_id)
                 reserved = True
-            prepare_context(repository.load_messages(conversation_id), system, current, settings)
+            if not settings.layered_context:
+                prepare_context(repository.load_messages(conversation_id), system, current, settings)
             yield conversation_id, request.message, request.filters
         except InputBudgetExceeded:
             raise HTTPException(status_code=413, detail='Message exceeds input budget') from None

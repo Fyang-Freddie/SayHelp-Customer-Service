@@ -29,12 +29,16 @@ class AgentLimits:
     response_tokens: int = 512
     selection_tokens: int = 512
     input_tokens: int = 3584
+    tool_result_tokens: int = 1200
+    max_agent_steps: int | None = None
 
     def __post_init__(self):
-        for name in ('model_calls', 'tool_calls', 'turn_tokens', 'response_tokens', 'selection_tokens', 'input_tokens'):
+        for name in ('model_calls', 'tool_calls', 'turn_tokens', 'response_tokens', 'selection_tokens', 'input_tokens', 'tool_result_tokens'):
             if type(getattr(self, name)) is not int or getattr(self, name) < 1:
                 raise ValueError(f'{name} must be a positive integer')
-        if self.model_calls > 6 or self.tool_calls > 6:
+        if self.max_agent_steps is not None and (type(self.max_agent_steps) is not int or not 1<=self.max_agent_steps<=5):
+            raise ValueError('max_agent_steps must be between one and five')
+        if self.model_calls > (7 if self.max_agent_steps is not None else 6) or self.tool_calls > 6:
             raise ValueError('Chapter 5 permits at most six model calls and six tool executions')
 
 
@@ -44,7 +48,8 @@ def _usage(state):
 
 
 def _estimate(messages):
-    return max(1, int(count_tokens_approximately(messages)))
+    from app.context_budget import estimate_tokens
+    return max(1, estimate_tokens(messages))
 
 
 def _account(usage, metadata, estimated):
@@ -91,6 +96,8 @@ async def agent_step(state: WorkflowState, *, model: AgentModel, tools: dict,
         return {'status': 'stopped', 'stop_reason': 'invalid_messages'}
     if state.get('model_calls', 0) >= limits.model_calls - 1:
         return {'status': 'answer', 'stop_reason': 'model_budget'}
+    if limits.max_agent_steps is not None and state.get('agent_steps',0)>=limits.max_agent_steps:
+        return {'status':'answer','stop_reason':'model_budget'}
     schemas, schema_tokens = _schemas(tools)
     input_tokens = _estimate(messages) + schema_tokens
     if input_tokens > limits.input_tokens:
@@ -104,12 +111,14 @@ async def agent_step(state: WorkflowState, *, model: AgentModel, tools: dict,
     await emit('model_start', {'phase': 'select', 'model_calls': calls})
     started = perf_counter()
     try:
+        if state.get('_log_model_request'):
+            state['_log_model_request'](messages, schemas)
         selected = await model.select(messages, schemas, max_tokens=limits.selection_tokens)
     except BaseException as error:
         await emit('model_error', {'phase': 'select', 'model_calls': calls, 'error_type': type(error).__name__,
             'duration_ms': (perf_counter()-started)*1000, 'usage': _account(_usage(state), None, input_tokens+limits.selection_tokens)})
         raise
-    update = {'model_calls': calls, 'usage': _account(_usage(state), selected.usage_metadata,
+    update = {'model_calls': calls, 'agent_steps':state.get('agent_steps',0)+1, 'usage': _account(_usage(state), selected.usage_metadata,
               input_tokens + _estimate([selected]))}
     await emit('model_end', {'phase': 'select', 'model_calls': calls, 'usage': update['usage'],
         'duration_ms': (perf_counter()-started)*1000})
@@ -168,7 +177,8 @@ def _failure_streak(messages, call):
 
 def _schemas(tools):
     schemas = [convert_to_openai_tool(t) for n, t in tools.items() if n in READ_TOOLS] + [SUGGEST_ACTIONS]
-    return schemas, max(1, len(json.dumps(schemas, ensure_ascii=False)) // 3)
+    from app.context_budget import estimate_tokens
+    return schemas, estimate_tokens([],schemas)
 
 
 def _fits_final(messages, usage: Usage, limits: AgentLimits):
@@ -261,7 +271,8 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
         # reserved for the final input, even though its execution cost is paid.
         result, candidate_citations = _number_knowledge(result, citations)
         pending = [_result_budget_error(c) for c in selected.tool_calls[index + 1:]]
-        if not _fits_final(messages + results + [result] + pending, _usage(state), limits):
+        if (_estimate(results + [result] + pending) > limits.tool_result_tokens or
+                not _fits_final(messages + results + [result] + pending, _usage(state), limits)):
             result = _result_budget_error(call, attempts=result.additional_kwargs.get('execution_attempts', 0))
             # This exact replacement was reserved at admission (or in the
             # preceding iteration), so the complete paired fallback must fit.
@@ -293,6 +304,8 @@ async def stream_answer(state: WorkflowState, *, model: AgentModel, limits: Agen
     answer, combined = '', None
     started = perf_counter()
     try:
+        if state.get('_log_model_request'):
+            state['_log_model_request'](messages, [])
         async for chunk in model.stream_reply(messages, max_tokens=limits.response_tokens):
             combined = chunk if combined is None else combined + chunk
             text = str(chunk.text)

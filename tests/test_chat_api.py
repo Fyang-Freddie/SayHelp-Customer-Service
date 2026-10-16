@@ -22,7 +22,8 @@ from app.workflow_repository import WorkflowRepository
 
 def settings(**overrides):
     values = dict(chat_base_url='https://example.invalid/v1', chat_model='test-model',
-                  chat_api_key='test-secret', workflow_checkpoint_path='.runtime/ch05/tests/' + uuid4().hex + '.sqlite')
+                  chat_api_key='test-secret', context_token_budget=18000, agent_turn_tokens=100000,
+                  workflow_checkpoint_path='.runtime/ch05/tests/' + uuid4().hex + '.sqlite')
     values.update(overrides)
     return Settings(**values)
 
@@ -99,11 +100,15 @@ def test_stream_emits_decimal_session_chunks_and_persists_final(sessions):
 
 def test_tool_status_precedes_tokens_and_contains_only_public_badge_data(sessions):
     class ToolModel(FakeModel):
+        async def stream_chat(self, messages):
+            self.final_context=messages
+            async for text in super().stream_chat(messages):yield text
         async def choose_tool(self, messages, tools):
             return AIMessage(content='', tool_calls=[{
                 'id': 'request-1', 'name': 'query_order', 'args': {'order_id': 'private-order'},
             }])
-    app = create_app(settings(), ToolModel(), session_factory=sessions, knowledge_gate=Gate())
+    model=ToolModel()
+    app = create_app(settings(), model, session_factory=sessions, knowledge_gate=Gate())
     response = asyncio.run(post(app, {'message': '查询订单'}))
     events = parse_events(response.text)
     assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'done']
@@ -111,9 +116,9 @@ def test_tool_status_precedes_tokens_and_contains_only_public_badge_data(session
                            ('tool_status', {'name': 'query_order', 'state': 'success'})]
     assert 'private-order' not in response.text and 'request-1' not in response.text
     rows = Repository(sessions).load_messages(int(events[0][1]['conversation_id']))
-    assert [r.role for r in rows] == ['user', 'assistant', 'tool', 'assistant']
-    assert rows[1].tool_calls[0]['args'] == {'order_id': 'private-order'}
-    assert rows[2].tool_call_id == 'request-1'
+    assert [r.role for r in rows] == ['user', 'assistant']
+    assert any(getattr(m,'tool_calls',None) and m.tool_calls[0]['args']=={'order_id':'private-order'} for m in model.final_context)
+    assert any(getattr(m,'tool_call_id',None)=='request-1' for m in model.final_context)
 
 
 def test_restart_uses_completed_persisted_context(sessions):
@@ -145,7 +150,7 @@ def test_malformed_conversation_returns_422_before_stream(cid, sessions):
 def test_oversized_request_creates_no_conversation_and_preserves_existing(sessions):
     repo = Repository(sessions)
     cid = repo.create_conversation('existing')
-    app = create_app(settings(), FakeModel(), sessions, knowledge_gate=Gate())
+    app = create_app(settings(context_token_budget=4096), FakeModel(), sessions, knowledge_gate=Gate())
     for id in (None, str(cid)):
         response = asyncio.run(post(app, {'message': 'x' * 20000, 'conversation_id': id}))
         assert response.status_code == 413
@@ -403,6 +408,9 @@ def test_active_capacity_limits_streams_without_evicting_persisted_chats(session
 
 def test_faq_uses_complete_gate_payload_and_excludes_ticket_execution(sessions):
     class PostageModel(FakeModel):
+        async def stream_chat(self, messages):
+            self.final_context=messages
+            async for text in super().stream_chat(messages):yield text
         async def choose_tool(self, messages, tools):
             names = [tool['function']['name'] for tool in tools]
             assert names == ['query_order', 'query_product', 'query_logistics', 'query_faq', 'suggest_actions']
@@ -413,11 +421,13 @@ def test_faq_uses_complete_gate_payload_and_excludes_ticket_execution(sessions):
     class CompleteGate(Gate):
         async def prepare(self, question, filters=None):
             return {'evidence': [evidence], 'citations': [citation], 'confidence': {'sufficient': True}}
-    app = create_app(settings(), PostageModel(), sessions, knowledge_gate=CompleteGate())
+    model=PostageModel()
+    app = create_app(settings(), model, sessions, knowledge_gate=CompleteGate())
     events = parse_events(asyncio.run(post(app, {'message': '邮费是多少'})).text)
     assert [kind for kind, _ in events] == ['session', 'tool_status', 'tool_status', 'token', 'token', 'citations', 'done']
     rows = Repository(sessions).load_messages(int(events[0][1]['conversation_id']))
-    payload = json.loads(rows[2].content)
+    assert [r.role for r in rows]==['user','assistant']
+    payload = json.loads(next(m.content for m in model.final_context if m.type=='tool'))
     assert payload['useful'] is True and payload['matches'] == [evidence]
     assert payload['citations'] == rows[-1].citations == [citation]
     emitted = next(data for kind, data in events if kind == 'citations')

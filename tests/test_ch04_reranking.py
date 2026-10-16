@@ -96,13 +96,14 @@ def test_lazy_single_initialization_and_serialized_inference(monkeypatch):
 
 def test_real_fixed_model_returns_ten_and_exact_model_over_nearby_variants():
     candidates=[]
-    for name,kind,body,digest in load_documents(ROOT/'eval/ch04/corpus.json'):
+    for name,kind,body,digest in load_documents(ROOT/'eval/ch06/corpus.json'):
         for draft in chunk_markdown(body,content_type=kind):
             candidates.append(EvidenceChunk(len(candidates)+1,draft.questions,draft.answer,draft.category,None,kind,draft.section_path,name,draft.source_start_line,draft.source_end_line,digest))
-    ranked=api().BgeReranker().rerank('MH-LP50是否有App远程监控和健康记录？',candidates)
+    candidates=sorted(candidates,key=lambda c:'MM-E100' not in c.question)[:50]
+    ranked=api().BgeReranker().rerank('MM-E100无线蓝牙耳机单次续航和配合充电盒续航分别多久？',candidates)
     assert len(ranked)==10 and all(math.isfinite(r.score) for r in ranked)
-    assert 'MH-LP50' in ranked[0].chunk.question
-    assert '不含 App' in ranked[0].chunk.answer
+    assert 'MM-E100' in ranked[0].chunk.question
+    assert '6 小时' in ranked[0].chunk.answer and '24 小时' in ranked[0].chunk.answer
     assert api().MODEL_ID=='BAAI/bge-reranker-v2-m3'
 
 

@@ -20,3 +20,20 @@ def test_missing_or_stale_knowledge_artifact_fails_explicitly(tmp_path):
     with pytest.raises(Exception): api().load_policy(path,{'corpus':'new'},'policy')
     path.write_text(json.dumps({'version':1,'fingerprints':{'corpus':'old'},'modes':{}}),encoding='utf-8')
     with pytest.raises(Exception): api().load_policy(path,{'corpus':'new'},'policy')
+
+
+def test_generation_window_changes_preserve_independent_knowledge_budget(tmp_path):
+    from types import SimpleNamespace
+    from app.config import Settings
+    corpus=SimpleNamespace(corpus_digest='same')
+    frozen=api().knowledge_fingerprints(corpus,Settings('x','same','x'))
+    path=tmp_path/'frozen.json'
+    path.write_text(json.dumps({'version':1,'fingerprints':frozen,
+        'modes':{'faq':{'enabled':True,'threshold':6.1}}}),encoding='utf8')
+    current=api().knowledge_fingerprints(corpus,Settings('x','same','x',
+        context_token_budget=18000,response_token_reserve=2000,layered_context=True))
+    assert current==frozen
+    assert api().load_policy(path,current,'faq').thresholds['hybrid_rerank']==6.1
+    for key in ('corpus_digest','query_model','prompt_digest','generation_k','context_token_budget','response_token_reserve'):
+        with pytest.raises(Exception):
+            api().load_policy(path,current|{key:'changed'},'faq')

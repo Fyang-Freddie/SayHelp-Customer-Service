@@ -687,6 +687,12 @@
           title.append(badge);
         }
         title.append(document.createTextNode(item.title));
+        if (item.has_summary) {
+          const badge = document.createElement("span");
+          badge.className = "history-pin";
+          badge.textContent = "已摘要";
+          title.append(badge);
+        }
         button.title = item.title;
         const date = document.createElement("span");
         date.className = "history-date";
@@ -742,7 +748,7 @@
         historyMore.disabled = true;
         try {
           const query = append && historyCursor ? "?before=" + encodeURIComponent(historyCursor) : "";
-          const response = await fetch("/v1/conversations" + query, {signal: historyAbort.signal});
+          const response = await fetch("/api/conversations" + query, {signal: historyAbort.signal});
           if (!response.ok) throw new Error("历史暂时无法加载，请稍后重试。");
           const data = await response.json();
           if (requestId !== historyRequest) return [];
@@ -763,7 +769,7 @@
           markActiveHistory();
           return data.conversations;
         } catch (error) {
-          if (error.name !== "AbortError" && requestId === historyRequest) historyStatus(error.message);
+          // Optional sidebar data must not interrupt the current conversation.
           return [];
         } finally {
           if (requestId === historyRequest) { historyLoading = false; historyMore.disabled = false; }
@@ -777,7 +783,7 @@
         setBusy(true);
         toggleHistory(false);
         try {
-          const response = await fetch("/v1/conversations/" + encodeURIComponent(id) + "/messages");
+          const response = await fetch("/api/conversations/" + encodeURIComponent(id) + "/messages");
           if (!response.ok) throw new Error(response.status === 404 ? "这段历史对话已不存在。" : "历史对话加载失败，请稍后重试。");
           const data = await response.json();
           if (epoch !== conversationEpoch || deletedConversations.has(id) || deletedConversations.has(data.conversation_id)) return;

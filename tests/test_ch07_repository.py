@@ -34,6 +34,22 @@ def test_complete_is_atomic_and_idempotent(context):
     assert len(state.summaries)==1
 
 
+def test_failed_attempt_does_not_block_following_complete_batch(context):
+    contexts,_,_=context
+    repo=Repository(contexts.session_factory)
+    cid=repo.create_conversation('failed-attempt')
+    failed=int(repo.append_message(cid,'user','失败轮次审计原文'))
+    start=int(repo.append_message(cid,'user','已完成问题'))
+    end=int(repo.append_message(cid,'assistant','已完成答复'))
+    recent=int(repo.append_message(cid,'user','最近问题'))
+    repo.append_message(cid,'assistant','最近答复')
+    assert contexts.advance_layer1(cid,0,recent)
+    with pytest.raises(ValueError):contexts.claim(cid,start,end,'b'*64)
+    lease=contexts.claim(cid,start,end,'b'*64,excluded_message_ids={str(failed)})
+    assert lease and contexts.complete(lease,'已完成的问题与答复',10)
+    assert repo.load_messages(cid)[0].content=='失败轮次审计原文'
+
+
 def test_late_expired_claim_cannot_commit(context):
     repo,cid,ids=context
     repo.advance_layer1(cid,0,ids[4])
@@ -41,10 +57,12 @@ def test_late_expired_claim_cannot_commit(context):
     with repo.session_factory.begin() as session:
         session.execute(text('UPDATE conversations SET summary_lease_until=:at WHERE id=:id'),
                         {'at':datetime.now(UTC).replace(tzinfo=None)-timedelta(seconds=5),'id':cid})
+    assert repo.expired_conversations()==[cid]
     replacement=repo.claim(cid,ids[0],ids[3],'a'*64)
     assert replacement.lease_token!=claim.lease_token
     assert not repo.complete(claim,'过时',2)
     assert repo.complete(replacement,'当前有效摘要',8)
+    assert repo.expired_conversations()==[]
 
 
 def test_downgrade_during_summary_does_not_skip_range(context):

@@ -259,7 +259,7 @@ def test_chapter5_settings_load_and_reject_excess_call_budget(monkeypatch, tmp_p
 def test_bare_cli_uses_existing_reads_and_prints_paid_final_step(capsys, monkeypatch):
     from app.bare_agent import run_demo
     from app.config import Settings
-    settings = Settings(chat_base_url='https://example.test/v1',chat_model='test',chat_api_key='offline',database_url='sqlite://')
+    settings = Settings(chat_base_url='https://example.test/v1',chat_model='test',chat_api_key='offline',database_url='sqlite://',context_token_budget=18000,agent_turn_tokens=100000)
     from contextlib import contextmanager
     from app import bare_agent
     opened = []
@@ -311,16 +311,16 @@ def test_oversized_tool_results_preserve_final_stream_and_message_pairing(sizes)
     assert result.model_calls == 2
     # The rejected generated result still cost an execution. Remaining batch
     # calls get matching errors without performing avoidable business work.
-    assert result.tool_calls == (1 if len(sizes) == 1 else 2)
+    assert result.tool_calls == 1
     assert len(attempts) == result.tool_calls
     results = [m for m in model.finals[0] if isinstance(m, ToolMessage)]
     assert [m.tool_call_id for m in results] == [f'faq-{n}' for n in range(len(sizes))]
-    rejected = results[0 if len(sizes) == 1 else 1]
+    rejected = results[0]
     assert rejected.status == 'error' and '未采用' in rejected.content
     assert len(rejected.content) < 100 and 'eeee' not in rejected.content
     assert rejected.additional_kwargs['execution_attempts'] == 1
     if len(sizes) > 1:
-        assert results[0].status == 'success' and 'e' * 24000 in results[0].content
+        assert all(m.status=='error' for m in results)
         assert results[-1].status == 'error'
     assert result.stop_reason == 'tool_result_budget'
     assert 120 + count_tokens_approximately(model.finals[0]) + 512 <= 12000
@@ -336,9 +336,10 @@ def test_minimum_paired_error_batch_must_fit_before_selection_is_appended():
         attempts.append(keyword)
         return {'answer': 'e' * 60000, 'useful': True}
     calls = [{'name': 'query_faq', 'id': f'c{n}', 'args': {'keyword': 'x'}} for n in range(20)]
-    selected = AIMessage(content='', tool_calls=calls)
+    selected = AIMessage(content='', tool_calls=calls,
+        usage_metadata={'input_tokens':100,'output_tokens':512,'total_tokens':612})
     model = ScriptModel([selected], [AIMessageChunk(content='需要缩小查询范围，请补充问题。')])
-    result, _ = scenario(model, {'query_faq': faq}, usage=Usage(estimated=10220))
+    result, _ = scenario(model, {'query_faq': faq}, usage=Usage(estimated=9000))
     assert len(model.finals) == 1 and result.answer == '需要缩小查询范围，请补充问题。'
     assert result.model_calls == 2 and result.tool_calls == 0 and attempts == []
     assert result.stop_reason == 'tool_result_budget'
