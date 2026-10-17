@@ -5,18 +5,19 @@
     "criteria": "73fcfacd85713aa678dd7571686d06b04285d8338f72b6b34b785b8aef39d994",
     "resolver": "ab45eea5e97aa62dd959f28b7ac31dbd2633668741eaa6739748d25ee9ddce73",
     "chat_model": "deepseek-v4-flash",
-    "cases": "6fd22bcd1c795668441d475c88155815f134e6c533dc1453d8a349f85ebd8592"
+    "cases": "6fd22bcd1c795668441d475c88155815f134e6c533dc1453d8a349f85ebd8592",
+    "recalibration_cases": "7689b19e138a13ccdf83f5a5e45e09240118ff660c8b61bf639c0a2066ac1ffb"
   },
   "thresholds": {
-    "物流": 0.99,
-    "订单": 1.0,
+    "物流": 0.98,
+    "订单": 0.93,
     "商品咨询": 0.99,
     "退款退货": 1.0,
-    "售后": 0.98,
-    "投诉": 1.0,
-    "闲聊": 0.95
+    "售后": 0.97,
+    "投诉": 0.42,
+    "闲聊": 0.86
   },
-  "automatic_correct": 95,
+  "automatic_correct": 98,
   "total": 110,
   "disabled": []
 }

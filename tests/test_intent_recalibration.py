@@ -82,3 +82,78 @@ def test_cli_dry_run_freezes_hash_without_provider_or_credentials():
     assert report['requests'] == 110
     assert len(report['dataset_sha256']) == 64
     assert report['mode'] == 'dry_run'
+
+
+def test_runtime_fingerprint_binds_promoted_policy_to_new_frozen_cases():
+    from app.config import Settings
+    from app.evaluation.ch06 import fingerprints
+    from app.intent_policy import IntentPolicy
+
+    _, digest = load_frozen_cases(CASES)
+    settings = Settings(chat_base_url='x', chat_model='deepseek-v4-flash',
+                        chat_api_key='x', jev_model='jev-1.13.0')
+    expected = fingerprints(settings)
+    assert expected['recalibration_cases'] == digest
+    candidate = IntentPolicy.from_artifact(
+        ROOT / 'eval/ch06/intent-policy-candidate.json', expected)
+    assert candidate.reason == ''
+    active = IntentPolicy.from_artifact(ROOT / 'eval/ch06/intent-policy.json', expected)
+    assert active.reason == ''
+    assert active.thresholds == candidate.thresholds
+
+
+def test_promote_requires_both_frozen_safety_reports_and_complete_tracked_ledger(tmp_path):
+    import shutil
+    from app.config import Settings
+    from app.evaluation.ch06 import fingerprints
+    from app.evaluation.intent_recalibration import promote_verified_candidate
+
+    source = ROOT / 'eval/ch06'
+    destination = tmp_path / 'eval/ch06'
+    destination.mkdir(parents=True)
+    names = ('intent-recalibration-v1.json', 'intent-policy-candidate.json',
+             'intent-policy-legacy.json', 'intent-recalibration-attempts.jsonl',
+             'intent-recalibration-calibration.jsonl', 'intent-recalibration-acceptance.jsonl',
+             'intent-recalibration-calibration-report.json', 'intent-recalibration-acceptance-report.json')
+    for name in names:
+        shutil.copyfile(source / name, destination / name)
+    expected = fingerprints(Settings(chat_base_url='x', chat_model='deepseek-v4-flash',
+                                     chat_api_key='x', jev_model='jev-1.13.0'))
+    result = promote_verified_candidate(tmp_path, expected)
+    assert result['acceptance']['candidate']['correct'] == 101
+    assert (destination / 'intent-policy.json').read_bytes() == (source / 'intent-policy-candidate.json').read_bytes()
+
+    report_path = destination / 'intent-recalibration-acceptance-report.json'
+    report = json.loads(report_path.read_text(encoding='utf8'))
+    report['candidate_is_safer'] = False
+    report_path.write_text(json.dumps(report, ensure_ascii=False), encoding='utf8')
+    (destination / 'intent-policy.json').unlink()
+    with pytest.raises(ValueError, match='safety gate failed'):
+        promote_verified_candidate(tmp_path, expected)
+    assert not (destination / 'intent-policy.json').exists()
+
+    shutil.copyfile(source / 'intent-recalibration-acceptance-report.json', report_path)
+    ledger_path = destination / 'intent-recalibration-attempts.jsonl'
+    ledger_path.write_text('\n'.join(ledger_path.read_text(encoding='utf8').splitlines()[:-1]) + '\n', encoding='utf8')
+    with pytest.raises(ValueError, match='attempt ledger is incomplete'):
+        promote_verified_candidate(tmp_path, expected)
+    assert not (destination / 'intent-policy.json').exists()
+
+
+def test_screenshot_like_complaint_reaches_complaint_route_with_promoted_policy():
+    from app.ch06_types import IntentDecision, IntentOutcome, Usage
+    from app.config import Settings
+    from app.evaluation.ch06 import fingerprints
+    from app.intent_policy import IntentPolicy
+    from app.intent import route_intent
+
+    rows = [json.loads(line) for line in (ROOT / 'eval/ch06/intent-recalibration-calibration.jsonl').read_text(encoding='utf8').splitlines()]
+    row = next(row for row in rows if row['id'] == 'cal-投诉-01')
+    assert '不要自动退款' in row['query']
+    expected = fingerprints(Settings(chat_base_url='x', chat_model='deepseek-v4-flash',
+                                     chat_api_key='x', jev_model='jev-1.13.0'))
+    policy = IntentPolicy.from_artifact(ROOT / 'eval/ch06/intent-policy.json', expected)
+    result = policy.apply(IntentOutcome(IntentDecision(intent=row['choice'], confidence=row['confidence']),
+                                        row['reason'], row['model'], row['probabilities'], Usage()))
+    assert result.decision.intent == '投诉'
+    assert route_intent(result.decision.intent) == 'complaint'

@@ -18,13 +18,16 @@ from app.evaluation.intent_recalibration import (
 from app.jev_classifier import JevIntentClassifier
 
 CASES = ROOT / 'eval/ch06/intent-recalibration-v1.json'
-LEDGER = ROOT / '.runtime/ch06/intent-recalibration-attempts.jsonl'
+LEDGER = ROOT / 'eval/ch06/intent-recalibration-attempts.jsonl'
 CANDIDATE = ROOT / 'eval/ch06/intent-policy-candidate.json'
 BASELINE = ROOT / 'eval/ch06/intent-policy.json'
 
 
 def _fingerprints(settings, digest):
-    return {**fingerprints(settings), 'recalibration_cases': digest}
+    expected = fingerprints(settings)
+    if expected['recalibration_cases'] != digest:
+        raise ValueError('Frozen dataset changed during evaluation')
+    return expected
 
 
 async def run(args):

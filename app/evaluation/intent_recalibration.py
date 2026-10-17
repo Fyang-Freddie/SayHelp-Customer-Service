@@ -3,6 +3,7 @@ from collections import Counter
 from datetime import datetime, UTC
 import hashlib
 import json
+import os
 from pathlib import Path
 
 from app.ch06_types import INTENTS
@@ -93,3 +94,43 @@ class AttemptLedger:
             stream.write(json.dumps(record, ensure_ascii=False) + '\n')
             stream.flush()
         self.records.append(record)
+
+
+def promote_verified_candidate(root: Path, expected_fingerprints: dict) -> dict:
+    """Promote only a candidate whose frozen runs and safety reports revalidate."""
+    root = Path(root)
+    folder = root / 'eval/ch06'
+    cases, digest = load_frozen_cases(folder / 'intent-recalibration-v1.json')
+    candidate = json.loads((folder / 'intent-policy-candidate.json').read_text(encoding='utf8'))
+    legacy = json.loads((folder / 'intent-policy-legacy.json').read_text(encoding='utf8'))
+    if candidate.get('fingerprints') != expected_fingerprints or expected_fingerprints.get('recalibration_cases') != digest:
+        raise ValueError('candidate fingerprint mismatch')
+    ledger = AttemptLedger(folder / 'intent-recalibration-attempts.jsonl')
+    if ledger.used != len(cases) or {r['case_id'] for r in ledger.records} != {c['id'] for c in cases}:
+        raise ValueError('approved attempt ledger is incomplete')
+    if any(r['dataset_sha256'] != digest or r['model'] != expected_fingerprints['model'] for r in ledger.records):
+        raise ValueError('attempt ledger fingerprint mismatch')
+    outcome = {}
+    for split in ('calibration', 'acceptance'):
+        selected = {c['id']: c for c in cases if c['split'] == split}
+        rows = [json.loads(line) for line in (folder / f'intent-recalibration-{split}.jsonl').read_text(encoding='utf8').splitlines() if line]
+        if len(rows) != len(selected) or {r['id'] for r in rows} != set(selected):
+            raise ValueError(f'{split} result set mismatch')
+        for row in rows:
+            case = selected[row['id']]
+            if any(row.get(key) != value for key, value in case.items()) or row.get('model') != expected_fingerprints['model']:
+                raise ValueError(f'{split} result fingerprint mismatch')
+        baseline = assess_thresholds(rows, legacy['thresholds'])
+        proposed = assess_thresholds(rows, candidate['thresholds'])
+        report = json.loads((folder / f'intent-recalibration-{split}-report.json').read_text(encoding='utf8'))
+        if (report.get('dataset_sha256') != digest or report.get('model') != expected_fingerprints['model']
+                or report.get('baseline') != baseline or report.get('candidate') != proposed
+                or report.get('candidate_is_safer') != candidate_is_safer(baseline, proposed)
+                or not candidate_is_safer(baseline, proposed)):
+            raise ValueError(f'{split} safety gate failed')
+        outcome[split] = {'baseline': baseline, 'candidate': proposed}
+    target = folder / 'intent-policy.json'
+    temporary = target.with_suffix('.verified.tmp')
+    temporary.write_text(json.dumps(candidate, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    os.replace(temporary, target)
+    return outcome

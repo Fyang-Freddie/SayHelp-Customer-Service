@@ -1,0 +1,40 @@
+{
+  "split": "calibration",
+  "dataset_sha256": "7689b19e138a13ccdf83f5a5e45e09240118ff660c8b61bf639c0a2066ac1ffb",
+  "model": "jev-1.13.0",
+  "baseline": {
+    "total": 110,
+    "correct": 93,
+    "fallback": 27,
+    "wrong_routed_ids": [],
+    "correct_by_label": {
+      "物流": 13,
+      "订单": 12,
+      "商品咨询": 14,
+      "退款退货": 15,
+      "售后": 14,
+      "投诉": 7,
+      "闲聊": 8,
+      "其他": 10
+    }
+  },
+  "candidate": {
+    "total": 110,
+    "correct": 108,
+    "fallback": 12,
+    "wrong_routed_ids": [],
+    "correct_by_label": {
+      "物流": 15,
+      "订单": 14,
+      "商品咨询": 14,
+      "退款退货": 15,
+      "售后": 15,
+      "投诉": 15,
+      "闲聊": 10,
+      "其他": 10
+    }
+  },
+  "candidate_is_safer": true,
+  "attempts_used": 110,
+  "candidate_path": "D:\\llm_agent\\contact_agent\\.worktrees\\ch07-main-integration\\eval\\ch06\\intent-policy-candidate.json"
+}

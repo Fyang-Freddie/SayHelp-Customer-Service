@@ -15,8 +15,9 @@ def load_cases():
 def fingerprints(settings):
     files=('intent-cases.json','dialogue-cases.json')
     digest=hashlib.sha256(b''.join((ROOT/'eval/ch06'/name).read_bytes() for name in files)).hexdigest()
+    recalibration=hashlib.sha256((ROOT/'eval/ch06/intent-recalibration-v1.json').read_bytes()).hexdigest()
     return {'model':settings.jev_model,'criteria':criteria_fingerprint(),'resolver':resolver_fingerprint(),
-            'chat_model':settings.chat_model,'cases':digest}
+            'chat_model':settings.chat_model,'cases':digest,'recalibration_cases':recalibration}
 
 def calibrate_intents(results: list[dict],fingerprints: dict) -> dict:
     if not results or any(r['split']!='calibration' for r in results):
