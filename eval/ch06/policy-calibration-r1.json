@@ -1,0 +1,3154 @@
+{
+  "split": "calibration",
+  "fingerprints": {
+    "corpus_digest": "1e7fc8ebedbf9d6c3bdf801d6d6888eff1108e8a508507eebf5212f380ea9b04",
+    "calibration_digest": "0f8419792add08ecc9e2ac70aba4e86ed27195a31010b889772347970d236a54",
+    "embedding_model": "BAAI/bge-m3",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "query_model": "deepseek-v4-flash",
+    "prompt_digest": "39a8ad550981ad5335f40472d5a54b504a57477f96631128470244caef61571a",
+    "context_token_budget": 4096,
+    "response_token_reserve": 512,
+    "token_counter": "langchain approximate chars_per_token=1.0",
+    "dense_k": 50,
+    "bm25_k": 50,
+    "rrf_k": 60,
+    "generation_k": 10,
+    "expansion_prompt": "58c9c6058306b7f6a0afd97fa142cd02354264f6bfa210675294b2e3ef3ee42b",
+    "query_mode": "policy:original+3-expansions/source-filter/RRF/one-rerank;faq:original-only",
+    "policy_rrf_k": 60,
+    "policy_candidates": 50,
+    "policy_top_k": 10
+  },
+  "cases": [
+    {
+      "id": "policy-calibration-01",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "七天无理由退货的七天期限从什么时候开始计算？",
+      "answerable": true,
+      "required_sections": [
+        "R04"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品七天无理由退货的七天期限从什么时候开始计算，适用政策如何规定？",
+        "普通商品适用七天无理由退货时，七天期限起算有哪些限制条件，相关政策如何规定？",
+        "普通商品办理七天无理由退货时，七天期限起算与办理流程、费用承担相关的适用政策是什么？"
+      ],
+      "score": 5.990616321563721,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "58",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R04【七天期限计算】",
+          "question": "R04【七天期限计算】",
+          "answer": "七天无理由退货自**物流显示签收后的次日 00:00:00 起计算**，连续满 168 小时为七天。  \n例：2026-10-10 15:30:00 签收，计算起点为 2026-10-11 00:00:00。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 19,
+          "source_end_line": 20,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "59",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R05【未签收订单】",
+          "question": "R05【未签收订单】",
+          "answer": "商品尚未签收时，不适用“签收后七天”的起算方式。买家可根据订单所处阶段申请取消订单、退款、拒收或拦截；是否能够直接退款取决于是否已发货、物流是否可拦截及商品性质。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 23,
+          "source_end_line": 23,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "61",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R07【商品完好要求】",
+          "question": "R07【商品完好要求】",
+          "answer": "无理由退货的商品应保持能够再次正常销售的状态，包括但不限于：\n1. 商品主体无明显污损、划伤、变形、异味或人为损坏；\n2. 原有功能正常；\n3. 商品、主要配件、说明书、保修卡等基本齐全；\n4. 防伪码、序列号与销售记录能够对应；\n5. 非必要的永久性激活、绑定、注册未发生；\n6. 商品页面明确要求保留的特殊包装或封签状态符合要求。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 31,
+          "source_end_line": 37,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "66",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R12【数字化及虚拟商品】",
+          "question": "R12【数字化及虚拟商品】",
+          "answer": "软件激活码、在线课程兑换码、会员权益、数字内容等，一旦激活、兑换、下载或交付完成，原则上不支持无理由退货。未使用且商品页面允许退款的，可按页面规则处理。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 55,
+          "source_end_line": 55,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "65",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R11【鲜活易腐商品】",
+          "question": "R11【鲜活易腐商品】",
+          "answer": "鲜果、鲜花、生鲜食品、短保食品等易腐商品一般不支持七天无理由退货；若存在腐坏、破损、短缺、与描述严重不符等问题，可按质量/履约问题处理。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 52,
+          "source_end_line": 52,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "64",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R10【定制商品】",
+          "question": "R10【定制商品】",
+          "answer": "按买家要求制作、刻字、印图、裁剪、个性化配置的商品，例如定制马克杯、刻字钢笔，一般不支持七天无理由退货；存在质量问题、错做、漏做的除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 49,
+          "source_end_line": 49,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "67",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R13【卫生及健康相关商品】",
+          "question": "R13【卫生及健康相关商品】",
+          "answer": "贴身内衣、隐形眼镜、部分医疗健康用品等，若密封包装或卫生封签已拆除，且商品性质决定其不适宜再次销售，可不支持七天无理由退货；商品本身存在质量问题的除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 58,
+          "source_end_line": 58,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "69",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R15【报刊及即时消费服务】",
+          "question": "R15【报刊及即时消费服务】",
+          "answer": "已交付的报纸、期刊及已经实际消费完成的即时服务，一般不适用七天无理由退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 64,
+          "source_end_line": 64,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "83",
+          "section_path": "退款退货政策 / 第六章 未发货、运输中与拒收 / R29【拒收】",
+          "question": "R29【拒收】",
+          "answer": "支持七天无理由退货的普通商品，买家因主观原因拒收时，原则上可按无理由退货处理，但买家可能需要承担因拒收产生的合理退回运费。质量、破损、错发等卖家责任导致拒收的，合理物流费用由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 112,
+          "source_end_line": 112,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "57",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R03【七天无理由退货】",
+          "question": "R03【七天无理由退货】",
+          "answer": "带有“7天无理由退货”标识且不属于例外商品的商品，买家可在规定期限内因“不喜欢、不合适、不想要”等非质量原因申请退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 16,
+          "source_end_line": 16,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 201,
+        "output_tokens": 828,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-02",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "普通数码配件申请无理由退货需要满足哪些商品完好要求？",
+      "answerable": true,
+      "required_sections": [
+        "R07"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通数码配件申请无理由退货需要满足哪些适用资格政策？",
+        "普通数码配件申请无理由退货对商品完好的限制条件有哪些政策规定？",
+        "普通数码配件申请无理由退货的办理流程和费用承担有哪些政策规定？"
+      ],
+      "score": 4.016361236572266,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "61",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R07【商品完好要求】",
+          "question": "R07【商品完好要求】",
+          "answer": "无理由退货的商品应保持能够再次正常销售的状态，包括但不限于：\n1. 商品主体无明显污损、划伤、变形、异味或人为损坏；\n2. 原有功能正常；\n3. 商品、主要配件、说明书、保修卡等基本齐全；\n4. 防伪码、序列号与销售记录能够对应；\n5. 非必要的永久性激活、绑定、注册未发生；\n6. 商品页面明确要求保留的特殊包装或封签状态符合要求。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 31,
+          "source_end_line": 37,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "74",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R20【人为损坏】",
+          "question": "R20【人为损坏】",
+          "answer": "因跌落、进水、错误安装、超负荷使用、擅自拆机、改装等造成的损坏，不属于无理由退货下的“商品完好”，也通常不属于商品质量问题。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 81,
+          "source_end_line": 81,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "105",
+          "section_path": "退款退货政策 / 第十二章 客服智能体判定顺序 / R51【判定顺序】",
+          "question": "R51【判定顺序】",
+          "answer": "客服处理退款/退货请求时应依次确认：\n1. 客户ID、订单号和商品项ID；\n2. 商品类型和购买时展示的退货属性；\n3. 是否发货、是否签收以及签收时间；\n4. 申请原因属于质量问题、履约问题还是非质量问题；\n5. 是否属于定制、虚拟、生鲜、卫生封签等例外；\n6. 商品完好、拆封、使用、包装与配件情况；\n7. 运费责任和退款金额；\n8. 信息不足时明确要求补充，不得自行假定。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 196,
+          "source_end_line": 204,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "57",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R03【七天无理由退货】",
+          "question": "R03【七天无理由退货】",
+          "answer": "带有“7天无理由退货”标识且不属于例外商品的商品，买家可在规定期限内因“不喜欢、不合适、不想要”等非质量原因申请退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 16,
+          "source_end_line": 16,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "70",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R16【外包装轻微破损】",
+          "question": "R16【外包装轻微破损】",
+          "answer": "仅运输外箱、快递袋等外层包装轻微破损，但不影响商品主体、品牌包装及二次销售的，不应单独作为拒绝退货的唯一理由。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 69,
+          "source_end_line": 69,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "133",
+          "section_path": "售后政策 / A25【转为退款退货的情形】",
+          "question": "A25【转为退款退货的情形】",
+          "answer": "满足下列任一情形，可从维修/换货流程转为退款或退货退款：\n1. 签收后七天内确认存在严重质量问题；\n2. 商品确认无法维修且无同款可换；\n3. 同一核心故障两次维修后仍未解决；\n4. 换货后仍出现相同严重质量问题；\n5. 商家确认无配件且在合理期限内无法恢复使用；\n6. 商家责任导致错发、严重描述不符且买家不接受换货；\n7. 售后处理严重超时，经平台介入判定应退款；\n8. 双方协商一致。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 101,
+          "source_end_line": 109,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "64",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R10【定制商品】",
+          "question": "R10【定制商品】",
+          "answer": "按买家要求制作、刻字、印图、裁剪、个性化配置的商品，例如定制马克杯、刻字钢笔，一般不支持七天无理由退货；存在质量问题、错做、漏做的除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 49,
+          "source_end_line": 49,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "63",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R09【试穿试用】",
+          "question": "R09【试穿试用】",
+          "answer": "服饰可在不产生污损、洗涤痕迹、香水味、明显穿着痕迹的情况下合理试穿。  \n电子产品可进行必要开机检查，但若完成不可逆激活、账号绑定、写入个人数据或造成明显使用痕迹，可能不再满足无理由退货条件。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 43,
+          "source_end_line": 44,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "80",
+          "section_path": "退款退货政策 / 第五章 质量问题与非质量问题 / R26【非质量问题】",
+          "question": "R26【非质量问题】",
+          "answer": "“不喜欢、买多了、尺码主观不合适、临时不需要、选错型号”等通常属于非质量原因。商品支持七天无理由且保持完好的，可申请退货退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 101,
+          "source_end_line": 101,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "60",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R06【一般支持范围】",
+          "question": "R06【一般支持范围】",
+          "answer": "普通服饰、鞋包、家居用品、常规数码配件、普通小家电、文具、未拆封且不影响二次销售的日用品等，商品页面标注支持“7天无理由退货”的，原则上可按本政策申请。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 28,
+          "source_end_line": 28,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 203,
+        "output_tokens": 1048,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-03",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "为检查商品而必要拆封是否必然不能退货？",
+      "answerable": true,
+      "required_sections": [
+        "R08"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品以订单为准，为检查商品而必要拆封是否必然不能退货，申请退货的适用资格政策是什么",
+        "普通商品以订单为准，为检查商品而必要拆封是否必然不能退货，适用的限制条件政策是什么",
+        "普通商品以订单为准，为检查商品而必要拆封是否必然不能退货，退货办理流程与费用适用政策是什么"
+      ],
+      "score": 6.091320037841797,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "62",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R08【合理拆封】",
+          "question": "R08【合理拆封】",
+          "answer": "为了查验商品品质、功能或确认尺码而进行的必要拆封，一般不当然视为影响退货；但拆封后会明显降低商品安全性、卫生性、品质或再次销售价值的商品除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 40,
+          "source_end_line": 40,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "73",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R19【赠品缺失】",
+          "question": "R19【赠品缺失】",
+          "answer": "赠品遗失、损坏时，主商品是否可以退货应优先依据主商品退货条件判断；如赠品具有独立明确价值，可对赠品价值进行合理扣减或由买家补回。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 78,
+          "source_end_line": 78,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "67",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R13【卫生及健康相关商品】",
+          "question": "R13【卫生及健康相关商品】",
+          "answer": "贴身内衣、隐形眼镜、部分医疗健康用品等，若密封包装或卫生封签已拆除，且商品性质决定其不适宜再次销售，可不支持七天无理由退货；商品本身存在质量问题的除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 58,
+          "source_end_line": 58,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "98",
+          "section_path": "退款退货政策 / 第十章 特殊场景 / R44【多商品订单】",
+          "question": "R44【多商品订单】",
+          "answer": "同一订单包含多个商品项时，买家可针对具体“商品项ID”申请售后，不要求整单全部退货，成套不可拆分商品除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 165,
+          "source_end_line": 165,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "74",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R20【人为损坏】",
+          "question": "R20【人为损坏】",
+          "answer": "因跌落、进水、错误安装、超负荷使用、擅自拆机、改装等造成的损坏，不属于无理由退货下的“商品完好”，也通常不属于商品质量问题。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 81,
+          "source_end_line": 81,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "60",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R06【一般支持范围】",
+          "question": "R06【一般支持范围】",
+          "answer": "普通服饰、鞋包、家居用品、常规数码配件、普通小家电、文具、未拆封且不影响二次销售的日用品等，商品页面标注支持“7天无理由退货”的，原则上可按本政策申请。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 28,
+          "source_end_line": 28,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "63",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R09【试穿试用】",
+          "question": "R09【试穿试用】",
+          "answer": "服饰可在不产生污损、洗涤痕迹、香水味、明显穿着痕迹的情况下合理试穿。  \n电子产品可进行必要开机检查，但若完成不可逆激活、账号绑定、写入个人数据或造成明显使用痕迹，可能不再满足无理由退货条件。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 43,
+          "source_end_line": 44,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "71",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R17【商品包装严重缺失】",
+          "question": "R17【商品包装严重缺失】",
+          "answer": "商品原厂包装属于商品重要组成部分，且缺失会明显影响二次销售价值的，卖家可要求买家补齐；无法补齐时，可根据实际价值减损协商处理，但不得对质量问题商品不合理拒绝售后。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 72,
+          "source_end_line": 72,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "70",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R16【外包装轻微破损】",
+          "question": "R16【外包装轻微破损】",
+          "answer": "仅运输外箱、快递袋等外层包装轻微破损，但不影响商品主体、品牌包装及二次销售的，不应单独作为拒绝退货的唯一理由。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 69,
+          "source_end_line": 69,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "72",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R18【配件缺失】",
+          "question": "R18【配件缺失】",
+          "answer": "主要配件、随机附件或成套商品缺件的，买家应尽量补齐后退回。确实无法补齐的，可按缺失配件的合理价值扣减退款，或与卖家协商补寄后再退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 75,
+          "source_end_line": 75,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 201,
+        "output_tokens": 1253,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-04",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "定制刻字商品因为不喜欢可以无理由退货吗？",
+      "answerable": true,
+      "required_sections": [
+        "R10"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "定制刻字商品（商品名称：普通商品；规格：以订单为准）因为不喜欢可以无理由退货吗？适用的申请资格政策是什么？",
+        "定制刻字商品（商品名称：普通商品；规格：以订单为准）因为不喜欢无理由退货有哪些限制条件或例外情形政策？",
+        "定制刻字商品（商品名称：普通商品；规格：以订单为准）因为不喜欢无理由退货的办理流程和费用承担政策是什么？"
+      ],
+      "score": 4.57251501083374,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "64",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R10【定制商品】",
+          "question": "R10【定制商品】",
+          "answer": "按买家要求制作、刻字、印图、裁剪、个性化配置的商品，例如定制马克杯、刻字钢笔，一般不支持七天无理由退货；存在质量问题、错做、漏做的除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 49,
+          "source_end_line": 49,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "80",
+          "section_path": "退款退货政策 / 第五章 质量问题与非质量问题 / R26【非质量问题】",
+          "question": "R26【非质量问题】",
+          "answer": "“不喜欢、买多了、尺码主观不合适、临时不需要、选错型号”等通常属于非质量原因。商品支持七天无理由且保持完好的，可申请退货退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 101,
+          "source_end_line": 101,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "61",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R07【商品完好要求】",
+          "question": "R07【商品完好要求】",
+          "answer": "无理由退货的商品应保持能够再次正常销售的状态，包括但不限于：\n1. 商品主体无明显污损、划伤、变形、异味或人为损坏；\n2. 原有功能正常；\n3. 商品、主要配件、说明书、保修卡等基本齐全；\n4. 防伪码、序列号与销售记录能够对应；\n5. 非必要的永久性激活、绑定、注册未发生；\n6. 商品页面明确要求保留的特殊包装或封签状态符合要求。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 31,
+          "source_end_line": 37,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "60",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R06【一般支持范围】",
+          "question": "R06【一般支持范围】",
+          "answer": "普通服饰、鞋包、家居用品、常规数码配件、普通小家电、文具、未拆封且不影响二次销售的日用品等，商品页面标注支持“7天无理由退货”的，原则上可按本政策申请。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 28,
+          "source_end_line": 28,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "63",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R09【试穿试用】",
+          "question": "R09【试穿试用】",
+          "answer": "服饰可在不产生污损、洗涤痕迹、香水味、明显穿着痕迹的情况下合理试穿。  \n电子产品可进行必要开机检查，但若完成不可逆激活、账号绑定、写入个人数据或造成明显使用痕迹，可能不再满足无理由退货条件。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 43,
+          "source_end_line": 44,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "68",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R14【激活后价值显著降低的商品】",
+          "question": "R14【激活后价值显著降低的商品】",
+          "answer": "手机、电脑、智能设备、存储设备等如完成不可逆激活、注册、写入数据或严重影响二次销售，可能不支持无理由退货。是否适用以商品页面购买时的明确提示为准。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 61,
+          "source_end_line": 61,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "83",
+          "section_path": "退款退货政策 / 第六章 未发货、运输中与拒收 / R29【拒收】",
+          "question": "R29【拒收】",
+          "answer": "支持七天无理由退货的普通商品，买家因主观原因拒收时，原则上可按无理由退货处理，但买家可能需要承担因拒收产生的合理退回运费。质量、破损、错发等卖家责任导致拒收的，合理物流费用由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 112,
+          "source_end_line": 112,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "66",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R12【数字化及虚拟商品】",
+          "question": "R12【数字化及虚拟商品】",
+          "answer": "软件激活码、在线课程兑换码、会员权益、数字内容等，一旦激活、兑换、下载或交付完成，原则上不支持无理由退货。未使用且商品页面允许退款的，可按页面规则处理。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 55,
+          "source_end_line": 55,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "85",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R31【非质量问题退货运费】",
+          "question": "R31【非质量问题退货运费】",
+          "answer": "因不喜欢、不需要、选错、尺码主观不合适等非质量原因退货，通常由买家承担退回运费；商品已包邮的，不另行向买家追收原发货运费，商品页面另有明确规则的除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 120,
+          "source_end_line": 120,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "57",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R03【七天无理由退货】",
+          "question": "R03【七天无理由退货】",
+          "answer": "带有“7天无理由退货”标识且不属于例外商品的商品，买家可在规定期限内因“不喜欢、不合适、不想要”等非质量原因申请退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 16,
+          "source_end_line": 16,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 201,
+        "output_tokens": 1810,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-05",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "激活后的软件激活码能无理由退款吗？",
+      "answerable": true,
+      "required_sections": [
+        "R12"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品（以订单为准）的软件激活码，激活后申请无理由退款的适用资格政策是什么？",
+        "普通商品（以订单为准）的软件激活码，激活后无理由退款的限制条件或例外情形政策有哪些？",
+        "普通商品（以订单为准）的软件激活码，激活后办理无理由退款的流程与费用政策是什么？"
+      ],
+      "score": 6.013446807861328,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "66",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R12【数字化及虚拟商品】",
+          "question": "R12【数字化及虚拟商品】",
+          "answer": "软件激活码、在线课程兑换码、会员权益、数字内容等，一旦激活、兑换、下载或交付完成，原则上不支持无理由退货。未使用且商品页面允许退款的，可按页面规则处理。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 55,
+          "source_end_line": 55,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "61",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R07【商品完好要求】",
+          "question": "R07【商品完好要求】",
+          "answer": "无理由退货的商品应保持能够再次正常销售的状态，包括但不限于：\n1. 商品主体无明显污损、划伤、变形、异味或人为损坏；\n2. 原有功能正常；\n3. 商品、主要配件、说明书、保修卡等基本齐全；\n4. 防伪码、序列号与销售记录能够对应；\n5. 非必要的永久性激活、绑定、注册未发生；\n6. 商品页面明确要求保留的特殊包装或封签状态符合要求。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 31,
+          "source_end_line": 37,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "63",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R09【试穿试用】",
+          "question": "R09【试穿试用】",
+          "answer": "服饰可在不产生污损、洗涤痕迹、香水味、明显穿着痕迹的情况下合理试穿。  \n电子产品可进行必要开机检查，但若完成不可逆激活、账号绑定、写入个人数据或造成明显使用痕迹，可能不再满足无理由退货条件。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 43,
+          "source_end_line": 44,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "97",
+          "section_path": "退款退货政策 / 第十章 特殊场景 / R43【换货后再退货】",
+          "question": "R43【换货后再退货】",
+          "answer": "换货后的商品如仍处于适用的售后期限内，可继续按质量问题或双方约定处理；无理由退货期限不因反复换货当然重新无限延长。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 162,
+          "source_end_line": 162,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "64",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R10【定制商品】",
+          "question": "R10【定制商品】",
+          "answer": "按买家要求制作、刻字、印图、裁剪、个性化配置的商品，例如定制马克杯、刻字钢笔，一般不支持七天无理由退货；存在质量问题、错做、漏做的除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 49,
+          "source_end_line": 49,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "62",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R08【合理拆封】",
+          "question": "R08【合理拆封】",
+          "answer": "为了查验商品品质、功能或确认尺码而进行的必要拆封，一般不当然视为影响退货；但拆封后会明显降低商品安全性、卫生性、品质或再次销售价值的商品除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 40,
+          "source_end_line": 40,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "60",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R06【一般支持范围】",
+          "question": "R06【一般支持范围】",
+          "answer": "普通服饰、鞋包、家居用品、常规数码配件、普通小家电、文具、未拆封且不影响二次销售的日用品等，商品页面标注支持“7天无理由退货”的，原则上可按本政策申请。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 28,
+          "source_end_line": 28,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "107",
+          "section_path": "退款退货政策 / 第十二章 客服智能体判定顺序 / R53【虚拟商品】",
+          "question": "R53【虚拟商品】",
+          "answer": "虚拟商品不产生实体物流或实体签收时间。是否可退款以是否已兑换、激活、下载或消费为核心判断条件。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 210,
+          "source_end_line": 210,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "141",
+          "section_path": "售后政策 / A33【虚拟商品售后】",
+          "question": "A33【虚拟商品售后】",
+          "answer": "软件激活码、课程兑换码等虚拟商品不进入实体维修流程。无法兑换、兑换码已被占用、版本错发、重复扣费等按数字商品履约售后处理。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 134,
+          "source_end_line": 134,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "68",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R14【激活后价值显著降低的商品】",
+          "question": "R14【激活后价值显著降低的商品】",
+          "answer": "手机、电脑、智能设备、存储设备等如完成不可逆激活、注册、写入数据或严重影响二次销售，可能不支持无理由退货。是否适用以商品页面购买时的明确提示为准。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 61,
+          "source_end_line": 61,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 200,
+        "output_tokens": 908,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-06",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "退货商品缺少配件时应该如何处理？",
+      "answerable": true,
+      "required_sections": [
+        "R18"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "退货商品缺少配件时，普通商品（以订单为准）申请退货适用哪些资格政策？",
+        "退货商品缺少配件时，普通商品（以订单为准）办理退货有哪些适用限制条件？",
+        "退货商品缺少配件时，普通商品（以订单为准）退货办理流程与费用适用哪些政策规定？"
+      ],
+      "score": 4.090523719787598,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "72",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R18【配件缺失】",
+          "question": "R18【配件缺失】",
+          "answer": "主要配件、随机附件或成套商品缺件的，买家应尽量补齐后退回。确实无法补齐的，可按缺失配件的合理价值扣减退款，或与卖家协商补寄后再退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 75,
+          "source_end_line": 75,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "79",
+          "section_path": "退款退货政策 / 第五章 质量问题与非质量问题 / R25【破损、漏液、短缺】",
+          "question": "R25【破损、漏液、短缺】",
+          "answer": "签收时或开箱后发现破损、漏液、数量不足、配件缺失，应尽快保留外包装、面单及开箱证据并发起售后。经核实后可补发缺件、换货、部分退款或退货退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 98,
+          "source_end_line": 98,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "73",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R19【赠品缺失】",
+          "question": "R19【赠品缺失】",
+          "answer": "赠品遗失、损坏时，主商品是否可以退货应优先依据主商品退货条件判断；如赠品具有独立明确价值，可对赠品价值进行合理扣减或由买家补回。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 78,
+          "source_end_line": 78,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "133",
+          "section_path": "售后政策 / A25【转为退款退货的情形】",
+          "question": "A25【转为退款退货的情形】",
+          "answer": "满足下列任一情形，可从维修/换货流程转为退款或退货退款：\n1. 签收后七天内确认存在严重质量问题；\n2. 商品确认无法维修且无同款可换；\n3. 同一核心故障两次维修后仍未解决；\n4. 换货后仍出现相同严重质量问题；\n5. 商家确认无配件且在合理期限内无法恢复使用；\n6. 商家责任导致错发、严重描述不符且买家不接受换货；\n7. 售后处理严重超时，经平台介入判定应退款；\n8. 双方协商一致。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 101,
+          "source_end_line": 109,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "135",
+          "section_path": "售后政策 / A27【部分退款】",
+          "question": "A27【部分退款】",
+          "answer": "对不影响核心功能的轻微外观瑕疵、少量配件问题，买家愿意保留商品时，可协商部分退款；客服必须记录部分退款对应的问题，防止重复赔付。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 115,
+          "source_end_line": 115,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "105",
+          "section_path": "退款退货政策 / 第十二章 客服智能体判定顺序 / R51【判定顺序】",
+          "question": "R51【判定顺序】",
+          "answer": "客服处理退款/退货请求时应依次确认：\n1. 客户ID、订单号和商品项ID；\n2. 商品类型和购买时展示的退货属性；\n3. 是否发货、是否签收以及签收时间；\n4. 申请原因属于质量问题、履约问题还是非质量问题；\n5. 是否属于定制、虚拟、生鲜、卫生封签等例外；\n6. 商品完好、拆封、使用、包装与配件情况；\n7. 运费责任和退款金额；\n8. 信息不足时明确要求补充，不得自行假定。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 196,
+          "source_end_line": 204,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "93",
+          "section_path": "退款退货政策 / 第八章 退款金额 / R39【成套商品】",
+          "question": "R39【成套商品】",
+          "answer": "成套销售且不可拆分计价的商品原则上整套退回；若仅部分损坏且卖家同意，可补发配件或按合理比例部分退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 146,
+          "source_end_line": 146,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "117",
+          "section_path": "售后政策 / A09【补发条件】",
+          "question": "A09【补发条件】",
+          "answer": "少件、漏发配件、赠品漏发且不影响主商品安全使用时，可优先补发缺失部分；若缺失的是核心部件导致商品无法使用，买家可选择换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 53,
+          "source_end_line": 53,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "125",
+          "section_path": "售后政策 / A17【无法维修转退款/换货】",
+          "question": "A17【无法维修转退款/换货】",
+          "answer": "经检测确认无法维修、无关键配件、维修费用明显接近或超过商品合理价值时，应优先提供换货方案；无可替换商品或买家合理拒绝降级替换时，可协商退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 77,
+          "source_end_line": 77,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "71",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R17【商品包装严重缺失】",
+          "question": "R17【商品包装严重缺失】",
+          "answer": "商品原厂包装属于商品重要组成部分，且缺失会明显影响二次销售价值的，卖家可要求买家补齐；无法补齐时，可根据实际价值减损协商处理，但不得对质量问题商品不合理拒绝售后。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 72,
+          "source_end_line": 72,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 197,
+        "output_tokens": 857,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-07",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "尚未实际发货的普通商品如何申请退款？",
+      "answerable": true,
+      "required_sections": [
+        "R27"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "尚未实际发货的普通商品（以订单为准）申请退款时，适用哪些申请资格政策？",
+        "尚未实际发货的普通商品（以订单为准）申请退款时，适用哪些限制条件政策？",
+        "尚未实际发货的普通商品（以订单为准）申请退款时，适用哪些办理流程与费用政策？"
+      ],
+      "score": 4.087947845458984,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "81",
+          "section_path": "退款退货政策 / 第六章 未发货、运输中与拒收 / R27【未发货退款】",
+          "question": "R27【未发货退款】",
+          "answer": "订单尚未实际发货且不属于已经开始制作的定制商品时，买家可申请取消订单/退款。若卖家已实际发货但系统尚未更新，应以有效物流揽收记录为准。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 106,
+          "source_end_line": 106,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "83",
+          "section_path": "退款退货政策 / 第六章 未发货、运输中与拒收 / R29【拒收】",
+          "question": "R29【拒收】",
+          "answer": "支持七天无理由退货的普通商品，买家因主观原因拒收时，原则上可按无理由退货处理，但买家可能需要承担因拒收产生的合理退回运费。质量、破损、错发等卖家责任导致拒收的，合理物流费用由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 112,
+          "source_end_line": 112,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "84",
+          "section_path": "退款退货政策 / 第六章 未发货、运输中与拒收 / R30【物流异常】",
+          "question": "R30【物流异常】",
+          "answer": "长时间无物流更新、丢件、异常退回或经承运商确认无法正常派送的，买家可申请平台介入。确认丢件或卖家无法履约时，可支持退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 115,
+          "source_end_line": 115,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "105",
+          "section_path": "退款退货政策 / 第十二章 客服智能体判定顺序 / R51【判定顺序】",
+          "question": "R51【判定顺序】",
+          "answer": "客服处理退款/退货请求时应依次确认：\n1. 客户ID、订单号和商品项ID；\n2. 商品类型和购买时展示的退货属性；\n3. 是否发货、是否签收以及签收时间；\n4. 申请原因属于质量问题、履约问题还是非质量问题；\n5. 是否属于定制、虚拟、生鲜、卫生封签等例外；\n6. 商品完好、拆封、使用、包装与配件情况；\n7. 运费责任和退款金额；\n8. 信息不足时明确要求补充，不得自行假定。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 196,
+          "source_end_line": 204,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "55",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R01【退款】",
+          "question": "R01【退款】",
+          "answer": "退款是指交易款项全部或部分退回买家，可能发生在商品未发货、运输中拒收、仅退款、退货退款等场景。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 10,
+          "source_end_line": 10,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "94",
+          "section_path": "退款退货政策 / 第九章 退款处理时点 / R40【退货寄出】",
+          "question": "R40【退货寄出】",
+          "answer": "买家获得退货地址或退货方式后，应在售后页面规定时间内寄出并填写有效物流单号；逾期未寄出且无合理说明的，售后申请可能关闭。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 151,
+          "source_end_line": 151,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "60",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R06【一般支持范围】",
+          "question": "R06【一般支持范围】",
+          "answer": "普通服饰、鞋包、家居用品、常规数码配件、普通小家电、文具、未拆封且不影响二次销售的日用品等，商品页面标注支持“7天无理由退货”的，原则上可按本政策申请。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 28,
+          "source_end_line": 28,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "99",
+          "section_path": "退款退货政策 / 第十章 特殊场景 / R45【预售商品】",
+          "question": "R45【预售商品】",
+          "answer": "预售商品在未发货前是否可无条件取消，以购买页面约定为准；发货并签收后的退货资格按照商品类型及页面服务标识判断。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 168,
+          "source_end_line": 168,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "59",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R05【未签收订单】",
+          "question": "R05【未签收订单】",
+          "answer": "商品尚未签收时，不适用“签收后七天”的起算方式。买家可根据订单所处阶段申请取消订单、退款、拒收或拦截；是否能够直接退款取决于是否已发货、物流是否可拦截及商品性质。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 23,
+          "source_end_line": 23,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "82",
+          "section_path": "退款退货政策 / 第六章 未发货、运输中与拒收 / R28【运输中退款】",
+          "question": "R28【运输中退款】",
+          "answer": "商品已经发出但尚未签收时，买家可申请退款。平台可先尝试物流拦截；拦截失败的，通常需要买家拒收或收货后再按退货流程处理。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 109,
+          "source_end_line": 109,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 199,
+        "output_tokens": 740,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-08",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "不喜欢商品而退货，退回运费由谁承担？",
+      "answerable": true,
+      "required_sections": [
+        "R31"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "不喜欢商品而退货，普通商品（以订单为准）退回运费由谁承担，适用政策的申请资格是什么？",
+        "不喜欢商品而退货，普通商品（以订单为准）退回运费由谁承担，适用政策有哪些限制条件或不适用情形？",
+        "不喜欢商品而退货，普通商品（以订单为准）退回运费的承担方、办理流程与费用规则在适用政策中如何规定？"
+      ],
+      "score": 4.156522274017334,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "85",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R31【非质量问题退货运费】",
+          "question": "R31【非质量问题退货运费】",
+          "answer": "因不喜欢、不需要、选错、尺码主观不合适等非质量原因退货，通常由买家承担退回运费；商品已包邮的，不另行向买家追收原发货运费，商品页面另有明确规则的除外。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 120,
+          "source_end_line": 120,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "87",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R33【运费险】",
+          "question": "R33【运费险】",
+          "answer": "订单含有效退货运费险时，保险赔付按保险规则执行。保险赔付不足实际运费的差额，应依据退货责任归属判断由买家或卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 126,
+          "source_end_line": 126,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "83",
+          "section_path": "退款退货政策 / 第六章 未发货、运输中与拒收 / R29【拒收】",
+          "question": "R29【拒收】",
+          "answer": "支持七天无理由退货的普通商品，买家因主观原因拒收时，原则上可按无理由退货处理，但买家可能需要承担因拒收产生的合理退回运费。质量、破损、错发等卖家责任导致拒收的，合理物流费用由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 112,
+          "source_end_line": 112,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "80",
+          "section_path": "退款退货政策 / 第五章 质量问题与非质量问题 / R26【非质量问题】",
+          "question": "R26【非质量问题】",
+          "answer": "“不喜欢、买多了、尺码主观不合适、临时不需要、选错型号”等通常属于非质量原因。商品支持七天无理由且保持完好的，可申请退货退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 101,
+          "source_end_line": 101,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "57",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R03【七天无理由退货】",
+          "question": "R03【七天无理由退货】",
+          "answer": "带有“7天无理由退货”标识且不属于例外商品的商品，买家可在规定期限内因“不喜欢、不合适、不想要”等非质量原因申请退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 16,
+          "source_end_line": 16,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "105",
+          "section_path": "退款退货政策 / 第十二章 客服智能体判定顺序 / R51【判定顺序】",
+          "question": "R51【判定顺序】",
+          "answer": "客服处理退款/退货请求时应依次确认：\n1. 客户ID、订单号和商品项ID；\n2. 商品类型和购买时展示的退货属性；\n3. 是否发货、是否签收以及签收时间；\n4. 申请原因属于质量问题、履约问题还是非质量问题；\n5. 是否属于定制、虚拟、生鲜、卫生封签等例外；\n6. 商品完好、拆封、使用、包装与配件情况；\n7. 运费责任和退款金额；\n8. 信息不足时明确要求补充，不得自行假定。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 196,
+          "source_end_line": 204,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "123",
+          "section_path": "售后政策 / A15【维修期间物流费用】",
+          "question": "A15【维修期间物流费用】",
+          "answer": "确认属于保修范围内质量问题的，合理寄修物流费用由商家承担或按平台指定方式寄送；非保修问题的寄送及维修费用应在维修前向买家说明。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 71,
+          "source_end_line": 71,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "88",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R34【到付件】",
+          "question": "R34【到付件】",
+          "answer": "未经卖家或平台同意，不建议直接使用高额到付方式退货。因买家自行选择明显不合理的高价运输方式增加的费用，超出合理部分可不由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 129,
+          "source_end_line": 129,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "78",
+          "section_path": "退款退货政策 / 第五章 质量问题与非质量问题 / R24【发错商品】",
+          "question": "R24【发错商品】",
+          "answer": "收到的型号、颜色、规格、款式或商品本体与订单不一致，视为履约问题。买家可申请换货或退货退款，由卖家承担合理的退回运费。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 95,
+          "source_end_line": 95,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "86",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R32【卖家责任运费】",
+          "question": "R32【卖家责任运费】",
+          "answer": "因质量问题、发错商品、少件、描述严重不符、运输包装责任导致的破损等卖家责任退货，合理退回运费由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 123,
+          "source_end_line": 123,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 200,
+        "output_tokens": 1195,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-09",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "商品维修受理需要符合哪些免费保修条件？",
+      "answerable": true,
+      "required_sections": [
+        "A07"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品免费保修申请需要满足哪些资格条件？",
+        "普通商品维修受理在哪些情形下不予免费保修？",
+        "普通商品免费保修的办理流程与费用是如何规定的？"
+      ],
+      "score": 5.117947578430176,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "115",
+          "section_path": "售后政策 / A07【维修受理条件】",
+          "question": "A07【维修受理条件】",
+          "answer": "原则上同时满足以下条件，方可进入免费保修/维修流程；个别条件无法核验时可转人工复核：\n1. 商品仍在对应保修期；\n2. 故障属于正常使用条件下的性能故障；\n3. 商品序列号、订单记录或其他购买凭证可核验；\n4. 商品不存在明显人为损坏或非授权拆修改装。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 38,
+          "source_end_line": 42,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "121",
+          "section_path": "售后政策 / A13【不保修：外观使用痕迹】",
+          "question": "A13【不保修：外观使用痕迹】",
+          "answer": "仅有不影响功能的正常使用划痕、轻微褪色、正常磨损，一般不作为免费维修或退款理由；若能证明为出厂瑕疵则按质量问题处理。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 65,
+          "source_end_line": 65,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "118",
+          "section_path": "售后政策 / A10【不保修：人为损坏】",
+          "question": "A10【不保修：人为损坏】",
+          "answer": "跌落、挤压、进水、火烧、明显外力撞击、错误电压、超规格使用、违规充电等造成的损坏，不属于免费保修范围。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 56,
+          "source_end_line": 56,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "113",
+          "section_path": "售后政策 / A05【超过15天】",
+          "question": "A05【超过15天】",
+          "answer": "超过 15 天但仍在保修期内的商品，原则上进入维修/保修流程。符合本手册“转为退款退货”条件的，可以转退款或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 20,
+          "source_end_line": 20,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "117",
+          "section_path": "售后政策 / A09【补发条件】",
+          "question": "A09【补发条件】",
+          "answer": "少件、漏发配件、赠品漏发且不影响主商品安全使用时，可优先补发缺失部分；若缺失的是核心部件导致商品无法使用，买家可选择换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 53,
+          "source_end_line": 53,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "133",
+          "section_path": "售后政策 / A25【转为退款退货的情形】",
+          "question": "A25【转为退款退货的情形】",
+          "answer": "满足下列任一情形，可从维修/换货流程转为退款或退货退款：\n1. 签收后七天内确认存在严重质量问题；\n2. 商品确认无法维修且无同款可换；\n3. 同一核心故障两次维修后仍未解决；\n4. 换货后仍出现相同严重质量问题；\n5. 商家确认无配件且在合理期限内无法恢复使用；\n6. 商家责任导致错发、严重描述不符且买家不接受换货；\n7. 售后处理严重超时，经平台介入判定应退款；\n8. 双方协商一致。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 101,
+          "source_end_line": 109,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "116",
+          "section_path": "售后政策 / A08【换货条件】",
+          "question": "A08【换货条件】",
+          "answer": "下列情况可优先考虑换货：\n1. 到货即坏或开机即出现核心功能故障；\n2. 同型号同规格库存充足；\n3. 商品存在无法通过简单维修解决的制造缺陷；\n4. 卖家发错型号、颜色或规格；\n5. 维修后短期内同一故障再次出现。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 45,
+          "source_end_line": 50,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "122",
+          "section_path": "售后政策 / A14【维修周期】",
+          "question": "A14【维修周期】",
+          "answer": "维修受理后，客服应给出预计处理区间而不是无依据承诺固定日期。需要返厂、等待配件或第三方检测时，应向买家同步当前状态。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 68,
+          "source_end_line": 68,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "119",
+          "section_path": "售后政策 / A11【不保修：擅自拆修】",
+          "question": "A11【不保修：擅自拆修】",
+          "answer": "未经授权自行拆机、改装、焊接、更换关键零件、刷写非官方固件并直接导致故障的，不属于免费保修范围。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 59,
+          "source_end_line": 59,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "132",
+          "section_path": "售后政策 / A24【非质量问题不进入免费保修】",
+          "question": "A24【非质量问题不进入免费保修】",
+          "answer": "“不会使用、与预期不同、颜色不喜欢、尺寸主观不合适”等非质量原因，不属于免费维修范围；是否可退货应转查《退款退货政策》。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 98,
+          "source_end_line": 98,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 199,
+        "output_tokens": 239,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-10",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "商品少配件可不可以申请补发？",
+      "answerable": true,
+      "required_sections": [
+        "A09"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品（以订单为准）少配件可不可以申请补发，申请资格和适用政策是什么？",
+        "普通商品（以订单为准）少配件可不可以申请补发，有哪些限制条件、除外情形和不予受理政策？",
+        "普通商品（以订单为准）少配件可不可以申请补发，办理流程、所需材料和费用政策是什么？"
+      ],
+      "score": 3.669679641723633,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "117",
+          "section_path": "售后政策 / A09【补发条件】",
+          "question": "A09【补发条件】",
+          "answer": "少件、漏发配件、赠品漏发且不影响主商品安全使用时，可优先补发缺失部分；若缺失的是核心部件导致商品无法使用，买家可选择换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 53,
+          "source_end_line": 53,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "79",
+          "section_path": "退款退货政策 / 第五章 质量问题与非质量问题 / R25【破损、漏液、短缺】",
+          "question": "R25【破损、漏液、短缺】",
+          "answer": "签收时或开箱后发现破损、漏液、数量不足、配件缺失，应尽快保留外包装、面单及开箱证据并发起售后。经核实后可补发缺件、换货、部分退款或退货退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 98,
+          "source_end_line": 98,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "135",
+          "section_path": "售后政策 / A27【部分退款】",
+          "question": "A27【部分退款】",
+          "answer": "对不影响核心功能的轻微外观瑕疵、少量配件问题，买家愿意保留商品时，可协商部分退款；客服必须记录部分退款对应的问题，防止重复赔付。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 115,
+          "source_end_line": 115,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "133",
+          "section_path": "售后政策 / A25【转为退款退货的情形】",
+          "question": "A25【转为退款退货的情形】",
+          "answer": "满足下列任一情形，可从维修/换货流程转为退款或退货退款：\n1. 签收后七天内确认存在严重质量问题；\n2. 商品确认无法维修且无同款可换；\n3. 同一核心故障两次维修后仍未解决；\n4. 换货后仍出现相同严重质量问题；\n5. 商家确认无配件且在合理期限内无法恢复使用；\n6. 商家责任导致错发、严重描述不符且买家不接受换货；\n7. 售后处理严重超时，经平台介入判定应退款；\n8. 双方协商一致。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 101,
+          "source_end_line": 109,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "125",
+          "section_path": "售后政策 / A17【无法维修转退款/换货】",
+          "question": "A17【无法维修转退款/换货】",
+          "answer": "经检测确认无法维修、无关键配件、维修费用明显接近或超过商品合理价值时，应优先提供换货方案；无可替换商品或买家合理拒绝降级替换时，可协商退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 77,
+          "source_end_line": 77,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "60",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R06【一般支持范围】",
+          "question": "R06【一般支持范围】",
+          "answer": "普通服饰、鞋包、家居用品、常规数码配件、普通小家电、文具、未拆封且不影响二次销售的日用品等，商品页面标注支持“7天无理由退货”的，原则上可按本政策申请。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 28,
+          "source_end_line": 28,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "73",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R19【赠品缺失】",
+          "question": "R19【赠品缺失】",
+          "answer": "赠品遗失、损坏时，主商品是否可以退货应优先依据主商品退货条件判断；如赠品具有独立明确价值，可对赠品价值进行合理扣减或由买家补回。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 78,
+          "source_end_line": 78,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "71",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R17【商品包装严重缺失】",
+          "question": "R17【商品包装严重缺失】",
+          "answer": "商品原厂包装属于商品重要组成部分，且缺失会明显影响二次销售价值的，卖家可要求买家补齐；无法补齐时，可根据实际价值减损协商处理，但不得对质量问题商品不合理拒绝售后。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 72,
+          "source_end_line": 72,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "93",
+          "section_path": "退款退货政策 / 第八章 退款金额 / R39【成套商品】",
+          "question": "R39【成套商品】",
+          "answer": "成套销售且不可拆分计价的商品原则上整套退回；若仅部分损坏且卖家同意，可补发配件或按合理比例部分退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 146,
+          "source_end_line": 146,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "72",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R18【配件缺失】",
+          "question": "R18【配件缺失】",
+          "answer": "主要配件、随机附件或成套商品缺件的，买家应尽量补齐后退回。确实无法补齐的，可按缺失配件的合理价值扣减退款，或与卖家协商补寄后再退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 75,
+          "source_end_line": 75,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 198,
+        "output_tokens": 1412,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-11",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "人为进水损坏是否属于免费保修？",
+      "answerable": true,
+      "required_sections": [
+        "A10"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品（以订单为准）人为进水损坏是否属于免费保修？申请免费保修需要符合哪些政策资格？",
+        "普通商品（以订单为准）在免费保修政策中，人为进水损坏涉及哪些限制条件与免责情形？",
+        "普通商品（以订单为准）人为进水损坏申请保修如何办理？相关费用如何规定的政策？"
+      ],
+      "score": 5.296669006347656,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "118",
+          "section_path": "售后政策 / A10【不保修：人为损坏】",
+          "question": "A10【不保修：人为损坏】",
+          "answer": "跌落、挤压、进水、火烧、明显外力撞击、错误电压、超规格使用、违规充电等造成的损坏，不属于免费保修范围。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 56,
+          "source_end_line": 56,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "74",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R20【人为损坏】",
+          "question": "R20【人为损坏】",
+          "answer": "因跌落、进水、错误安装、超负荷使用、擅自拆机、改装等造成的损坏，不属于无理由退货下的“商品完好”，也通常不属于商品质量问题。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 81,
+          "source_end_line": 81,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "132",
+          "section_path": "售后政策 / A24【非质量问题不进入免费保修】",
+          "question": "A24【非质量问题不进入免费保修】",
+          "answer": "“不会使用、与预期不同、颜色不喜欢、尺寸主观不合适”等非质量原因，不属于免费维修范围；是否可退货应转查《退款退货政策》。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 98,
+          "source_end_line": 98,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "120",
+          "section_path": "售后政策 / A12【不保修：耗材正常损耗】",
+          "question": "A12【不保修：耗材正常损耗】",
+          "answer": "电池容量自然衰减、刀头磨损、滤芯耗尽、保护膜划痕等符合产品生命周期的正常损耗，不视为质量问题；商品另有明确耗材保修承诺的除外。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 62,
+          "source_end_line": 62,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "117",
+          "section_path": "售后政策 / A09【补发条件】",
+          "question": "A09【补发条件】",
+          "answer": "少件、漏发配件、赠品漏发且不影响主商品安全使用时，可优先补发缺失部分；若缺失的是核心部件导致商品无法使用，买家可选择换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 53,
+          "source_end_line": 53,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "123",
+          "section_path": "售后政策 / A15【维修期间物流费用】",
+          "question": "A15【维修期间物流费用】",
+          "answer": "确认属于保修范围内质量问题的，合理寄修物流费用由商家承担或按平台指定方式寄送；非保修问题的寄送及维修费用应在维修前向买家说明。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 71,
+          "source_end_line": 71,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "134",
+          "section_path": "售后政策 / A26【不能直接转退款的情形】",
+          "question": "A26【不能直接转退款的情形】",
+          "answer": "仅因超过保修期、正常损耗、轻微外观磨损、买家人为损坏、非授权拆机等，不应直接判定为质量退款。可提供付费维修、配件购买或其他可行方案。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 112,
+          "source_end_line": 112,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "121",
+          "section_path": "售后政策 / A13【不保修：外观使用痕迹】",
+          "question": "A13【不保修：外观使用痕迹】",
+          "answer": "仅有不影响功能的正常使用划痕、轻微褪色、正常磨损，一般不作为免费维修或退款理由；若能证明为出厂瑕疵则按质量问题处理。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 65,
+          "source_end_line": 65,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "115",
+          "section_path": "售后政策 / A07【维修受理条件】",
+          "question": "A07【维修受理条件】",
+          "answer": "原则上同时满足以下条件，方可进入免费保修/维修流程；个别条件无法核验时可转人工复核：\n1. 商品仍在对应保修期；\n2. 故障属于正常使用条件下的性能故障；\n3. 商品序列号、订单记录或其他购买凭证可核验；\n4. 商品不存在明显人为损坏或非授权拆修改装。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 38,
+          "source_end_line": 42,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "119",
+          "section_path": "售后政策 / A11【不保修：擅自拆修】",
+          "question": "A11【不保修：擅自拆修】",
+          "answer": "未经授权自行拆机、改装、焊接、更换关键零件、刷写非官方固件并直接导致故障的，不属于免费保修范围。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 59,
+          "source_end_line": 59,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 197,
+        "output_tokens": 911,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-12",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "商家可以承诺维修一定在哪天完成吗？",
+      "answerable": true,
+      "required_sections": [
+        "A14"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "对于普通商品（以订单为准），商家是否可以承诺维修一定在哪天完成，适用哪些政策规定的申请资格条件？",
+        "普通商品（以订单为准）交易中，商家承诺维修一定在某天完成，相关政策对维修完成时限承诺有哪些限制条件？",
+        "普通商品（以订单为准）订单下，商家承诺维修完成日期时，维修办理流程和费用承担适用哪些政策规定？"
+      ],
+      "score": -0.050571829080581665,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "122",
+          "section_path": "售后政策 / A14【维修周期】",
+          "question": "A14【维修周期】",
+          "answer": "维修受理后，客服应给出预计处理区间而不是无依据承诺固定日期。需要返厂、等待配件或第三方检测时，应向买家同步当前状态。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 68,
+          "source_end_line": 68,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "112",
+          "section_path": "售后政策 / A04【8—15天质量问题】",
+          "question": "A04【8—15天质量问题】",
+          "answer": "签收后第 8—15 天发生质量问题的普通耐用商品，原则上优先换货或维修；如无同款库存、无法维修、维修成本明显不合理或商家同意，可转为退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 17,
+          "source_end_line": 17,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "130",
+          "section_path": "售后政策 / A22【数据安全】",
+          "question": "A22【数据安全】",
+          "answer": "手机、电脑、存储设备等返修前，应提醒买家备份并清除个人敏感数据。维修过程中可能发生恢复出厂设置或数据丢失，客服不得承诺数据绝对保留。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 92,
+          "source_end_line": 92,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "111",
+          "section_path": "售后政策 / A03【七天内严重质量问题】",
+          "question": "A03【七天内严重质量问题】",
+          "answer": "商品签收后七天内出现经确认的严重质量问题，且明显影响正常使用的，可优先支持退货退款；买家愿意保留商品的，也可选择换货、维修或合理部分退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 14,
+          "source_end_line": 14,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "110",
+          "section_path": "售后政策 / A02【售后起算时间】",
+          "question": "A02【售后起算时间】",
+          "answer": "需要以收货为起点的服务，原则上以物流签收时间为依据；无有效签收记录时，不得擅自补猜签收时间，应转人工或结合承运商有效证明确认。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 11,
+          "source_end_line": 11,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "126",
+          "section_path": "售后政策 / A18【长期缺货】",
+          "question": "A18【长期缺货】",
+          "answer": "质量问题商品需要换货但同款长期无库存，且预计 15 个自然日内无法补货的，可由买家选择等待、同价替换或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 80,
+          "source_end_line": 80,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "133",
+          "section_path": "售后政策 / A25【转为退款退货的情形】",
+          "question": "A25【转为退款退货的情形】",
+          "answer": "满足下列任一情形，可从维修/换货流程转为退款或退货退款：\n1. 签收后七天内确认存在严重质量问题；\n2. 商品确认无法维修且无同款可换；\n3. 同一核心故障两次维修后仍未解决；\n4. 换货后仍出现相同严重质量问题；\n5. 商家确认无配件且在合理期限内无法恢复使用；\n6. 商家责任导致错发、严重描述不符且买家不接受换货；\n7. 售后处理严重超时，经平台介入判定应退款；\n8. 双方协商一致。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 101,
+          "source_end_line": 109,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "108",
+          "section_path": "售后政策",
+          "question": "售后政策",
+          "answer": "**版本**：AS-2026.10  \n**生效日期**：2026-10-01  \n**适用范围**：本商城自营及明确加入本售后服务的第三方商家商品。商品详情页另有更优承诺的，从其承诺。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 3,
+          "source_end_line": 5,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "113",
+          "section_path": "售后政策 / A05【超过15天】",
+          "question": "A05【超过15天】",
+          "answer": "超过 15 天但仍在保修期内的商品，原则上进入维修/保修流程。符合本手册“转为退款退货”条件的，可以转退款或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 20,
+          "source_end_line": 20,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "127",
+          "section_path": "售后政策 / A19【维修超时】",
+          "question": "A19【维修超时】",
+          "answer": "商家已收货并确认保修责任后，超过承诺处理周期且无法给出合理原因或新的明确处理方案，买家可申请平台介入；平台可根据影响程度支持换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 83,
+          "source_end_line": 83,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 199,
+        "output_tokens": 724,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-13",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "同一核心故障两次维修仍无法使用怎么处理？",
+      "answerable": true,
+      "required_sections": [
+        "A16"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品同一核心故障两次维修仍无法使用，申请退换货需要满足哪些资格条件？",
+        "普通商品同一核心故障两次维修仍无法使用，适用政策在时间、次数或情形上有哪些限制条件？",
+        "普通商品同一核心故障两次维修仍无法使用，以订单为准办理退换货的流程和费用如何规定？"
+      ],
+      "score": 5.8477630615234375,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "124",
+          "section_path": "售后政策 / A16【重复维修转退款/换货】",
+          "question": "A16【重复维修转退款/换货】",
+          "answer": "同一核心故障在合理期限内经两次维修仍无法正常使用的，可转为换货；无同款可换或再次换货仍存在相同严重故障的，可进一步申请退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 74,
+          "source_end_line": 74,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "116",
+          "section_path": "售后政策 / A08【换货条件】",
+          "question": "A08【换货条件】",
+          "answer": "下列情况可优先考虑换货：\n1. 到货即坏或开机即出现核心功能故障；\n2. 同型号同规格库存充足；\n3. 商品存在无法通过简单维修解决的制造缺陷；\n4. 卖家发错型号、颜色或规格；\n5. 维修后短期内同一故障再次出现。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 45,
+          "source_end_line": 50,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "127",
+          "section_path": "售后政策 / A19【维修超时】",
+          "question": "A19【维修超时】",
+          "answer": "商家已收货并确认保修责任后，超过承诺处理周期且无法给出合理原因或新的明确处理方案，买家可申请平台介入；平台可根据影响程度支持换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 83,
+          "source_end_line": 83,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "135",
+          "section_path": "售后政策 / A27【部分退款】",
+          "question": "A27【部分退款】",
+          "answer": "对不影响核心功能的轻微外观瑕疵、少量配件问题，买家愿意保留商品时，可协商部分退款；客服必须记录部分退款对应的问题，防止重复赔付。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 115,
+          "source_end_line": 115,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "114",
+          "section_path": "售后政策 / A06【模拟保修期限表】",
+          "question": "A06【模拟保修期限表】",
+          "answer": "| 商品类别 | 模拟保修期限 | 默认处理方式 |\n|---|---:|---|\n| 手机、电脑、平板、智能穿戴 | 12个月 | 检测后维修/换货 |\n| 耳机、键盘、鼠标、路由器、移动硬盘等数码配件 | 12个月 | 维修/换货 |\n| 电饭煲、空气炸锅、电热水壶等小家电 | 12个月 | 维修/换货 |\n| 灯具、电源类产品 | 12个月 | 维修/换货 |\n| 箱包五金、拉链等结构问题 | 3个月 | 维修/换货 |\n| 服饰鞋类 | 30天质量保障 | 脱线、开胶等质量问题处理 |\n| 家纺、厨具、收纳用品 | 90天质量保障 | 质量问题换货/退货 |\n| 食品、生鲜、日化 | 不设传统维修保修 | 按质量/破损/履约问题售后 |\n| 定制商品 | 不设无理由保修退货 | 按制作错误或质量问题处理 |\n| 数字/虚拟商品 | 不设传统保修 | 按无法兑换、重复扣费等履约问题处理 |",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 24,
+          "source_end_line": 35,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "141",
+          "section_path": "售后政策 / A33【虚拟商品售后】",
+          "question": "A33【虚拟商品售后】",
+          "answer": "软件激活码、课程兑换码等虚拟商品不进入实体维修流程。无法兑换、兑换码已被占用、版本错发、重复扣费等按数字商品履约售后处理。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 134,
+          "source_end_line": 134,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "136",
+          "section_path": "售后政策 / A28【多商品订单】",
+          "question": "A28【多商品订单】",
+          "answer": "同一订单中不同商品项应分别判断售后状态。一个商品需要维修，不代表同订单其他商品自动进入售后。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 118,
+          "source_end_line": 118,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "125",
+          "section_path": "售后政策 / A17【无法维修转退款/换货】",
+          "question": "A17【无法维修转退款/换货】",
+          "answer": "经检测确认无法维修、无关键配件、维修费用明显接近或超过商品合理价值时，应优先提供换货方案；无可替换商品或买家合理拒绝降级替换时，可协商退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 77,
+          "source_end_line": 77,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "117",
+          "section_path": "售后政策 / A09【补发条件】",
+          "question": "A09【补发条件】",
+          "answer": "少件、漏发配件、赠品漏发且不影响主商品安全使用时，可优先补发缺失部分；若缺失的是核心部件导致商品无法使用，买家可选择换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 53,
+          "source_end_line": 53,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "133",
+          "section_path": "售后政策 / A25【转为退款退货的情形】",
+          "question": "A25【转为退款退货的情形】",
+          "answer": "满足下列任一情形，可从维修/换货流程转为退款或退货退款：\n1. 签收后七天内确认存在严重质量问题；\n2. 商品确认无法维修且无同款可换；\n3. 同一核心故障两次维修后仍未解决；\n4. 换货后仍出现相同严重质量问题；\n5. 商家确认无配件且在合理期限内无法恢复使用；\n6. 商家责任导致错发、严重描述不符且买家不接受换货；\n7. 售后处理严重超时，经平台介入判定应退款；\n8. 双方协商一致。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 101,
+          "source_end_line": 109,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 200,
+        "output_tokens": 389,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-14",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "维修前个人数据应如何处理？",
+      "answerable": true,
+      "required_sections": [
+        "A22"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品维修前个人数据应如何处理，适用哪些申请资格政策？",
+        "普通商品维修前个人数据处理有哪些限制条件政策？",
+        "普通商品维修前个人数据处理的办理与费用适用哪些政策？"
+      ],
+      "score": 2.906660556793213,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "130",
+          "section_path": "售后政策 / A22【数据安全】",
+          "question": "A22【数据安全】",
+          "answer": "手机、电脑、存储设备等返修前，应提醒买家备份并清除个人敏感数据。维修过程中可能发生恢复出厂设置或数据丢失，客服不得承诺数据绝对保留。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 92,
+          "source_end_line": 92,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "138",
+          "section_path": "售后政策 / A30【客服回答原则】",
+          "question": "A30【客服回答原则】",
+          "answer": "客服应优先引用订单、商品项ID、签收时间、售后状态和具体条款编号。无法确认的信息使用“未知/暂无法确认”，不得补猜测检测结论、责任归属或物流事实。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 124,
+          "source_end_line": 124,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "115",
+          "section_path": "售后政策 / A07【维修受理条件】",
+          "question": "A07【维修受理条件】",
+          "answer": "原则上同时满足以下条件，方可进入免费保修/维修流程；个别条件无法核验时可转人工复核：\n1. 商品仍在对应保修期；\n2. 故障属于正常使用条件下的性能故障；\n3. 商品序列号、订单记录或其他购买凭证可核验；\n4. 商品不存在明显人为损坏或非授权拆修改装。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 38,
+          "source_end_line": 42,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "114",
+          "section_path": "售后政策 / A06【模拟保修期限表】",
+          "question": "A06【模拟保修期限表】",
+          "answer": "| 商品类别 | 模拟保修期限 | 默认处理方式 |\n|---|---:|---|\n| 手机、电脑、平板、智能穿戴 | 12个月 | 检测后维修/换货 |\n| 耳机、键盘、鼠标、路由器、移动硬盘等数码配件 | 12个月 | 维修/换货 |\n| 电饭煲、空气炸锅、电热水壶等小家电 | 12个月 | 维修/换货 |\n| 灯具、电源类产品 | 12个月 | 维修/换货 |\n| 箱包五金、拉链等结构问题 | 3个月 | 维修/换货 |\n| 服饰鞋类 | 30天质量保障 | 脱线、开胶等质量问题处理 |\n| 家纺、厨具、收纳用品 | 90天质量保障 | 质量问题换货/退货 |\n| 食品、生鲜、日化 | 不设传统维修保修 | 按质量/破损/履约问题售后 |\n| 定制商品 | 不设无理由保修退货 | 按制作错误或质量问题处理 |\n| 数字/虚拟商品 | 不设传统保修 | 按无法兑换、重复扣费等履约问题处理 |",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 24,
+          "source_end_line": 35,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "127",
+          "section_path": "售后政策 / A19【维修超时】",
+          "question": "A19【维修超时】",
+          "answer": "商家已收货并确认保修责任后，超过承诺处理周期且无法给出合理原因或新的明确处理方案，买家可申请平台介入；平台可根据影响程度支持换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 83,
+          "source_end_line": 83,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "123",
+          "section_path": "售后政策 / A15【维修期间物流费用】",
+          "question": "A15【维修期间物流费用】",
+          "answer": "确认属于保修范围内质量问题的，合理寄修物流费用由商家承担或按平台指定方式寄送；非保修问题的寄送及维修费用应在维修前向买家说明。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 71,
+          "source_end_line": 71,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "105",
+          "section_path": "退款退货政策 / 第十二章 客服智能体判定顺序 / R51【判定顺序】",
+          "question": "R51【判定顺序】",
+          "answer": "客服处理退款/退货请求时应依次确认：\n1. 客户ID、订单号和商品项ID；\n2. 商品类型和购买时展示的退货属性；\n3. 是否发货、是否签收以及签收时间；\n4. 申请原因属于质量问题、履约问题还是非质量问题；\n5. 是否属于定制、虚拟、生鲜、卫生封签等例外；\n6. 商品完好、拆封、使用、包装与配件情况；\n7. 运费责任和退款金额；\n8. 信息不足时明确要求补充，不得自行假定。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 196,
+          "source_end_line": 204,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "129",
+          "section_path": "售后政策 / A21【质量问题证据】",
+          "question": "A21【质量问题证据】",
+          "answer": "可接受证据包括照片、视频、错误提示、序列号、开箱记录、检测结论及与商家沟通记录。证据要求应与商品价值和问题复杂度相匹配。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 89,
+          "source_end_line": 89,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "122",
+          "section_path": "售后政策 / A14【维修周期】",
+          "question": "A14【维修周期】",
+          "answer": "维修受理后，客服应给出预计处理区间而不是无依据承诺固定日期。需要返厂、等待配件或第三方检测时，应向买家同步当前状态。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 68,
+          "source_end_line": 68,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "141",
+          "section_path": "售后政策 / A33【虚拟商品售后】",
+          "question": "A33【虚拟商品售后】",
+          "answer": "软件激活码、课程兑换码等虚拟商品不进入实体维修流程。无法兑换、兑换码已被占用、版本错发、重复扣费等按数字商品履约售后处理。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 134,
+          "source_end_line": 134,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 196,
+        "output_tokens": 839,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-15",
+      "split": "calibration",
+      "mode": "faq",
+      "query": "MM-E100耳机使用什么充电接口？",
+      "answerable": true,
+      "required_sections": [
+        "无线蓝牙耳机"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [],
+      "score": 6.11632776260376,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "147",
+          "section_path": "商品规格手册 / 1. 无线蓝牙耳机（型号 MM-E100）",
+          "question": "1. 无线蓝牙耳机（型号 MM-E100）",
+          "answer": "- 商品名称：无线蓝牙耳机\n- 型号：MM-E100\n- 规格：黑色 / 标准版\n- 蓝牙版本：Bluetooth 5.3\n- 单耳重量：约 4.5g\n- 充电接口：USB-C\n- 单次续航：约 6 小时\n- 配合充电盒续航：约 24 小时\n- 核心功能：双麦通话降噪、触控操作、低延迟模式、自动回连\n- 防护等级：IPX4 生活防水\n- 使用要点：首次使用需放入充电盒激活，取出后进入配对模式\n- 注意事项：不支持游泳或淋浴场景使用；进水、跌落等人为损坏不属于免费保修范围",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 54,
+          "source_end_line": 65,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "151",
+          "section_path": "商品规格手册 / 5. USB-C 数据线（型号 MM-C100-15）",
+          "question": "5. USB-C 数据线（型号 MM-C100-15）",
+          "answer": "- 商品名称：USB-C数据线\n- 型号：MM-C100-15\n- 规格：1.5米 / 100W\n- 接口：USB-C to USB-C\n- 长度：1.5m\n- 最大充电功率：100W\n- 数据传输：USB 2.0 速率\n- 核心特点：E-Marker 芯片、编织线身\n- 使用要点：使用 100W 快充需搭配兼容的充电器和设备\n- 注意事项：不支持视频输出",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 115,
+          "source_end_line": 124,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "145",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线鼠标 | MM-MOUSE-S | 静音版 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 路由器 | MM-AX3000 | AX3000 / 白色 | 数码设备 | 支持（未不可逆激活/严重使用） | 12个月 |\n| 移动固态硬盘 | MM-SSD1T | 1TB / USB 3.2 | 存储设备 | 支持（无严重使用/数据写入影响二次销售时除外） | 12个月 |\n| 毛毯 | MM-BLANKET1520G | 150×200cm / 灰色 | 家纺 | 支持（未清洗、未明显使用） | 90天质量保障 |\n| 床上四件套 | MM-BED18BG | 1.8m床 / 蓝灰色 | 家纺 | 支持（未清洗、未明显使用） | 90天质量保障 |\n| 收纳箱 | MM-BOX60 | 60L / 透明 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 厨房刀具套装 | MM-KNIFE5 | 5件套 / 不锈钢 | 厨具 | 支持（商品完好） | 90天质量保障 |\n| 不粘锅 | MM-PAN28B | 28cm / 黑色 | 厨具 | 支持（商品完好） | 90天质量保障 |\n| 咖啡豆 | MM-COFFEE500M | 500g / 中度烘焙 | 预包装食品 | 支持（未拆封且不影响二次销售） | 质量问题售后 |\n| 坚果礼盒 | MM-NUT1200 | 1200g / 综合装 | 预包装食品 | 支持（未拆封且不影响二次销售） | 质量问题售后 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 40,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "149",
+          "section_path": "商品规格手册 / 3. 充电宝（型号 MM-PB100）",
+          "question": "3. 充电宝（型号 MM-PB100）",
+          "answer": "- 商品名称：充电宝\n- 型号：MM-PB100\n- 规格：10000mAh / 22.5W / 白色\n- 电池容量：10000mAh\n- 额定能量：约 37Wh\n- 最大输出功率：22.5W\n- 输入接口：USB-C\n- 输出接口：USB-C、USB-A\n- 核心功能：快充、过流保护、过温保护、短路保护\n- 使用要点：首次使用建议充满后再外出携带\n- 注意事项：禁止高温暴晒、挤压、穿刺或自行拆解",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 85,
+          "source_end_line": 95,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "143",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线蓝牙耳机 | MM-E100 | 黑色 / 标准版 | 数码配件 | 支持（商品完好） | 12个月 |\n| 机械键盘 | MM-K87R | 87键 / 红轴 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 充电宝 | MM-PB100 | 10000mAh / 22.5W / 白色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 智能手环 | MM-BAND5N | NFC版 / 黑色 | 智能穿戴 | 支持（未不可逆激活/严重使用） | 12个月 |\n| USB-C数据线 | MM-C100-15 | 1.5米 / 100W | 数码配件 | 支持（商品完好） | 12个月 |\n| 手机壳 | MM-CASE-X30 | 适配Phone X30 / 透明 | 数码配件 | 支持（商品完好） | 90天质量保障 |\n| 保温杯 | MM-CUP500S | 500ml / 银色 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 双肩电脑包 | MM-BAG156 | 15.6英寸 / 黑色 | 箱包 | 支持（商品完好） | 3个月结构质量保障 |\n| 纯棉T恤 | MM-TS-LW | L码 / 白色 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |\n| 休闲运动鞋 | MM-SHOE42G | 42码 / 灰白 | 鞋类 | 支持（仅室内试穿） | 30天质量保障 |\n| 牛仔裤 | MM-JEANS32D | 32码 / 深蓝 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 19,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        }
+      ],
+      "error": null,
+      "usage": null
+    },
+    {
+      "id": "policy-calibration-16",
+      "split": "calibration",
+      "mode": "faq",
+      "query": "MM-K87R键盘是什么连接方式？",
+      "answerable": true,
+      "required_sections": [
+        "机械键盘"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [],
+      "score": 6.261697769165039,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "148",
+          "section_path": "商品规格手册 / 2. 机械键盘（型号 MM-K87R）",
+          "question": "2. 机械键盘（型号 MM-K87R）",
+          "answer": "- 商品名称：机械键盘\n- 型号：MM-K87R\n- 规格：87键 / 红轴 / 黑色\n- 连接方式：USB-C 有线\n- 键位数量：87 键\n- 轴体：线性红轴\n- 背光：白色背光，支持多档亮度\n- 全键无冲：支持\n- 核心特点：紧凑布局、可拆卸连接线、PBT 键帽\n- 使用要点：连接电脑后即可使用，无需额外驱动\n- 注意事项：自行拆焊轴体、进水造成的损坏不属于免费保修",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 70,
+          "source_end_line": 80,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "145",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线鼠标 | MM-MOUSE-S | 静音版 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 路由器 | MM-AX3000 | AX3000 / 白色 | 数码设备 | 支持（未不可逆激活/严重使用） | 12个月 |\n| 移动固态硬盘 | MM-SSD1T | 1TB / USB 3.2 | 存储设备 | 支持（无严重使用/数据写入影响二次销售时除外） | 12个月 |\n| 毛毯 | MM-BLANKET1520G | 150×200cm / 灰色 | 家纺 | 支持（未清洗、未明显使用） | 90天质量保障 |\n| 床上四件套 | MM-BED18BG | 1.8m床 / 蓝灰色 | 家纺 | 支持（未清洗、未明显使用） | 90天质量保障 |\n| 收纳箱 | MM-BOX60 | 60L / 透明 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 厨房刀具套装 | MM-KNIFE5 | 5件套 / 不锈钢 | 厨具 | 支持（商品完好） | 90天质量保障 |\n| 不粘锅 | MM-PAN28B | 28cm / 黑色 | 厨具 | 支持（商品完好） | 90天质量保障 |\n| 咖啡豆 | MM-COFFEE500M | 500g / 中度烘焙 | 预包装食品 | 支持（未拆封且不影响二次销售） | 质量问题售后 |\n| 坚果礼盒 | MM-NUT1200 | 1200g / 综合装 | 预包装食品 | 支持（未拆封且不影响二次销售） | 质量问题售后 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 40,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "169",
+          "section_path": "商品规格手册 / 23. 无线鼠标（型号 MM-MOUSE-S）",
+          "question": "23. 无线鼠标（型号 MM-MOUSE-S）",
+          "answer": "- 商品名称：无线鼠标\n- 型号：MM-MOUSE-S\n- 规格：静音版 / 黑色\n- 连接方式：2.4GHz USB 接收器\n- DPI：800 / 1200 / 1600\n- 按键：静音微动\n- 供电：1 节 AA 电池\n- 核心特点：自动休眠、即插即用\n- 使用要点：接收器位于电池仓内\n- 注意事项：长期不用建议取出电池",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 360,
+          "source_end_line": 369,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "143",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线蓝牙耳机 | MM-E100 | 黑色 / 标准版 | 数码配件 | 支持（商品完好） | 12个月 |\n| 机械键盘 | MM-K87R | 87键 / 红轴 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 充电宝 | MM-PB100 | 10000mAh / 22.5W / 白色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 智能手环 | MM-BAND5N | NFC版 / 黑色 | 智能穿戴 | 支持（未不可逆激活/严重使用） | 12个月 |\n| USB-C数据线 | MM-C100-15 | 1.5米 / 100W | 数码配件 | 支持（商品完好） | 12个月 |\n| 手机壳 | MM-CASE-X30 | 适配Phone X30 / 透明 | 数码配件 | 支持（商品完好） | 90天质量保障 |\n| 保温杯 | MM-CUP500S | 500ml / 银色 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 双肩电脑包 | MM-BAG156 | 15.6英寸 / 黑色 | 箱包 | 支持（商品完好） | 3个月结构质量保障 |\n| 纯棉T恤 | MM-TS-LW | L码 / 白色 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |\n| 休闲运动鞋 | MM-SHOE42G | 42码 / 灰白 | 鞋类 | 支持（仅室内试穿） | 30天质量保障 |\n| 牛仔裤 | MM-JEANS32D | 32码 / 深蓝 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 19,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        }
+      ],
+      "error": null,
+      "usage": null
+    },
+    {
+      "id": "policy-calibration-17",
+      "split": "calibration",
+      "mode": "faq",
+      "query": "MM-PB100充电宝最大输出功率是多少？",
+      "answerable": true,
+      "required_sections": [
+        "充电宝"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [],
+      "score": 6.939180850982666,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "149",
+          "section_path": "商品规格手册 / 3. 充电宝（型号 MM-PB100）",
+          "question": "3. 充电宝（型号 MM-PB100）",
+          "answer": "- 商品名称：充电宝\n- 型号：MM-PB100\n- 规格：10000mAh / 22.5W / 白色\n- 电池容量：10000mAh\n- 额定能量：约 37Wh\n- 最大输出功率：22.5W\n- 输入接口：USB-C\n- 输出接口：USB-C、USB-A\n- 核心功能：快充、过流保护、过温保护、短路保护\n- 使用要点：首次使用建议充满后再外出携带\n- 注意事项：禁止高温暴晒、挤压、穿刺或自行拆解",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 85,
+          "source_end_line": 95,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "151",
+          "section_path": "商品规格手册 / 5. USB-C 数据线（型号 MM-C100-15）",
+          "question": "5. USB-C 数据线（型号 MM-C100-15）",
+          "answer": "- 商品名称：USB-C数据线\n- 型号：MM-C100-15\n- 规格：1.5米 / 100W\n- 接口：USB-C to USB-C\n- 长度：1.5m\n- 最大充电功率：100W\n- 数据传输：USB 2.0 速率\n- 核心特点：E-Marker 芯片、编织线身\n- 使用要点：使用 100W 快充需搭配兼容的充电器和设备\n- 注意事项：不支持视频输出",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 115,
+          "source_end_line": 124,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "144",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 防晒外套 | MM-UVXL-G | XL码 / 浅灰 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |\n| 洗发水 | MM-SH500-O | 500ml / 控油型 | 日化 | 支持（未明显使用且不影响二次销售） | 质量问题售后 |\n| 面部洁面乳 | MM-FC120A | 120g / 氨基酸型 | 日化 | 支持（未明显使用且不影响二次销售） | 质量问题售后 |\n| 护手霜 | MM-HC50U | 50g / 无香型 | 日化 | 支持（未明显使用且不影响二次销售） | 质量问题售后 |\n| 纸巾 | MM-TISSUE24 | 24包 / 3层 | 日用品 | 支持（未明显使用） | 质量问题售后 |\n| 电动牙刷 | MM-TB200W | 成人款 / 白色 | 小家电 | 支持（主机完好；刷头卫生属性另行判断） | 12个月 |\n| 电饭煲 | MM-RC30IH | 3L / IH加热 | 小家电 | 支持（商品完好） | 12个月 |\n| 电热水壶 | MM-KT17W | 1.7L / 白色 | 小家电 | 支持（商品完好） | 12个月 |\n| 空气炸锅 | MM-AF50B | 5L / 黑色 | 小家电 | 支持（商品完好） | 12个月 |\n| 台灯 | MM-LAMP01W | 护眼款 / 白色 | 灯具 | 支持（商品完好） | 12个月 |\n| 显示器支架 | MM-ARM32 | 单臂 / 17-32英寸 | 家居/办公 | 支持（商品完好） | 90天质量保障 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 30,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "143",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线蓝牙耳机 | MM-E100 | 黑色 / 标准版 | 数码配件 | 支持（商品完好） | 12个月 |\n| 机械键盘 | MM-K87R | 87键 / 红轴 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 充电宝 | MM-PB100 | 10000mAh / 22.5W / 白色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 智能手环 | MM-BAND5N | NFC版 / 黑色 | 智能穿戴 | 支持（未不可逆激活/严重使用） | 12个月 |\n| USB-C数据线 | MM-C100-15 | 1.5米 / 100W | 数码配件 | 支持（商品完好） | 12个月 |\n| 手机壳 | MM-CASE-X30 | 适配Phone X30 / 透明 | 数码配件 | 支持（商品完好） | 90天质量保障 |\n| 保温杯 | MM-CUP500S | 500ml / 银色 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 双肩电脑包 | MM-BAG156 | 15.6英寸 / 黑色 | 箱包 | 支持（商品完好） | 3个月结构质量保障 |\n| 纯棉T恤 | MM-TS-LW | L码 / 白色 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |\n| 休闲运动鞋 | MM-SHOE42G | 42码 / 灰白 | 鞋类 | 支持（仅室内试穿） | 30天质量保障 |\n| 牛仔裤 | MM-JEANS32D | 32码 / 深蓝 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 19,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        }
+      ],
+      "error": null,
+      "usage": null
+    },
+    {
+      "id": "policy-calibration-18",
+      "split": "calibration",
+      "mode": "faq",
+      "query": "MM-BAND5N手环是否支持NFC？",
+      "answerable": true,
+      "required_sections": [
+        "智能手环"
+      ],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [],
+      "score": 6.861996650695801,
+      "gold_found": true,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "150",
+          "section_path": "商品规格手册 / 4. 智能手环（型号 MM-BAND5N）",
+          "question": "4. 智能手环（型号 MM-BAND5N）",
+          "answer": "- 商品名称：智能手环\n- 型号：MM-BAND5N\n- 规格：NFC版 / 黑色\n- 屏幕：1.62 英寸 AMOLED\n- 连接方式：Bluetooth 5.2\n- NFC：支持\n- 核心功能：步数、心率、睡眠记录、运动模式、消息提醒\n- 防水等级：5ATM\n- 典型续航：约 10 天\n- 使用要点：首次开机后需通过配套 App 完成绑定\n- 注意事项：健康数据仅供日常参考，不用于医疗诊断",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 100,
+          "source_end_line": 110,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "145",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线鼠标 | MM-MOUSE-S | 静音版 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 路由器 | MM-AX3000 | AX3000 / 白色 | 数码设备 | 支持（未不可逆激活/严重使用） | 12个月 |\n| 移动固态硬盘 | MM-SSD1T | 1TB / USB 3.2 | 存储设备 | 支持（无严重使用/数据写入影响二次销售时除外） | 12个月 |\n| 毛毯 | MM-BLANKET1520G | 150×200cm / 灰色 | 家纺 | 支持（未清洗、未明显使用） | 90天质量保障 |\n| 床上四件套 | MM-BED18BG | 1.8m床 / 蓝灰色 | 家纺 | 支持（未清洗、未明显使用） | 90天质量保障 |\n| 收纳箱 | MM-BOX60 | 60L / 透明 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 厨房刀具套装 | MM-KNIFE5 | 5件套 / 不锈钢 | 厨具 | 支持（商品完好） | 90天质量保障 |\n| 不粘锅 | MM-PAN28B | 28cm / 黑色 | 厨具 | 支持（商品完好） | 90天质量保障 |\n| 咖啡豆 | MM-COFFEE500M | 500g / 中度烘焙 | 预包装食品 | 支持（未拆封且不影响二次销售） | 质量问题售后 |\n| 坚果礼盒 | MM-NUT1200 | 1200g / 综合装 | 预包装食品 | 支持（未拆封且不影响二次销售） | 质量问题售后 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 40,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "143",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线蓝牙耳机 | MM-E100 | 黑色 / 标准版 | 数码配件 | 支持（商品完好） | 12个月 |\n| 机械键盘 | MM-K87R | 87键 / 红轴 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 充电宝 | MM-PB100 | 10000mAh / 22.5W / 白色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 智能手环 | MM-BAND5N | NFC版 / 黑色 | 智能穿戴 | 支持（未不可逆激活/严重使用） | 12个月 |\n| USB-C数据线 | MM-C100-15 | 1.5米 / 100W | 数码配件 | 支持（商品完好） | 12个月 |\n| 手机壳 | MM-CASE-X30 | 适配Phone X30 / 透明 | 数码配件 | 支持（商品完好） | 90天质量保障 |\n| 保温杯 | MM-CUP500S | 500ml / 银色 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 双肩电脑包 | MM-BAG156 | 15.6英寸 / 黑色 | 箱包 | 支持（商品完好） | 3个月结构质量保障 |\n| 纯棉T恤 | MM-TS-LW | L码 / 白色 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |\n| 休闲运动鞋 | MM-SHOE42G | 42码 / 灰白 | 鞋类 | 支持（仅室内试穿） | 30天质量保障 |\n| 牛仔裤 | MM-JEANS32D | 32码 / 深蓝 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 19,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        }
+      ],
+      "error": null,
+      "usage": null
+    },
+    {
+      "id": "policy-calibration-19",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "你们是否提供宇航服在火星使用后的退款政策？",
+      "answerable": false,
+      "required_sections": [],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "普通商品（以订单为准）是否提供宇航服在火星使用后的退款政策，申请资格如何认定？",
+        "普通商品（以订单为准）就宇航服在火星使用后的退款政策，适用哪些限制条件或不适用情形？",
+        "普通商品（以订单为准）办理宇航服在火星使用后的退款政策，涉及哪些流程与费用？"
+      ],
+      "score": -3.513148307800293,
+      "gold_found": false,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "54",
+          "section_path": "退款退货政策",
+          "question": "退款退货政策",
+          "answer": "**政策版本**：V2026.10  \n**生效日期**：2026-10-01  \n**适用范围**：本商城中国大陆地区普通网络零售订单；特殊活动、跨境订单、定制服务、虚拟商品及商品页面另有明确约定的，以专项规则为准。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 3,
+          "source_end_line": 5,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "132",
+          "section_path": "售后政策 / A24【非质量问题不进入免费保修】",
+          "question": "A24【非质量问题不进入免费保修】",
+          "answer": "“不会使用、与预期不同、颜色不喜欢、尺寸主观不合适”等非质量原因，不属于免费维修范围；是否可退货应转查《退款退货政策》。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 98,
+          "source_end_line": 98,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "111",
+          "section_path": "售后政策 / A03【七天内严重质量问题】",
+          "question": "A03【七天内严重质量问题】",
+          "answer": "商品签收后七天内出现经确认的严重质量问题，且明显影响正常使用的，可优先支持退货退款；买家愿意保留商品的，也可选择换货、维修或合理部分退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 14,
+          "source_end_line": 14,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "90",
+          "section_path": "退款退货政策 / 第八章 退款金额 / R36【整单优惠分摊】",
+          "question": "R36【整单优惠分摊】",
+          "answer": "使用店铺满减、平台优惠券、跨店优惠等整单优惠时，部分商品退款应按照订单系统实际分摊到该商品项的实付金额计算，不按商品原价退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 137,
+          "source_end_line": 137,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "101",
+          "section_path": "退款退货政策 / 第十章 特殊场景 / R47【恶意或异常售后】",
+          "question": "R47【恶意或异常售后】",
+          "answer": "平台发现异常高频退款、虚假物流、调包、空包、恶意损坏等风险时，可要求补充证据并进入人工审核，但不得仅凭风险标签否定合法售后权益。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 174,
+          "source_end_line": 174,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "135",
+          "section_path": "售后政策 / A27【部分退款】",
+          "question": "A27【部分退款】",
+          "answer": "对不影响核心功能的轻微外观瑕疵、少量配件问题，买家愿意保留商品时，可协商部分退款；客服必须记录部分退款对应的问题，防止重复赔付。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 115,
+          "source_end_line": 115,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "63",
+          "section_path": "退款退货政策 / 第二章 支持七天无理由退货的商品 / R09【试穿试用】",
+          "question": "R09【试穿试用】",
+          "answer": "服饰可在不产生污损、洗涤痕迹、香水味、明显穿着痕迹的情况下合理试穿。  \n电子产品可进行必要开机检查，但若完成不可逆激活、账号绑定、写入个人数据或造成明显使用痕迹，可能不再满足无理由退货条件。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 43,
+          "source_end_line": 44,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "100",
+          "section_path": "退款退货政策 / 第十章 特殊场景 / R46【赠品订单】",
+          "question": "R46【赠品订单】",
+          "answer": "“0元赠品”或赠品本身一般不单独退款；主商品退款时，赠品处理按照主商品活动规则执行。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 171,
+          "source_end_line": 171,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "117",
+          "section_path": "售后政策 / A09【补发条件】",
+          "question": "A09【补发条件】",
+          "answer": "少件、漏发配件、赠品漏发且不影响主商品安全使用时，可优先补发缺失部分；若缺失的是核心部件导致商品无法使用，买家可选择换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 53,
+          "source_end_line": 53,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "66",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R12【数字化及虚拟商品】",
+          "question": "R12【数字化及虚拟商品】",
+          "answer": "软件激活码、在线课程兑换码、会员权益、数字内容等，一旦激活、兑换、下载或交付完成，原则上不支持无理由退货。未使用且商品页面允许退款的，可按页面规则处理。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 55,
+          "source_end_line": 55,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 201,
+        "output_tokens": 1522,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-20",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "购买商业卫星发射服务失败能赔偿多少钱？",
+      "answerable": false,
+      "required_sections": [],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "购买商业卫星发射服务失败能赔偿多少钱？申请赔偿的资格政策是什么？商品为普通商品，规格以订单为准。",
+        "购买商业卫星发射服务失败能赔偿多少钱？赔偿的限制条件适用政策有哪些？商品为普通商品，规格以订单为准。",
+        "购买商业卫星发射服务失败能赔偿多少钱？赔偿办理与费用适用政策如何规定？商品为普通商品，规格以订单为准。"
+      ],
+      "score": -7.5871124267578125,
+      "gold_found": false,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "92",
+          "section_path": "退款退货政策 / 第八章 退款金额 / R38【部分退款】",
+          "question": "R38【部分退款】",
+          "answer": "商品存在轻微瑕疵但买家愿意保留商品时，经双方协商可进行部分退款。部分退款完成后，同一问题再次申请时，平台可结合已补偿金额综合判断。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 143,
+          "source_end_line": 143,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "117",
+          "section_path": "售后政策 / A09【补发条件】",
+          "question": "A09【补发条件】",
+          "answer": "少件、漏发配件、赠品漏发且不影响主商品安全使用时，可优先补发缺失部分；若缺失的是核心部件导致商品无法使用，买家可选择换货或退货退款。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 53,
+          "source_end_line": 53,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "74",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R20【人为损坏】",
+          "question": "R20【人为损坏】",
+          "answer": "因跌落、进水、错误安装、超负荷使用、擅自拆机、改装等造成的损坏，不属于无理由退货下的“商品完好”，也通常不属于商品质量问题。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 81,
+          "source_end_line": 81,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "118",
+          "section_path": "售后政策 / A10【不保修：人为损坏】",
+          "question": "A10【不保修：人为损坏】",
+          "answer": "跌落、挤压、进水、火烧、明显外力撞击、错误电压、超规格使用、违规充电等造成的损坏，不属于免费保修范围。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 56,
+          "source_end_line": 56,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "134",
+          "section_path": "售后政策 / A26【不能直接转退款的情形】",
+          "question": "A26【不能直接转退款的情形】",
+          "answer": "仅因超过保修期、正常损耗、轻微外观磨损、买家人为损坏、非授权拆机等，不应直接判定为质量退款。可提供付费维修、配件购买或其他可行方案。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 112,
+          "source_end_line": 112,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "72",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R18【配件缺失】",
+          "question": "R18【配件缺失】",
+          "answer": "主要配件、随机附件或成套商品缺件的，买家应尽量补齐后退回。确实无法补齐的，可按缺失配件的合理价值扣减退款，或与卖家协商补寄后再退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 75,
+          "source_end_line": 75,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "77",
+          "section_path": "退款退货政策 / 第五章 质量问题与非质量问题 / R23【质量问题处理】",
+          "question": "R23【质量问题处理】",
+          "answer": "经确认属于商品质量问题的，可根据问题程度支持补发、换货、维修、退货退款或部分退款。若在合理退货退款期限内且问题严重影响正常使用，应优先考虑退货退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 92,
+          "source_end_line": 92,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "71",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R17【商品包装严重缺失】",
+          "question": "R17【商品包装严重缺失】",
+          "answer": "商品原厂包装属于商品重要组成部分，且缺失会明显影响二次销售价值的，卖家可要求买家补齐；无法补齐时，可根据实际价值减损协商处理，但不得对质量问题商品不合理拒绝售后。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 72,
+          "source_end_line": 72,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "87",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R33【运费险】",
+          "question": "R33【运费险】",
+          "answer": "订单含有效退货运费险时，保险赔付按保险规则执行。保险赔付不足实际运费的差额，应依据退货责任归属判断由买家或卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 126,
+          "source_end_line": 126,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "115",
+          "section_path": "售后政策 / A07【维修受理条件】",
+          "question": "A07【维修受理条件】",
+          "answer": "原则上同时满足以下条件，方可进入免费保修/维修流程；个别条件无法核验时可转人工复核：\n1. 商品仍在对应保修期；\n2. 故障属于正常使用条件下的性能故障；\n3. 商品序列号、订单记录或其他购买凭证可核验；\n4. 商品不存在明显人为损坏或非授权拆修改装。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 38,
+          "source_end_line": 42,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 199,
+        "output_tokens": 1149,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-21",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "店铺是否承担我购买比特币亏损的赔偿？",
+      "answerable": false,
+      "required_sections": [],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "对于普通商品（以订单为准），店铺是否承担我购买比特币亏损的赔偿？适用哪些申请资格政策？",
+        "对于普通商品（以订单为准），店铺是否承担我购买比特币亏损的赔偿？适用政策有哪些限制条件？",
+        "对于普通商品（以订单为准），店铺是否承担我购买比特币亏损的赔偿？办理流程与费用政策如何规定？"
+      ],
+      "score": -7.3467302322387695,
+      "gold_found": false,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "87",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R33【运费险】",
+          "question": "R33【运费险】",
+          "answer": "订单含有效退货运费险时，保险赔付按保险规则执行。保险赔付不足实际运费的差额，应依据退货责任归属判断由买家或卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 126,
+          "source_end_line": 126,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "141",
+          "section_path": "售后政策 / A33【虚拟商品售后】",
+          "question": "A33【虚拟商品售后】",
+          "answer": "软件激活码、课程兑换码等虚拟商品不进入实体维修流程。无法兑换、兑换码已被占用、版本错发、重复扣费等按数字商品履约售后处理。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 134,
+          "source_end_line": 134,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "71",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R17【商品包装严重缺失】",
+          "question": "R17【商品包装严重缺失】",
+          "answer": "商品原厂包装属于商品重要组成部分，且缺失会明显影响二次销售价值的，卖家可要求买家补齐；无法补齐时，可根据实际价值减损协商处理，但不得对质量问题商品不合理拒绝售后。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 72,
+          "source_end_line": 72,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "92",
+          "section_path": "退款退货政策 / 第八章 退款金额 / R38【部分退款】",
+          "question": "R38【部分退款】",
+          "answer": "商品存在轻微瑕疵但买家愿意保留商品时，经双方协商可进行部分退款。部分退款完成后，同一问题再次申请时，平台可结合已补偿金额综合判断。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 143,
+          "source_end_line": 143,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "90",
+          "section_path": "退款退货政策 / 第八章 退款金额 / R36【整单优惠分摊】",
+          "question": "R36【整单优惠分摊】",
+          "answer": "使用店铺满减、平台优惠券、跨店优惠等整单优惠时，部分商品退款应按照订单系统实际分摊到该商品项的实付金额计算，不按商品原价退款。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 137,
+          "source_end_line": 137,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "108",
+          "section_path": "售后政策",
+          "question": "售后政策",
+          "answer": "**版本**：AS-2026.10  \n**生效日期**：2026-10-01  \n**适用范围**：本商城自营及明确加入本售后服务的第三方商家商品。商品详情页另有更优承诺的，从其承诺。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 3,
+          "source_end_line": 5,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "135",
+          "section_path": "售后政策 / A27【部分退款】",
+          "question": "A27【部分退款】",
+          "answer": "对不影响核心功能的轻微外观瑕疵、少量配件问题，买家愿意保留商品时，可协商部分退款；客服必须记录部分退款对应的问题，防止重复赔付。",
+          "source_file": "knowledge_db/after-sales-manual.md",
+          "source_start_line": 115,
+          "source_end_line": 115,
+          "source_digest": "2ffbaa5ea56d41c8b1b4fd4d0cf8009debbdef5d45921264bd119e7233170eae",
+          "source_url": "/v1/knowledge/documents/after-sales-manual.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "83",
+          "section_path": "退款退货政策 / 第六章 未发货、运输中与拒收 / R29【拒收】",
+          "question": "R29【拒收】",
+          "answer": "支持七天无理由退货的普通商品，买家因主观原因拒收时，原则上可按无理由退货处理，但买家可能需要承担因拒收产生的合理退回运费。质量、破损、错发等卖家责任导致拒收的，合理物流费用由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 112,
+          "source_end_line": 112,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "86",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R32【卖家责任运费】",
+          "question": "R32【卖家责任运费】",
+          "answer": "因质量问题、发错商品、少件、描述严重不符、运输包装责任导致的破损等卖家责任退货，合理退回运费由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 123,
+          "source_end_line": 123,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "88",
+          "section_path": "退款退货政策 / 第七章 运费承担 / R34【到付件】",
+          "question": "R34【到付件】",
+          "answer": "未经卖家或平台同意，不建议直接使用高额到付方式退货。因买家自行选择明显不合理的高价运输方式增加的费用，超出合理部分可不由卖家承担。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 129,
+          "source_end_line": 129,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 199,
+        "output_tokens": 741,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-22",
+      "split": "calibration",
+      "mode": "policy",
+      "query": "境外私人游艇租赁合同退订规则是什么？",
+      "answerable": false,
+      "required_sections": [],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [
+        "针对普通商品（以订单为准），境外私人游艇租赁合同退订规则对申请资格有哪些适用政策？",
+        "针对普通商品（以订单为准），境外私人游艇租赁合同退订规则在限制条件方面有哪些适用政策？",
+        "针对普通商品（以订单为准），境外私人游艇租赁合同退订规则在办理流程与费用方面有哪些适用政策？"
+      ],
+      "score": -7.299327850341797,
+      "gold_found": false,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "102",
+          "section_path": "退款退货政策 / 第十一章 争议与适用顺序 / R48【规则适用顺序】",
+          "question": "R48【规则适用顺序】",
+          "answer": "发生冲突时，按以下顺序综合判断：\n1. 国家法律法规的强制性规定；\n2. 商品购买页面已明确展示且合法有效的特别约定；\n3. 本商城专项类目规则；\n4. 本通用退款退货政策；\n5. 双方后续合法有效的协商结果。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 179,
+          "source_end_line": 184,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "54",
+          "section_path": "退款退货政策",
+          "question": "退款退货政策",
+          "answer": "**政策版本**：V2026.10  \n**生效日期**：2026-10-01  \n**适用范围**：本商城中国大陆地区普通网络零售订单；特殊活动、跨境订单、定制服务、虚拟商品及商品页面另有明确约定的，以专项规则为准。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 3,
+          "source_end_line": 5,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "101",
+          "section_path": "退款退货政策 / 第十章 特殊场景 / R47【恶意或异常售后】",
+          "question": "R47【恶意或异常售后】",
+          "answer": "平台发现异常高频退款、虚假物流、调包、空包、恶意损坏等风险时，可要求补充证据并进入人工审核，但不得仅凭风险标签否定合法售后权益。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 174,
+          "source_end_line": 174,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 4,
+          "chunk_id": "65",
+          "section_path": "退款退货政策 / 第三章 不适用或限制七天无理由退货的商品 / R11【鲜活易腐商品】",
+          "question": "R11【鲜活易腐商品】",
+          "answer": "鲜果、鲜花、生鲜食品、短保食品等易腐商品一般不支持七天无理由退货；若存在腐坏、破损、短缺、与描述严重不符等问题，可按质量/履约问题处理。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 52,
+          "source_end_line": 52,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 5,
+          "chunk_id": "92",
+          "section_path": "退款退货政策 / 第八章 退款金额 / R38【部分退款】",
+          "question": "R38【部分退款】",
+          "answer": "商品存在轻微瑕疵但买家愿意保留商品时，经双方协商可进行部分退款。部分退款完成后，同一问题再次申请时，平台可结合已补偿金额综合判断。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 143,
+          "source_end_line": 143,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 6,
+          "chunk_id": "91",
+          "section_path": "退款退货政策 / 第八章 退款金额 / R37【红包、积分与优惠券】",
+          "question": "R37【红包、积分与优惠券】",
+          "answer": "红包、积分、优惠券等是否退回以及退回形式，以对应营销工具规则为准。已经过期的优惠权益可能无法恢复。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 140,
+          "source_end_line": 140,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 7,
+          "chunk_id": "73",
+          "section_path": "退款退货政策 / 第四章 拆封、使用、包装与配件 / R19【赠品缺失】",
+          "question": "R19【赠品缺失】",
+          "answer": "赠品遗失、损坏时，主商品是否可以退货应优先依据主商品退货条件判断；如赠品具有独立明确价值，可对赠品价值进行合理扣减或由买家补回。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 78,
+          "source_end_line": 78,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 8,
+          "chunk_id": "57",
+          "section_path": "退款退货政策 / 第一章 基本定义 / R03【七天无理由退货】",
+          "question": "R03【七天无理由退货】",
+          "answer": "带有“7天无理由退货”标识且不属于例外商品的商品，买家可在规定期限内因“不喜欢、不合适、不想要”等非质量原因申请退货。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 16,
+          "source_end_line": 16,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 9,
+          "chunk_id": "104",
+          "section_path": "退款退货政策 / 第十一章 争议与适用顺序 / R50【未知字段处理】",
+          "question": "R50【未知字段处理】",
+          "answer": "客服或智能体无法从订单、物流或规则中确认事实时，应明确回答“未知/暂无法确认”，不得自行补猜测签收时间、质量结论、物流节点或责任归属。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 190,
+          "source_end_line": 190,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        },
+        {
+          "n": 10,
+          "chunk_id": "103",
+          "section_path": "退款退货政策 / 第十一章 争议与适用顺序 / R49【平台介入】",
+          "question": "R49【平台介入】",
+          "answer": "买卖双方无法协商一致时，可申请平台介入。平台可要求双方提供订单、物流、商品照片、视频、检测或沟通记录等必要证据。",
+          "source_file": "knowledge_db/returns-policy.md",
+          "source_start_line": 187,
+          "source_end_line": 187,
+          "source_digest": "e9001e03e45c5f2645f4d35dba023c1d8bb3afbf21747515fb6a288e213a24b6",
+          "source_url": "/v1/knowledge/documents/returns-policy.md"
+        }
+      ],
+      "error": null,
+      "usage": {
+        "input_tokens": 200,
+        "output_tokens": 1129,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "policy-calibration-23",
+      "split": "calibration",
+      "mode": "faq",
+      "query": "MM-E100耳机有多少亿个晶体管？",
+      "answerable": false,
+      "required_sections": [],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [],
+      "score": -0.9830684065818787,
+      "gold_found": false,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "147",
+          "section_path": "商品规格手册 / 1. 无线蓝牙耳机（型号 MM-E100）",
+          "question": "1. 无线蓝牙耳机（型号 MM-E100）",
+          "answer": "- 商品名称：无线蓝牙耳机\n- 型号：MM-E100\n- 规格：黑色 / 标准版\n- 蓝牙版本：Bluetooth 5.3\n- 单耳重量：约 4.5g\n- 充电接口：USB-C\n- 单次续航：约 6 小时\n- 配合充电盒续航：约 24 小时\n- 核心功能：双麦通话降噪、触控操作、低延迟模式、自动回连\n- 防护等级：IPX4 生活防水\n- 使用要点：首次使用需放入充电盒激活，取出后进入配对模式\n- 注意事项：不支持游泳或淋浴场景使用；进水、跌落等人为损坏不属于免费保修范围",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 54,
+          "source_end_line": 65,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "145",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线鼠标 | MM-MOUSE-S | 静音版 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 路由器 | MM-AX3000 | AX3000 / 白色 | 数码设备 | 支持（未不可逆激活/严重使用） | 12个月 |\n| 移动固态硬盘 | MM-SSD1T | 1TB / USB 3.2 | 存储设备 | 支持（无严重使用/数据写入影响二次销售时除外） | 12个月 |\n| 毛毯 | MM-BLANKET1520G | 150×200cm / 灰色 | 家纺 | 支持（未清洗、未明显使用） | 90天质量保障 |\n| 床上四件套 | MM-BED18BG | 1.8m床 / 蓝灰色 | 家纺 | 支持（未清洗、未明显使用） | 90天质量保障 |\n| 收纳箱 | MM-BOX60 | 60L / 透明 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 厨房刀具套装 | MM-KNIFE5 | 5件套 / 不锈钢 | 厨具 | 支持（商品完好） | 90天质量保障 |\n| 不粘锅 | MM-PAN28B | 28cm / 黑色 | 厨具 | 支持（商品完好） | 90天质量保障 |\n| 咖啡豆 | MM-COFFEE500M | 500g / 中度烘焙 | 预包装食品 | 支持（未拆封且不影响二次销售） | 质量问题售后 |\n| 坚果礼盒 | MM-NUT1200 | 1200g / 综合装 | 预包装食品 | 支持（未拆封且不影响二次销售） | 质量问题售后 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 40,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "143",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线蓝牙耳机 | MM-E100 | 黑色 / 标准版 | 数码配件 | 支持（商品完好） | 12个月 |\n| 机械键盘 | MM-K87R | 87键 / 红轴 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 充电宝 | MM-PB100 | 10000mAh / 22.5W / 白色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 智能手环 | MM-BAND5N | NFC版 / 黑色 | 智能穿戴 | 支持（未不可逆激活/严重使用） | 12个月 |\n| USB-C数据线 | MM-C100-15 | 1.5米 / 100W | 数码配件 | 支持（商品完好） | 12个月 |\n| 手机壳 | MM-CASE-X30 | 适配Phone X30 / 透明 | 数码配件 | 支持（商品完好） | 90天质量保障 |\n| 保温杯 | MM-CUP500S | 500ml / 银色 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 双肩电脑包 | MM-BAG156 | 15.6英寸 / 黑色 | 箱包 | 支持（商品完好） | 3个月结构质量保障 |\n| 纯棉T恤 | MM-TS-LW | L码 / 白色 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |\n| 休闲运动鞋 | MM-SHOE42G | 42码 / 灰白 | 鞋类 | 支持（仅室内试穿） | 30天质量保障 |\n| 牛仔裤 | MM-JEANS32D | 32码 / 深蓝 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 19,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        }
+      ],
+      "error": null,
+      "usage": null
+    },
+    {
+      "id": "policy-calibration-24",
+      "split": "calibration",
+      "mode": "faq",
+      "query": "MM-K87R键盘每个按键的精确化学成分是什么？",
+      "answerable": false,
+      "required_sections": [],
+      "item": {
+        "product_name": "普通商品",
+        "variant": "以订单为准"
+      },
+      "queries": [],
+      "score": 0.30565595626831055,
+      "gold_found": false,
+      "sufficient": true,
+      "citations": [
+        {
+          "n": 1,
+          "chunk_id": "148",
+          "section_path": "商品规格手册 / 2. 机械键盘（型号 MM-K87R）",
+          "question": "2. 机械键盘（型号 MM-K87R）",
+          "answer": "- 商品名称：机械键盘\n- 型号：MM-K87R\n- 规格：87键 / 红轴 / 黑色\n- 连接方式：USB-C 有线\n- 键位数量：87 键\n- 轴体：线性红轴\n- 背光：白色背光，支持多档亮度\n- 全键无冲：支持\n- 核心特点：紧凑布局、可拆卸连接线、PBT 键帽\n- 使用要点：连接电脑后即可使用，无需额外驱动\n- 注意事项：自行拆焊轴体、进水造成的损坏不属于免费保修",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 70,
+          "source_end_line": 80,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 2,
+          "chunk_id": "144",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 防晒外套 | MM-UVXL-G | XL码 / 浅灰 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |\n| 洗发水 | MM-SH500-O | 500ml / 控油型 | 日化 | 支持（未明显使用且不影响二次销售） | 质量问题售后 |\n| 面部洁面乳 | MM-FC120A | 120g / 氨基酸型 | 日化 | 支持（未明显使用且不影响二次销售） | 质量问题售后 |\n| 护手霜 | MM-HC50U | 50g / 无香型 | 日化 | 支持（未明显使用且不影响二次销售） | 质量问题售后 |\n| 纸巾 | MM-TISSUE24 | 24包 / 3层 | 日用品 | 支持（未明显使用） | 质量问题售后 |\n| 电动牙刷 | MM-TB200W | 成人款 / 白色 | 小家电 | 支持（主机完好；刷头卫生属性另行判断） | 12个月 |\n| 电饭煲 | MM-RC30IH | 3L / IH加热 | 小家电 | 支持（商品完好） | 12个月 |\n| 电热水壶 | MM-KT17W | 1.7L / 白色 | 小家电 | 支持（商品完好） | 12个月 |\n| 空气炸锅 | MM-AF50B | 5L / 黑色 | 小家电 | 支持（商品完好） | 12个月 |\n| 台灯 | MM-LAMP01W | 护眼款 / 白色 | 灯具 | 支持（商品完好） | 12个月 |\n| 显示器支架 | MM-ARM32 | 单臂 / 17-32英寸 | 家居/办公 | 支持（商品完好） | 90天质量保障 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 30,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        },
+        {
+          "n": 3,
+          "chunk_id": "143",
+          "section_path": "商品规格手册 / 商品主数据索引",
+          "question": "商品主数据索引",
+          "answer": "| 商品名称 | 型号 | 订单规格 | 商品类型 | 七天无理由属性 | 保修/售后属性 |\n|---|---|---|---|---|---|\n| 无线蓝牙耳机 | MM-E100 | 黑色 / 标准版 | 数码配件 | 支持（商品完好） | 12个月 |\n| 机械键盘 | MM-K87R | 87键 / 红轴 / 黑色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 充电宝 | MM-PB100 | 10000mAh / 22.5W / 白色 | 数码配件 | 支持（商品完好） | 12个月 |\n| 智能手环 | MM-BAND5N | NFC版 / 黑色 | 智能穿戴 | 支持（未不可逆激活/严重使用） | 12个月 |\n| USB-C数据线 | MM-C100-15 | 1.5米 / 100W | 数码配件 | 支持（商品完好） | 12个月 |\n| 手机壳 | MM-CASE-X30 | 适配Phone X30 / 透明 | 数码配件 | 支持（商品完好） | 90天质量保障 |\n| 保温杯 | MM-CUP500S | 500ml / 银色 | 家居用品 | 支持（商品完好） | 90天质量保障 |\n| 双肩电脑包 | MM-BAG156 | 15.6英寸 / 黑色 | 箱包 | 支持（商品完好） | 3个月结构质量保障 |\n| 纯棉T恤 | MM-TS-LW | L码 / 白色 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |\n| 休闲运动鞋 | MM-SHOE42G | 42码 / 灰白 | 鞋类 | 支持（仅室内试穿） | 30天质量保障 |\n| 牛仔裤 | MM-JEANS32D | 32码 / 深蓝 | 服饰 | 支持（仅合理试穿） | 30天质量保障 |",
+          "source_file": "knowledge_db/product-specifications.md",
+          "source_start_line": 7,
+          "source_end_line": 19,
+          "source_digest": "fe20bc84b4dcca3ddaf3ef33f8c56a0ff9d76bfd3fdeb93dd7cbb3219245a14e",
+          "source_url": "/v1/knowledge/documents/product-specifications.md"
+        }
+      ],
+      "error": null,
+      "usage": null
+    }
+  ],
+  "cumulative_attempts": {
+    "jev": 221,
+    "chat": 238
+  },
+  "calibration": {
+    "version": 1,
+    "fingerprints": {
+      "corpus_digest": "1e7fc8ebedbf9d6c3bdf801d6d6888eff1108e8a508507eebf5212f380ea9b04",
+      "calibration_digest": "0f8419792add08ecc9e2ac70aba4e86ed27195a31010b889772347970d236a54",
+      "embedding_model": "BAAI/bge-m3",
+      "reranker_model": "BAAI/bge-reranker-v2-m3",
+      "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+      "query_model": "deepseek-v4-flash",
+      "prompt_digest": "39a8ad550981ad5335f40472d5a54b504a57477f96631128470244caef61571a",
+      "context_token_budget": 4096,
+      "response_token_reserve": 512,
+      "token_counter": "langchain approximate chars_per_token=1.0",
+      "dense_k": 50,
+      "bm25_k": 50,
+      "rrf_k": 60,
+      "generation_k": 10,
+      "expansion_prompt": "58c9c6058306b7f6a0afd97fa142cd02354264f6bfa210675294b2e3ef3ee42b",
+      "query_mode": "policy:original+3-expansions/source-filter/RRF/one-rerank;faq:original-only",
+      "policy_rrf_k": 60,
+      "policy_candidates": 50,
+      "policy_top_k": 10
+    },
+    "modes": {
+      "policy": {
+        "threshold": -0.050571829080581665,
+        "false_accept": 0,
+        "false_reject": 0,
+        "enabled": true,
+        "observations": 18
+      },
+      "faq": {
+        "threshold": 6.11632776260376,
+        "false_accept": 0,
+        "false_reject": 0,
+        "enabled": true,
+        "observations": 6
+      }
+    }
+  }
+}

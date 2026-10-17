@@ -18,9 +18,12 @@ class RagRetrieval:
         if self.corpus.chunks:
             self.reranker.rerank('知识查询',[next(iter(self.corpus.chunks.values()))],limit=1)
 
-    def retrieve(self,query,strategy,filters=None):
+    def retrieve(self,query,strategy,filters=None,*,allowed_ids=None):
         if strategy not in {'dense','bm25','hybrid','hybrid_rerank'}: raise ValueError('Invalid retrieval strategy')
         filters=filters if filters is not None else KnowledgeFilters()
+        if allowed_ids is not None:
+            if not isinstance(allowed_ids,frozenset) or not allowed_ids<=self.corpus.chunks.keys(): raise ValueError('Invalid policy IDs')
+            if not allowed_ids: return RetrievalResult(strategy,query,[],[],{})
         try: verify_source_versions(self.corpus)
         except (OSError,RuntimeError): raise IndexStaleError('Corpus source changed; rebuild index') from None
         timings={};started=perf_counter();vector=None
@@ -35,7 +38,7 @@ class RagRetrieval:
         timings['index_verification']=(perf_counter()-before)*1000
         if strategy!='bm25':
             before=perf_counter();vector=self.embedder.encode([query.search_text])[0];timings['embedding']=(perf_counter()-before)*1000
-        stored=self.store.retrieve(query,vector,strategy,filters,**({} if self.diagnostics else {'diagnostics':False}))
+        stored=self.store.retrieve(query,vector,strategy,filters,**({} if self.diagnostics else {'diagnostics':False}),**({} if allowed_ids is None else {'allowed_ids':allowed_ids}))
         timings.update(stored.timings_ms)
         hits=stored.hits
         ids=[h.chunk_id for h in hits]
@@ -45,6 +48,7 @@ class RagRetrieval:
             chunks={row.id:row_evidence(row) for row in rows}
         candidates=[]
         for hit in hits:
+            if allowed_ids is not None and hit.chunk_id not in allowed_ids: raise IndexStaleError("Policy filter returned an unauthorized source")
             c=chunks.get(hit.chunk_id);entity=stored.entities.get(hit.chunk_id)
             if c is None or c!=self.corpus.chunks.get(hit.chunk_id) or entity is None:
                 raise IndexStaleError('Source chunk missing or changed; rebuild index')

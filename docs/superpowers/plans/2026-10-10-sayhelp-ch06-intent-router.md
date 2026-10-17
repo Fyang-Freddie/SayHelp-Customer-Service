@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python、FastAPI 0.142.2、SQLAlchemy 2.0.54/MySQL、LangGraph 1.2.2、langgraph-checkpoint-sqlite 3.1.1、langchain-core/langchain-openai 1.6.6/1.6.7、PyMilvus 2.6.x、已有embedding/reranker、httpx、原生HTML/JS。
 
-**Spec:** `docs/superpowers/specs/2026-10-10-sayhelp-ch06-intent-router-design.md`；用户已于2026-10-10明确批准。此计划仍待用户审阅并选择执行方式。
+**Spec:** `docs/superpowers/specs/2026-10-10-sayhelp-ch06-intent-router-design.md`；用户已于2026-10-10明确批准。用户于2026-10-11选择Native，计划进入执行。
 
 ## Global Constraints
 
@@ -53,7 +53,7 @@
 
 Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标签的非敏感样例；从返回model取得固定版本，再通过JEV_MODEL配置后续评估。不得把列表中的别名当作已验证固定版本；新版本/criteria变更使旧阈值失效。
 
-## 任务1：可验证的Markdown业务数据接口
+## Task 1: 可验证的Markdown业务数据接口
 
 **Files:** Create `app/business_data.py`, `tests/test_ch06_business_data.py`, `tests/fixtures/ch06/`；Modify `app/tools.py`, `tests/test_tools.py`, `dev-notes/ch06.md`；将用户提供的6个knowledge_db文档作为当前来源快照纳入本章分支。
 
@@ -67,7 +67,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] Run上述测试及`tests/test_tools.py`；对真实目录只运行解析/一致性检查，保存`eval/ch06/data-validation.json`，失败报告真实原因并修复读取逻辑或请用户纠正来源。
 - [ ] 更新四项记录，提交并推送`feat(ch06): read scoped orders and logistics from Markdown`。
 
-## 任务2：Jev客户端、严格结果契约和集中置信策略
+## Task 2: Jev客户端、严格结果契约和集中置信策略
 
 **Files:** Create `app/ch06_types.py`, `app/jev_classifier.py`, `app/intent_policy.py`, `app/intent_criteria.py`, `tests/test_jev_classifier.py`, `tests/test_intent_policy.py`, `scripts/check_jev.py`；Modify `app/intent.py`, `app/config.py`, `app/model_service.py`, `tests/test_intent.py`。
 
@@ -82,7 +82,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] Run `python scripts/check_jev.py --live --output eval/ch06/protocol-check.json`，仅1次choice请求，确认actual model后配置JEV_MODEL；此请求不宣称已校准。验证密钥不在结果/异常/日志中。
 - [ ] 记录API核查、真实调用次数、结果，提交并推送`feat(ch06): classify intent through Jev choice`。
 
-## 任务3：历史查询理解与真实意图校准
+## Task 3: 历史查询理解与真实意图校准
 
 **Files:** Create `app/query_resolver.py`, `app/ch06_prompts.py`, `tests/test_query_resolver.py`, `app/evaluation/ch06.py`, `tests/test_ch06_evaluation.py`, `eval/ch06/intent-cases.json`, `eval/ch06/dialogue-cases.json`, `scripts/evaluate_ch06.py`；Modify `app/model_service.py`。
 
@@ -97,7 +97,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] 阈值和配置冻结；独立验收留任务10执行。中文失败如需改变技术选型必须停下来问用户，不能换模型类别或补关键词分类器。
 - [ ] 即时记录原始评估、误例和返工，提交并推送`feat(ch06): resolve conversational queries and calibrate intent routing`。
 
-## 任务4：新知识清单、核心场景扩写与政策检索
+## Task 4: 新知识清单、核心场景扩写与政策检索
 
 **Files:** Create `app/query_expansion.py`, `app/policy_retrieval.py`, `tests/test_query_expansion.py`, `tests/test_policy_retrieval.py`, `eval/ch06/corpus.json`, `eval/ch06/policy-cases.json`, `tests/fixtures/ch04_corpus/`；Modify `app/ch04_ingest.py`, `app/build_ch04_knowledge.py`, `app/rag_retrieval.py`, `app/hybrid_store.py`, `app/workflow_knowledge.py`, `app/model_service.py`, `app/main.py`, `scripts/evaluate_ch06.py`, `tests/ch04_support.py`, `tests/test_ch04_ingest.py`, `tests/test_ch04_index.py`, `tests/test_ch04_dataset.py`, `tests/test_rag_index_health.py`, `tests/test_workflow_knowledge.py`。
 
@@ -113,7 +113,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] 建48条政策样例（24校准/24验收，含退款、售后、无答案、限制条款与FAQ），先`evaluate_ch06 --suite policy --split calibration --dry-run`再`--live`；最多修订一轮，产物`eval/ch06/knowledge-policy.json`绑定语料/扩写/查询方式/重排指纹。单Query商品咨询也需当前语料校准，不能沿用旧raw-query门限。
 - [ ] 记录并提交推送`feat(ch06): retrieve policy evidence with query expansion`。
 
-## 任务5：等待交互与退款动作的持久化边界
+## Task 5: 等待交互与退款动作的持久化边界
 
 **Files:** Create `app/ch06_db.py`, `app/ch06_repository.py`, `app/init_ch06_db.py`, `db/ch06_schema.sql`, `tests/test_ch06_db.py`, `tests/test_ch06_repository.py`；Modify `app/workflow_repository.py`, `app/chat_views.py`。
 
@@ -126,7 +126,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] 故障注入断言无半条动作、无越会话访问、同request_id不同payload返回冲突；Run上述测试加`tests/test_workflow_repository.py tests/test_chat_views.py`。
 - [ ] 记录并提交推送`feat(ch06): persist recoverable interactions and refund actions`。
 
-## 任务6：确定性退款售后子流程和真实interrupt
+## Task 6: 确定性退款售后子流程和真实interrupt
 
 **Files:** Create `app/aftersales_workflow.py`, `app/workflow_interactions.py`, `tests/test_aftersales_workflow.py`, `tests/test_ch06_interrupts.py`；Modify `app/workflow_graph.py`, `app/workflow_types.py`, `app/workflow_log.py`, `app/agent_runtime.py`, `app/prompts.py`, `app/model_service.py`, `tests/test_workflow_graph.py`, `tests/test_workflow_checkpoint.py`。
 
@@ -140,7 +140,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] 用真实SQLite文件测试关闭重开后同thread_id恢复、另一thread隔离；断言resolver/classifier调用次数仍为1，GraphInterrupt不计node_error。新诉求结束旧等待并重新走Jev；错误ID保留有效等待。
 - [ ] Run上述测试加既有graph/checkpoint/agent_runtime测试；记录并提交推送`feat(ch06): add deterministic aftersales workflow with interrupts`。
 
-## 任务7：恢复接口、SSE与双存储对账
+## Task 7: 恢复接口、SSE与双存储对账
 
 **Files:** Create `tests/test_ch06_interaction_api.py`, `tests/test_ch06_recovery.py`；Modify `app/workflow_service.py`, `app/main.py`, `app/schemas.py`, `app/chat_views.py`, `app/workflow_repository.py`, `tests/test_workflow_service.py`, `tests/test_workflow_api.py`, `tests/test_conversation_management.py`。
 
@@ -153,7 +153,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] 新普通聊天在等待时走执行输入判别；纯ID补槽，改变诉求则取消旧等待再建立新轮。旧卡片禁止恢复，客户变化清理旧绑定。删除会话禁止恢复和动作提交。
 - [ ] 故障注入两个存储先后失败、服务重启、重复点选、resume处理中断线；断言模型/退款次数与预期一致。Run上述测试及service/api/conversation_management模块；记录并提交推送`feat(ch06): stream and restore human-in-the-loop interactions`。
 
-## 任务8：退款申请表单后端与幂等提交
+## Task 8: 退款申请表单后端与幂等提交
 
 **Files:** Create `app/refund_service.py`, `tests/test_refund_service.py`, `tests/test_refund_api.py`；Modify `app/ch06_repository.py`, `app/main.py`, `app/schemas.py`, `app/chat_views.py`, `app/workflow_service.py`。
 
@@ -166,7 +166,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] 无资金划转调用，不改orders.md；成功文案为“退款申请已提交，等待处理”。重复、取消和数据错误不返回“退款成功”。
 - [ ] Run上述测试加ch06_repository；记录并提交推送`feat(ch06): submit idempotent refund requests after confirmation`。
 
-## 任务9：聊天订单卡片与退款表单（前端例外）
+## Task 9: 聊天订单卡片与退款表单（前端例外）
 
 **Files:** Modify `app/web/index.html`；浏览器证据保存`eval/ch06/browser-acceptance.md`与允许提交的无敏感截图。
 
@@ -178,7 +178,7 @@ Jev协议验证先从配置读取稳定别名jev-latest，只跑1条有预期标
 - [ ] 用真实浏览器走未带订单号→客户ID→卡片→点击恢复→政策答复→表单；再检查刷新/重复点击/取消/切话题。此任务不做brainstorm、TDD或独立前端code review；所依赖的后端安全/契约测试仍必须通过。
 - [ ] 按用户反馈直接调整效果，逐次记录；完成后提交推送`feat(ch06): add chat order cards and refund form`。
 
-## 任务10：独立验收、全分支后端评审与交付
+## Task 10: 独立验收、全分支后端评审与交付
 
 **Files:** Create `scripts/demo_ch06.py`, `tests/test_demo_ch06.py`, `eval/ch06/acceptance-report.md`；Modify `scripts/evaluate_ch06.py`, `README.md`, `dev-notes/ch06.md`。
 

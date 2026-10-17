@@ -1,0 +1,16 @@
+{
+  "conversation_id": "21",
+  "scope": "Real service/graph follow-up on the original 24-turn checkpoint; one earlier persistence failure remains an incomplete audit row; HTTP cookie path not repeated",
+  "original_report": "default-acceptance.json",
+  "question": "最开始那个订单后来怎么说？请复述订单号和我当时提出的诉求。",
+  "answer": "您最开始提供的信息如下：\n\n- **订单号**：TB202611000001  \n- **客户ID**：C0016  \n- **最初诉求**：投诉该订单缺少一个配件；要求核实缺件情况并告知后续处理；先记录投诉；**不要替您申请退款**；**不要承诺已经补发**。\n\n后续您多次强调的诉求是：\n\n- 目前仍未收到明确处理结果；\n- 要求客服区分“已经核实的信息”和“还在等待确认的信息”；\n- 不能把您的期望写成平台已经完成的操作；\n- 要求保留原始沟通记录，之后有结果再明确告知；\n- 如果还不能确认，请直接说明仍在核实；\n- 不要给出没有依据的时间承诺；\n- 不要自动替您办理退款。\n\n目前可说明的是：这些是您提供并坚持的诉求；关于该订单是否确实缺件、缺哪个配件、后续如何处理，目前仍属于待核实事项，暂无明确处理结论。我也不能声称已经转人工、建工单、退款或补发。  \n如需正式投诉记录或人工跟进，请选择“转人工”或“建立工单”按钮，由对应流程处理。",
+  "checkpoint_messages": 52,
+  "summary_count": 0,
+  "model_logs": 2,
+  "recall_correct": true,
+  "passed": true,
+  "business_messages": 51,
+  "complete_business_messages": 50,
+  "excluded_incomplete_messages": 1,
+  "downgrades": 0
+}

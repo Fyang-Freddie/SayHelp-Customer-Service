@@ -14,8 +14,7 @@ from app.knowledge_types import CorpusSnapshot, EvidenceChunk
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS = {
     'knowledge_db/after-sales-manual.md': 'manual',
-    'knowledge_db/product-faq.md': 'faq',
-    'knowledge_db/product-specs.md': 'manual',
+    'knowledge_db/product-specifications.md': 'manual',
     'knowledge_db/returns-policy.md': 'policy',
 }
 _FIELDS = ('category','questions','answer','section_path','content_type','is_key_clause')
@@ -30,7 +29,7 @@ def product_category(section: str, source_file: str) -> str:
         if needle in section:
             return category
     return {'knowledge_db/returns-policy.md':'政策','knowledge_db/after-sales-manual.md':'售后',
-            'knowledge_db/product-faq.md':'购物','knowledge_db/product-specs.md':'商品'}[source_file]
+            'knowledge_db/product-faq.md':'购物','knowledge_db/product-specs.md':'商品','knowledge_db/product-specifications.md':'商品'}[source_file]
 
 
 def load_documents(manifest: Path) -> list[tuple[str,str,str,str]]:
@@ -55,7 +54,7 @@ def load_documents(manifest: Path) -> list[tuple[str,str,str,str]]:
         documents.append((name,kind,body,digest_text(body)))
         seen.add(name)
     if seen != set(DOCUMENTS):
-        raise ValueError('Manifest must contain exactly the four real corpus documents')
+        raise ValueError('Manifest must contain exactly the current whitelisted corpus documents')
     return documents
 
 

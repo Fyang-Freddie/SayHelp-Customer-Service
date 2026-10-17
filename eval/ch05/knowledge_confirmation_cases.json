@@ -1,0 +1,14 @@
+[
+  {"id":"confirm-a1","split":"confirmatory","question":"MH-HP12恒温多少度，连续通电建议不要超过多久？","answerable":true,"evidence":{"source_file":"knowledge_db/product-specs.md","section_path":"商品规格手册 / 恒温加热垫(型号 MH-HP12)","quote":"恒温 38℃,内置过热保护,连续通电不超过 12 小时为宜"}},
+  {"id":"confirm-a2","split":"confirmatory","question":"MH-W60水箱多少升，表面盘用的是什么材质？","answerable":true,"evidence":{"source_file":"knowledge_db/product-specs.md","section_path":"商品规格手册 / 自动饮水机 Pro 不锈钢(型号 MH-W60)","quote":"水箱容量:6L,304 不锈钢表面盘"}},
+  {"id":"confirm-a3","split":"confirmatory","question":"MH-LP100能给多重的猫用？","answerable":true,"evidence":{"source_file":"knowledge_db/product-specs.md","section_path":"商品规格手册 / 智能猫砂盆 Pro(型号 MH-LP100)","quote":"适用猫咪体重:1.5kg 至 8kg"}},
+  {"id":"confirm-a4","split":"confirmatory","question":"MH-FD10没有市电时用什么电池应急？","answerable":true,"evidence":{"source_file":"knowledge_db/product-specs.md","section_path":"商品规格手册 / 自动喂食器 基础版(型号 MH-FD10)","quote":"4 节 5 号电池断电应急"}},
+  {"id":"confirm-a5","split":"confirmatory","question":"商品发错货引起退换货，运费由谁承担？","answerable":true,"evidence":{"source_file":"knowledge_db/returns-policy.md","section_path":"退货退款政策 / 退换货运费承担","quote":"因商品质量问题、发错货、少发漏发导致的退换货,运费由平台承担"}},
+  {"id":"confirm-a6","split":"confirmatory","question":"退货核验通过后退款通过什么渠道退回，到账时间按什么规则？","answerable":true,"evidence":{"source_file":"knowledge_db/returns-policy.md","section_path":"退货退款政策 / 无理由退货 / 退款时效","quote":"退款原路退回,到账时效以平台售后规则为准"}},
+  {"id":"confirm-n1","split":"confirmatory","question":"MH-HP12的欧盟CE证书编号和签发实验室名称是什么？","answerable":false,"missing":"没有认证证书编号和实验室资料"},
+  {"id":"confirm-n2","split":"confirmatory","question":"MH-W40滤芯微孔的精确直径是多少微米？","answerable":false,"missing":"没有滤芯微孔尺寸参数"},
+  {"id":"confirm-n3","split":"confirmatory","question":"MH-LP50内部PCB板的长宽尺寸和Gerber文件在哪？","answerable":false,"missing":"没有内部PCB尺寸及制造文件"},
+  {"id":"confirm-n4","split":"confirmatory","question":"喵喵优选公司的实缴注册资本和税务登记号码是什么？","answerable":false,"missing":"没有企业注册资本和税务信息"},
+  {"id":"confirm-n5","split":"confirmatory","question":"宠物抗生素AM-7给两公斤幼猫服用的剂量是多少？","answerable":false,"missing":"未收录药品且没有医疗用药资料"},
+  {"id":"confirm-n6","split":"confirmatory","question":"MH-FD30固件开发仓库的Git提交哈希是什么？","answerable":false,"missing":"没有固件开发仓库及提交资料"}
+]

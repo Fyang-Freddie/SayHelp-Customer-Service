@@ -23,10 +23,12 @@ class ToolExecutor:
         self.timeout_seconds = timeout_seconds
         self.max_read_attempts = max_read_attempts
 
-    async def execute(self, call: dict) -> ToolMessage:
+    async def execute(self, call: dict, *, max_attempts: int | None = None, on_attempt=None) -> ToolMessage:
         """Return a matching result even when validation or execution fails."""
+        execution_attempts = 0
         def error(content: str) -> ToolMessage:
-            return ToolMessage(content=content, tool_call_id=call['id'], status='error')
+            return ToolMessage(content=content, tool_call_id=call['id'], status='error',
+                               additional_kwargs={'execution_attempts': execution_attempts})
 
         name = call.get('name')
         if not isinstance(name, str) or name not in self.tools:
@@ -42,11 +44,19 @@ class ToolExecutor:
             return error('工具参数无效，请核实客户提供的信息。')
 
         attempts = self.max_read_attempts if name in _READ_TOOLS else 1
+        if max_attempts is not None:
+            if type(max_attempts) is not int or max_attempts < 0:
+                raise ValueError('max_attempts must be a nonnegative integer')
+            attempts = min(attempts, max_attempts)
         for _ in range(attempts):
+            execution_attempts += 1
+            if on_attempt is not None:
+                await on_attempt(name, execution_attempts)
             try:
                 result = await asyncio.wait_for(selected.ainvoke(validated), timeout=self.timeout_seconds)
                 content = result if isinstance(result, str) else json.dumps(result, ensure_ascii=False)
-                return ToolMessage(content=content, tool_call_id=call['id'], status='success')
+                return ToolMessage(content=content, tool_call_id=call['id'], status='success',
+                                   additional_kwargs={'execution_attempts': execution_attempts})
             except Exception:
                 # Sync tools run in workers that may finish after timeout. Never retry a write.
                 if name == 'create_ticket':

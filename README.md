@@ -1,5 +1,42 @@
 # SayHelp 客服系统
 
+## ch05 Workflow + Agent（当前分支）
+
+在线聊天入口现在使用 LangGraph：原话透传 → 七类意图分类 → 固定路由。商品咨询、退款退货先检索并通过置信闸；订单、物流、售后走有预算的 Agent 循环；闲聊和投诉使用固定回复。选择工具时的草稿不发给用户，结束选择后由未绑定工具的模型真实流式生成。每轮最多6次 Agent 模型调用（含最后生成）、6次实际工具执行，默认12000累计token（含分类）；分类请求单独计数。
+
+已有完整 ch04 数据库和知识索引的环境，先备份 MySQL，再执行增量迁移；该命令只增加4张 workflow 元数据表，遇到不兼容/部分迁移会拒绝，不会重建知识库。不要以迁移为由重新摄入或删除已有 Milvus 集合。
+
+```powershell
+python -m pip install -r requirements.txt -c requirements-ch05.lock.txt
+python -m app.init_ch05_db
+python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001 --workers 1
+```
+
+运行配置沿用本地 `.env`，不得提交凭据。启动时验证 ch05 原话检索校准指纹并预热本地检索模型。`eval/ch05/confidence.json` 与当前语料、模型、原话查询模式绑定；ch04 校准文件不能替代它。保留的原始知识验收失败及独立确认集结果见 [验收报告](eval/ch05/report.md)，不要把旧章节状态理解为本章全部完成。
+
+在仓库根目录运行以下命令。两个演示入口始终使用 `.env` 或进程环境配置的真实模型及现有只读知识检索，需已有 MySQL、Milvus、模型缓存和匹配校准。每次运行会向配置模型发送问题、提示、工具结果及检索证据并产生调用费用；没有模拟模式或配置失败后的假模型回退。无需先启动 API 服务，CLI 使用临时 SQLite checkpointer。
+
+```powershell
+python scripts/demo_ch05.py --mode bare --case multi-step
+python scripts/demo_ch05.py --mode workflow --case logistics
+python scripts/demo_ch05.py --mode workflow --case policy
+python scripts/demo_ch05.py --mode workflow --case complaint
+python scripts/demo_ch05.py --mode workflow --case chitchat
+python scripts/demo_ch05.py --mode workflow --case weak-evidence
+python scripts/demo_ch05.py --mode workflow --case missing-info
+python -m app.bare_agent --message "查询订单1001的状态"
+```
+
+`bare` 与 `workflow` 都接受上述7个 case；`--live` 参数已移除。**订单和物流数据源尚未接入**，工具只返回未接入原因，不生成状态、金额或位置。multi-step 先查订单，仅真实结果为已发货/已完成才允许继续查物流；当前应在订单未接入后停止并说明需要核实。商品规格和政策继续通过真实文档检索与置信闸回答，未绑定知识适配器的商品工具也明确返回未接入。后续数据计划存放在 `knowledge_db`，目前没有约定格式或新增连接器。演示不写业务历史或真实 tickets；投诉只打印建议，实际建单需在网页点击「建工单」并确认。末行 JSON 记录调用、工具、token、节点、真实流块数量；`--output 路径.json` 可保存结果。
+
+网页的「转人工」和「建工单」是独立动作。转人工保留前端模拟，只显示“已转接人工客服”，不写工单；建工单打开确认框，可编辑类型/描述或取消。相同动作同载荷重试复用原工单，修改已提交载荷会冲突。忽略建议可以继续聊天，过期/已删除会话动作不能建单；网络结果未知时由用户明确重试，不自动追加请求。
+
+SQLite 默认路径为 `.runtime/ch05/checkpoints.sqlite`（可用 `WORKFLOW_CHECKPOINT_PATH` 覆盖），MySQL 保存业务和完整历史。只能单实例、单进程 `--workers 1`；进程内预约锁和本地 SQLite 不提供跨进程协调。备份前停止这个 API 实例并等待连接关闭，保留 SQLite 及可能存在的关联日志文件，同时独立备份 MySQL。两库没有分布式事务，运行时复制单个 SQLite 文件或分别在不同时间备份两库不保证一致恢复；故障恢复以完整 MySQL 历史重建上下文，不能自动重放写工具。临时 CLI SQLite 在命令退出后删除。
+
+`.runtime/ch05/events.jsonl` 保存受限结构化事件；弱证据原问题单独写入本地 `low-confidence.jsonl`，不进旧低置信度池或飞轮数据库。文件不提交 Git，含原问题的日志需要本地访问控制、备份和清理；当前没有自动轮转/保留策略。日志写失败时不会谎称“已记录”。
+
+移除假数据前的本章验收、真实调用次数与未完成项保留在 [report.md](eval/ch05/report.md)、[acceptance_results.json](eval/ch05/acceptance_results.json)，其中模拟数据结果属于历史基线，不代表当前运行行为；本次结果见 [移除模拟数据补充验收](eval/ch05/no-simulation-report.md)，过程见 [dev-notes/ch05.md](dev-notes/ch05.md)。以下 ch01–ch04 内容保留为历史流程；旧 ChatService 离线评估仍独立保留，旧生产注入参数已不再适用于 create_app。
+
 `main` 已整合 ch01–ch04 各功能分支当前已有的代码。知识问答默认使用 Milvus 原生 BM25 与 dense 混合检索、RRF 融合、bge-reranker-v2-m3 重排和证据门控；业务工具、会话和消息保存在 MySQL。历史列表支持滚动、置顶/取消置顶和逻辑删除。
 
 **ch04 仍在开发中。** 已合并代码不表示整章验收完成：真实模型演示、完整四策略评估、编造个案台账流程，以及满意度前端收尾仍以[实施计划](docs/superpowers/plans/2026-10-05-sayhelp-ch04-hybrid-rag.md)的未完成项为准。开发和验证记录见 [dev-notes/ch04.md](dev-notes/ch04.md)。
@@ -28,7 +65,7 @@ python -m app.calibrate_ch04
 python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
 ```
 
-`app.init_ch04_db` 验证并补齐已有业务表及 [ch04 迁移](db/ch04_migration.sql)，知识索引读取 `knowledge_db` 中的真实文档，默认使用独立 `knowledge_ch04` 集合。`app.calibrate_ch04` 会调用配置的模型归一化标注问题并生成校准产物；换环境重新建库后需重新校准，不能直接把仓库中的既有运行快照视为通用结果。业务工具中的商品、订单、物流仍属于早期章节的演示实现。
+`app.init_ch04_db` 验证并补齐已有业务表及 [ch04 迁移](db/ch04_migration.sql)，知识索引读取 `knowledge_db` 中的真实文档，默认使用独立 `knowledge_ch04` 集合。`app.calibrate_ch04` 会调用配置的模型归一化标注问题并生成校准产物；换环境重新建库后需重新校准，不能直接把仓库中的既有运行快照视为通用结果。当前商品工具已使用真实知识文档，订单/物流数据源尚未接入并明确返回不可用。
 
 下面保留旧章节的 dense 检索及数据提取说明作历史参考；当前聊天页已兼容 ch04 的 `citations` 和旧 `sources` 事件。
 
@@ -76,7 +113,7 @@ node scripts/validate_ch04_citations.cjs
 
 | 提问 | 预期工具 | 预期结果 |
 | --- | --- | --- |
-| 订单 1001 的物流到哪了 | `query_logistics` | 随机模拟物流状态和位置；回答明确说明是演示数据 |
+| 订单 1001 的物流到哪了 | `query_logistics` | 明确说明数据源尚未接入，不能提供真实物流状态或位置 |
 | 退货政策是什么 | `query_faq` | dense 检索命中退货 FAQ，回答包含七天内可申请等内容 |
 | 邮费是多少 | `query_faq` | 语义命中运费 FAQ；回答依据命中原文并保留结算页限定 |
 
@@ -93,7 +130,7 @@ node scripts/validate_ch04_citations.cjs
 
 ## 范围和限制
 
-五个 LangChain `@tool` 为 `query_order`、`query_product`、`query_logistics`、`query_faq`、`create_ticket`。前三个随机模拟，FAQ 使用本地 BGE-M3 与 Milvus dense 召回、MySQL 原文回填；工单写入 MySQL。读工具有超时和有限重试；创建工单不会自动重试，以免重复创建。聊天页只显示工具名称与状态，不显示参数或错误细节。并发会话预约在单个 API 进程内协调；API 使用单 worker；知识摄入和索引通过 MySQL advisory lock 协调跨进程写入。
+五个 LangChain `@tool` 为 `query_order`、`query_product`、`query_logistics`、`query_faq`、`create_ticket`。订单/物流尚未接入，商品/FAQ 在当前工作流使用真实文档混合检索及置信闸；商品未绑定知识适配器时返回未接入；工单写入 MySQL。读工具有超时和有限重试；创建工单不会自动重试，以免重复创建。聊天页只显示工具名称与状态，不显示参数或错误细节。并发会话预约在单个 API 进程内协调；API 使用单 worker；知识摄入和索引通过 MySQL advisory lock 协调跨进程写入。
 
 可选上下文参数：`CONTEXT_TOKEN_BUDGET=4096`、`RESPONSE_TOKEN_RESERVE=512`、`MAX_CONVERSATIONS=100`、`MAX_TURNS_PER_CONVERSATION=20`。模型服务使用 `CHAT_BASE_URL` 指向的 OpenAI 兼容接口；实际验收使用已配置的 DeepSeek。
 
@@ -309,3 +346,49 @@ commits. Detailed evidence is in [dev-notes/ch03.md](dev-notes/ch03.md).
 - `DELETE /v1/conversations/{id}`，成功及重复删除均返回 204。逻辑删除使列表、读取及续聊不可见，消息、工单与低置信度记录保留作追溯。
 - `GET /v1/conversations?limit=30&before=...` 中 before 取上一页 next_cursor，旧数字游标需刷新后重新加载。
 - 生成中的会话置顶/删除返回 409，存储失败返回 503。必须保持 **单进程 `--workers 1`**：聊天预留与历史管理共用进程内锁；多 worker 部署需要先实现跨进程协调。
+
+### 第六章：意图分流与退款申请（验收中）
+
+当前版本的 Jev 单标签意图、真实订单卡片、LangGraph 暂停恢复和本地待处理退款申请已接入。**独立验收仍有失败，暂不作为正式发布版本。** 结果见 [eval/ch06/acceptance-report.md](eval/ch06/acceptance-report.md)，开发记录见 [dev-notes/ch06.md](dev-notes/ch06.md)。
+
+准备本地 MySQL 与 Milvus，先对现有业务库做备份；服务端 `.env` 至少配置原有聊天上游、数据库以及 `TYPESAFE_API_KEY` 与 `JEV_MODEL`。Jev 密钥不得进入浏览器或 Git。使用已有的 Python 环境，在仓库根目录运行：
+
+```powershell
+python -m app.init_ch05_db
+python -m app.init_ch06_db
+python scripts/demo_ch06.py --case order-picker --live --init-db --count-evaluation
+```
+
+最后一条启动 `http://127.0.0.1:8096/` 的单 worker 浏览器演示。`--case` 可选 `context-switch`、`order-picker`、`refund-form`，只标记手动演示场景，脚本不会自动提交退款申请；不传 `--live` 只打印 dry-run 提示。用 `--env-file D:/.../.env` 指向工作树外的服务端配置时，命令中的路径改为实际位置。首次加载本地向量模型可能较久。不要启动多个 worker：当前聊天会话锁在进程内。
+
+手动验收：从无订单号“我想申请退款”开始，回复自己声明的客户 ID，点击其订单商品卡片，检查政策来源与资格答复；eligible 才有固定原因下拉。提交后生成的只是**待处理申请**，不是转账或退款到账。也可用“客户 ID + 订单号查物流 → 这个能退吗 → 先不退了继续查物流”检查多轮切换。只要政策证据不足，核心流程会明确兜底，不会批准申请。
+
+### 第七章：当前会话上下文与多会话侧栏
+
+服务端将完整原文保留在 MySQL `conversations`/`messages` 和 LangGraph checkpoint；发给聊天模型的是按预算整理的三层视图。`summary_upto_msg_id` 与 `layer1_from_msg_id` 是单调边界，旧轮次的摘要追加到独立表。摘要在后台运行，当前回复不等待摘要。`GET /api/conversations` 与 `GET /api/conversations/{id}/messages` 使用浏览器访客 cookie 校验归属。旧会话原文可从侧栏回载并继续聊天。上线前运行加法迁移，且继续使用单进程服务以保持现有会话锁语义。
+
+```powershell
+python -m app.init_ch07_db
+python scripts/check_ch07_budget.py --profile default --json
+python scripts/check_ch07_budget.py --profile demo --json
+python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001 --workers 1
+```
+
+窗口账本为 `H = min(N×T, max(0, W-F-R-S-O-U-G-P))`，其中 `G=ceil(0.05W)`、`P=K×(A+X+B)`。`W` 是模型窗口，`F` 是实际固定 system 文本与有序工具 schema 的估算，`R` 是本轮证据预留，`S` 是摘要预留，`O` 是输出预留，`U` 是当前用户输入，`K` 是最多选择步数，`A` 是每步选择输出，`X` 是整批工具结果上限，`B` 是协议余量。`N×T` 表示想保留轮数乘以每轮稳态占用；层 1 获得 `floor(0.7H)`，层 2 获得余下部分。统一以 `count_tokens_approximately(chars_per_token=1.0, extra_tokens_per_message=3.0)` 计数；实际请求在调用前再次验证，启动时历史不足一轮即报“上下文预算不足”。预算 CLI 根据当前提示词和 schema 重算，不把上游模型容量验证伪装为已完成。
+
+默认窗口 `MODEL_CONTEXT_WINDOW=65536`。演示配置为 `MODEL_CONTEXT_WINDOW=18000 MAX_OUTPUT_TOKENS=2000 MAX_USER_INPUT_TOKENS=2000 MAX_AGENT_STEPS=3 TOOL_RESULT_MAX_TOKENS=1200 RERANK_TOP_K=5`。知识证据的冻结校准预算另由 `KNOWLEDGE_CONTEXT_TOKEN_BUDGET=4096` 与 `KNOWLEDGE_RESPONSE_TOKEN_RESERVE=512` 保持；更改它们会触发知识策略指纹校验，不会隐式放宽门槛。
+
+启动还会从上游 `/models` 读取所选模型的 `context_window` 与输出上限，配置超出真实容量便拒绝启动；无法读取的兼容服务须按官方资料显式设置 `MODEL_PROVIDER_CONTEXT_WINDOW`，日志会标为 `configured_unverified`，不要把人工声明当作上游实测。DeepSeek 旧别名 `deepseek-v4-flash` 按其官方映射查询当前 `deepseek-flash` 容量。
+
+真实验收脚本读取现有服务端配置和冻结的 24 轮样例，发起真实模型、Jev、MySQL 与 Milvus 请求，并使用持久化额度账本。预先启动 MySQL 和 Milvus；以下 `--env-file` 改成你的实际服务端配置路径，绝不把 `.env` 提交到 Git。`--dry-run` 不发送请求。
+
+```powershell
+python scripts/demo_ch07.py --profile default --dry-run
+python scripts/demo_ch07.py --profile demo --dry-run
+python scripts/demo_ch07.py --profile default --live --init-db --env-file D:/path/to/.env
+python scripts/demo_ch07.py --profile demo --live --init-db --env-file D:/path/to/.env
+rg 'model_ctx|history_ctx|summary|层1' log/app.log
+python -m pytest -q
+```
+
+`model_ctx` 记录实际送出的逐条消息、全文摘要、工具定义与 token 估算；`history_ctx` 每轮记录指代消解和意图分流共用的历史，闲聊兜底轮也能查到。日志可能含用户提供的订单号等原话，留在忽略目录 `log/app.log`，不要提交。当前验证数据和限制见 [第七章验收记录](eval/ch07/acceptance-report.md)，开发过程见 [dev-notes/ch07.md](dev-notes/ch07.md)。

@@ -41,6 +41,8 @@ def test_overlap_range_includes_actual_previous_sentence():
 
 @pytest.fixture
 def corpus(tmp_path, monkeypatch):
+    from tests.ch04_support import activate_legacy_corpus
+    activate_legacy_corpus(monkeypatch,tmp_path)
     def ingest_call(session_factory, manifest):
         ingest = module('ch04_ingest')
         monkeypatch.setattr(ingest, 'ROOT', tmp_path)

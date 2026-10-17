@@ -1,0 +1,412 @@
+"""Reconcile MySQL history, stream the graph, and own its SQLite lifecycle."""
+import asyncio
+import hashlib
+import json
+from collections.abc import AsyncIterator
+from contextlib import aclosing, asynccontextmanager, ExitStack
+from uuid import uuid4
+from time import perf_counter
+
+from anyio import CancelScope
+from langchain_core.messages import AIMessage, HumanMessage, RemoveMessage, SystemMessage, ToolMessage
+from langgraph.graph.message import REMOVE_ALL_MESSAGES
+from langgraph.types import Command
+
+from app.agent_runtime import AgentLimits, READ_TOOLS
+from app.chat_service import ChatEvent
+from app.chat_views import public_actions
+from app.history import prepare_context
+from app.context_history import reconcile_history
+from app.intent import classify_intent
+from app.prompts import render_workflow_system_prompt
+from app.tools import build_tools
+from app.workflow_graph import build_workflow, open_workflow_checkpointer
+from app.workflow_knowledge import create_live_knowledge_gate
+from app.workflow_log import WorkflowLog
+from app.workflow_repository import WorkflowRepository
+
+
+async def _settled(function, *args, **kwargs):
+    """Finish started database work even under repeated task/scope cancellation."""
+    worker = asyncio.create_task(asyncio.to_thread(function, *args, **kwargs))
+    try:
+        return await asyncio.shield(worker)
+    except asyncio.CancelledError:
+        with CancelScope(shield=True):
+            while not worker.done():
+                try:
+                    await asyncio.shield(worker)
+                except asyncio.CancelledError:
+                    continue
+                except Exception:
+                    break
+        if not worker.cancelled():
+            worker.exception()
+        raise
+
+
+class WorkflowService:
+    def __init__(self, repository, workflow_repository, graph, settings, *, log=None, interactions=None, business=None, refunds=None, context_runtime=None):
+        self.context_runtime=context_runtime
+        self.refunds = refunds
+        self.business = business
+        self.interactions = interactions
+        self.repository = repository
+        self.workflow_repository = workflow_repository
+        self.graph = graph
+        self.settings = settings
+        self.log = log if log is not None else WorkflowLog()
+
+    @staticmethod
+    def _public_pending(row):
+        return {key:row[key] for key in ('interrupt_id','turn_id','message_id','kind','payload','status')}
+
+    async def get_pending_interaction(self,conversation_id):
+        if self.interactions is None:return None
+        if await asyncio.to_thread(self.repository.get_conversation,conversation_id) is None:raise KeyError('Conversation not found')
+        config={'configurable':{'thread_id':str(conversation_id)}}
+        snapshot=await self.graph.aget_state(config)
+        display=await asyncio.to_thread(self.interactions.pending,conversation_id)
+        if display and display['status']=='processing':
+            current_ids={point.id for point in snapshot.interrupts}
+            request_id=await asyncio.to_thread(self.interactions.processing_request,conversation_id,display['interrupt_id'])
+            if request_id and display['interrupt_id'] not in current_ids and snapshot.values.get('turn_id')==display['turn_id']:
+                if snapshot.interrupts:
+                    await _settled(self.interactions.finish_resume,request_id,{'status':'paused'})
+                elif not snapshot.next and snapshot.values.get('status')=='done':
+                    current=next((m.id for m in reversed(snapshot.values.get('messages',[])) if isinstance(m,HumanMessage)),None)
+                    if not current:raise ValueError('Original message missing')
+                    message_id,_=await self._persist_reply(conversation_id,display['turn_id'],current,snapshot.values)
+                    await _settled(self.interactions.finish_resume,request_id,{'status':'complete','message_id':message_id})
+        if not snapshot.interrupts:return None
+        point=snapshot.interrupts[0]
+        payload=point.value
+        if not isinstance(payload,dict):raise ValueError('Invalid interrupt payload')
+        row=await _settled(self.interactions.publish_wait,conversation_id,payload['turn_id'],point.id,payload['kind'],payload,snapshot.config['configurable']['checkpoint_id'])
+        if row['status']=='cancelled':return None
+        return self._public_pending(row)
+
+    async def stream_turn(self,conversation_id,message,filters=None):
+        pending=await self.get_pending_interaction(conversation_id)
+        if pending:
+            from app.workflow_interactions import resolve_execution_input
+            decision=await resolve_execution_input(message,pending['payload'])
+            if decision['kind']=='slot_reply':
+                async with aclosing(self.resume_turn(conversation_id,pending['turn_id'],pending['interrupt_id'],uuid4().hex,decision['value'])) as stream:
+                    async for event in stream:yield event
+                return
+            if decision['kind']=='new_request':await self.cancel_interaction(conversation_id,pending['interrupt_id'])
+            else:
+                yield ChatEvent('interaction_required',pending)
+                yield ChatEvent('paused',{'turn_id':pending['turn_id'],'interrupt_id':pending['interrupt_id']})
+                return
+        if self.refunds is not None:
+            await _settled(self.refunds.repository.cancel_actions,conversation_id)
+        async with aclosing(self._stream_turn(conversation_id,message,filters)) as stream:
+            async for event in stream:yield event
+
+    async def validate_resume(self,conversation_id,turn_id,interrupt_id,request_id,value):
+        if self.interactions is None:raise ValueError('Interactions unavailable')
+        await self.get_pending_interaction(conversation_id)
+        digest=hashlib.sha256(json.dumps(value,sort_keys=True,ensure_ascii=False,allow_nan=False,separators=(',',':')).encode()).hexdigest()
+        existing=await asyncio.to_thread(self.interactions.get_resume,conversation_id,turn_id,interrupt_id,request_id,digest)
+        if existing is not None:return {'existing':existing,'digest':digest}
+        pending=await self.get_pending_interaction(conversation_id)
+        if pending is None or (pending['turn_id'],pending['interrupt_id'])!=(turn_id,interrupt_id):raise ValueError('Stale interaction')
+        if pending['status']!='waiting':raise ValueError('Resume is processing')
+        payload=pending['payload'];kind=pending['kind']
+        if not isinstance(value,dict):raise ValueError('Invalid resume value')
+        if kind=='order_selection':
+            if set(value)!={'customer_id','order_id','item_id','data_digest'} or value['customer_id']!=payload['customer_id'] or value['data_digest']!=payload['data_digest']:raise ValueError('Order selection conflict')
+            if self.business is not None and (await asyncio.to_thread(self.business.load)).digest!=value['data_digest']:raise ValueError('Order data changed; refresh selection')
+            if not any(item['order_id']==value['order_id'] and item['item_id']==value['item_id'] for item in payload['orders']):raise ValueError('Order selection conflict')
+        elif kind=='customer_input':
+            if set(value)!={'customer_id'} or not isinstance(value['customer_id'],str) or not value['customer_id'].strip() or len(value['customer_id'])>64:raise ValueError('Invalid customer ID')
+            if self.business is not None and not await asyncio.to_thread(self.business.list_items,value['customer_id']):raise ValueError('Customer has no matching orders')
+        elif kind=='clarification':
+            if set(value)!={'text'} or not isinstance(value['text'],str) or not value['text'].strip() or len(value['text'])>2000:raise ValueError('Invalid clarification')
+        snapshot=await self.graph.aget_state({'configurable':{'thread_id':str(conversation_id)}})
+        current=next((m.id for m in reversed(snapshot.values.get('messages',[])) if isinstance(m,HumanMessage)),None)
+        if not current:raise ValueError('Original message missing')
+        return {'digest':digest,'current_id':current}
+
+    async def resume_turn(self,conversation_id,turn_id,interrupt_id,request_id,value):
+        validated=await self.validate_resume(conversation_id,turn_id,interrupt_id,request_id,value)
+        claim=validated.get('existing') or await _settled(self.interactions.claim_resume,conversation_id,turn_id,interrupt_id,request_id,validated['digest'])
+        if not claim.get('claimed'):
+            result=claim.get('result') or {}
+            if claim['status']=='complete' and result.get('message_id'):
+                yield ChatEvent('completed',{'message_id':result['message_id']})
+            else:
+                yield ChatEvent('resume_status',{'request_id':request_id,'status':claim['status']})
+                yield ChatEvent('paused',{'turn_id':turn_id,'interrupt_id':interrupt_id})
+            return
+        resume={'turn_id':turn_id,'interrupt_id':interrupt_id,'request_id':request_id,'value':value,'current_id':validated['current_id']}
+        async with aclosing(self._stream_turn(conversation_id,'',resume=resume)) as stream:
+            async for event in stream:yield event
+
+    async def cancel_interaction(self,conversation_id,interrupt_id):
+        pending=await self.get_pending_interaction(conversation_id)
+        if pending is None or pending['interrupt_id']!=interrupt_id:raise ValueError('Stale interaction')
+        await _settled(self.interactions.cancel_wait,conversation_id,interrupt_id)
+        await self.graph.aupdate_state({'configurable':{'thread_id':str(conversation_id)}},{'status':'cancelled','selected_order':{},'eligibility':{},'confirmed':{}},as_node='log_turn')
+
+    async def _persist_reply(self, conversation_id, turn_id, current_id, result):
+        # Parent agent outputs include its input history; fixed nodes only emit final.
+        messages = result['messages']
+        start = next((i + 1 for i, m in enumerate(messages) if m.id == current_id), 0)
+        suffix = messages[start:]
+        if not suffix or not isinstance(suffix[-1], AIMessage) or suffix[-1].tool_calls:
+            raise RuntimeError('Workflow has no complete final message')
+        # Intermediate requests/results remain in the full checkpoint, not MySQL.
+        # Keep the final position stable across completion-receipt retries.
+        return await _settled(self.workflow_repository.commit_reply, conversation_id,
+            turn_id, len(suffix), result['answer'], result.get('citations', []),
+            result.get('suggestions', []))
+
+    async def _stream_turn(self, conversation_id: int, message: str, filters=None, *, resume=None) -> AsyncIterator[ChatEvent]:
+        turn_id = resume['turn_id'] if resume else uuid4().hex
+        terminal = {'conversation_id': conversation_id, 'turn_id': turn_id, 'usage': {}}
+        began = perf_counter()
+        committed = False
+        finished = False
+        started = False
+        paused = False
+        try:
+            if await asyncio.to_thread(self.repository.get_conversation, conversation_id) is None:
+                raise KeyError('Conversation not found')
+            if resume:
+                config={'configurable':{'thread_id':str(conversation_id)},'recursion_limit':64}
+                snapshot=await self.graph.aget_state(config)
+                if self.context_runtime:
+                    view=await self.context_runtime.history_view(snapshot.values)
+                    self.context_runtime.log.history(conversation_id,turn_id,view)
+                current=HumanMessage(content='',id=resume['current_id'])
+                inputs=Command(resume={resume['interrupt_id']:resume['value']})
+                started=True
+            else:
+                rows = await asyncio.to_thread(self.repository.load_messages, conversation_id)
+                excluded = await asyncio.to_thread(self.workflow_repository.incomplete_message_ids, conversation_id)
+                current = HumanMessage(content=message, id=turn_id + ':user')
+                config = {'configurable': {'thread_id': str(conversation_id)}, 'recursion_limit': 64}
+                snapshot = await self.graph.aget_state(config) if hasattr(self.graph,'aget_state') else None
+                prior = snapshot.values.get('messages',[]) if snapshot is not None else []
+                turns = reconcile_history([r for r in rows if str(r.id) not in excluded],prior,[])
+                known = {str(m.id) for m in prior}
+                # A user row alone does not prove that its committed reply reached
+                # the checkpoint: MySQL may have committed before SQLite failed.
+                missing = any(str(m.id) not in known for t in turns for m in t.messages)
+                if missing:
+                    restored = [m for t in turns for m in t.messages]
+                    restored_ids={str(m.id) for m in restored}
+                    # Retain unfinished checkpoint-only messages during a one-time import.
+                    orphan=[m for m in prior if m.type!='system' and str(m.id) not in restored_ids]
+                    context=([RemoveMessage(id=REMOVE_ALL_MESSAGES)] if prior else [])+restored+orphan
+                else:
+                    # aget_state may expose pending writes from a failed superstep.
+                    # Re-submit durable turns by stable ID so add_messages confirms
+                    # them without duplicating or discarding checkpoint history.
+                    context=[m for t in turns for m in t.messages]
+                # The attempt may commit before cancellation is observed; cleanup always checks it.
+                started = True
+                current.id = await _settled(self.workflow_repository.append_message_once,
+                    conversation_id, turn_id, 0, 'user', message)
+                inputs = {'conversation_id': conversation_id, 'turn_id': turn_id,
+                    'messages': [*context, current], 'raw_question': message,
+                    'history_message_ids':[str(m.id) for t in turns for m in t.messages],
+                    'filters': filters.model_dump(exclude_none=True) if hasattr(filters, 'model_dump') else (filters or {})}
+                config = {'configurable': {'thread_id': str(conversation_id)}, 'recursion_limit': 64}
+            final = None
+            streamed = False
+            actions=[]
+            message_id=None
+            # Closing settles graph/checkpointer tasks before request reservation is released.
+            async with aclosing(self.graph.astream(inputs, config,
+                    stream_mode=['custom', 'updates'], subgraphs=True)) as stream:
+                async for namespace, mode, data in stream:
+                    if mode == 'custom' and data['event'] in ('model_start', 'model_end', 'model_error'):
+                        terminal.update({k:v for k,v in data['payload'].items() if k in ('usage','model_calls')})
+                    if mode == 'custom' and data['event'] in ('tool_start', 'tool_end'):
+                        yield ChatEvent('tool_status', {'name': data['payload']['name'],
+                            'state': 'running' if data['event'] == 'tool_start' else data['payload']['status']})
+                    elif mode == 'custom' and data['event']=='workflow_stage':
+                        yield ChatEvent('workflow_stage',data['payload'])
+                    elif mode == 'custom' and data['event'] == 'token':
+                        if data['event'] == 'token':
+                            streamed = True
+                        yield ChatEvent(data['event'], data['payload'])
+                    elif mode == 'updates' and not namespace:
+                        for node, result in data.items():
+                            if node=='__interrupt__':
+                                paused=True
+                                continue
+                            if not isinstance(result,dict):continue
+                            terminal.update({k:v for k,v in (result or {}).items() if k in
+                                ('usage','intent','route','model_calls','tool_calls','stop_reason')})
+                            if node not in ('agent', 'aftersales', 'fallback', 'complaint', 'chitchat','recap'):
+                                continue
+                            if node=='aftersales' and result.get('status')=='fallback':continue
+                            if result.get('status') != 'done' or not result.get('answer', '').strip():
+                                raise RuntimeError('Workflow did not produce a complete answer')
+                            final = result
+                            terminal.update({k:result.get(k) for k in ('usage','intent','route','model_calls','tool_calls','stop_reason')})
+                            message_id, actions = await self._persist_reply(
+                                conversation_id, turn_id, current.id, result)
+                            committed = True
+            if paused:
+                snapshot=await self.graph.aget_state(config)
+                if not snapshot.interrupts:raise RuntimeError('Interrupt checkpoint missing')
+                if resume:
+                    await _settled(self.interactions.finish_resume,resume['request_id'],{'status':'paused'})
+                pending=await self.get_pending_interaction(conversation_id)
+                if pending is None:raise RuntimeError('Waiting display could not be restored')
+                finished=True
+                yield ChatEvent('interaction_required',pending)
+                yield ChatEvent('paused',{'turn_id':turn_id,'interrupt_id':pending['interrupt_id']})
+                return
+            # Stream exhaustion confirms ALL graph tasks and final SQLite writes succeeded.
+            if final is None or not committed:
+                raise RuntimeError('Workflow ended without a persisted reply')
+            if not streamed:
+                # Fixed route text is one literal event; model replies are never re-chunked.
+                yield ChatEvent('token', {'text': final['answer']})
+            if final.get('citations'):
+                yield ChatEvent('citations', {'message_id': message_id, 'citations': final['citations']})
+            if actions:
+                yield ChatEvent('actions', {'message_id': message_id, 'actions': public_actions(actions)})
+            if self.refunds is not None and final.get('intent')=='退款退货' and final.get('eligibility',{}).get('status')=='eligible':
+                from app.ch06_types import Eligibility
+                bound=final['selected_order']
+                item=await asyncio.to_thread(self.business.get_item,bound['customer_id'],bound['order_id'],bound['item_id'])
+                if item.to_dict()!=final['order_item']:raise ValueError('Order changed before refund form')
+                form=await _settled(self.refunds.prepare_action,conversation_id,turn_id,item,
+                    Eligibility.model_validate(final['eligibility']),final['evidence'],query=final['resolved_question'],
+                    facts=final.get('facts',{}),model_calls=final.get('model_calls',0),usage=final.get('usage',{}))
+                yield ChatEvent('refund_form',{'message_id':message_id,**form})
+            self.log.write('turn_terminal', {**terminal, 'status':'complete', 'duration_ms':(perf_counter()-began)*1000})
+            if resume:
+                await _settled(self.interactions.finish_resume,resume['request_id'],{'status':'complete','message_id':message_id})
+            finished = True
+            yield ChatEvent('completed', {'message_id': message_id})
+        except BaseException as error:
+            try:
+                self.log.write('turn_terminal', {**terminal, 'status':'cancelled' if isinstance(error, (asyncio.CancelledError, GeneratorExit)) else 'failed',
+                    'error_type':type(error).__name__, 'duration_ms':(perf_counter()-began)*1000})
+            except Exception:
+                pass
+            if started and not finished and not paused and not resume:
+                status = ('incomplete' if isinstance(error, (asyncio.CancelledError, GeneratorExit))
+                          else 'checkpoint_failed' if committed else 'failed')
+                # A failed database can prevent this best-effort marker; never hide the original error.
+                with CancelScope(shield=True):
+                    try:
+                        await _settled(self.workflow_repository.set_turn_status, turn_id, status)
+                    except (Exception, asyncio.CancelledError):
+                        pass
+            raise
+
+
+async def knowledge_tool_answer(gate, keyword, filters=None):
+    """Existing tool wrappers receive complete gate evidence, without another model."""
+    result = await gate.prepare(keyword, filters)
+    useful = bool(result.get('confidence', {}).get('sufficient') and result.get('evidence'))
+    evidence = result.get('evidence', []) if useful else []
+    return {'keyword': keyword, 'matches': evidence, 'useful': useful,
+            'message': '请依据完整证据回答' if useful else '知识证据不足，请人工核实',
+            'reason': result.get('confidence', {}).get('reason'),
+            'citations': result.get('citations', []) if useful else []}
+
+
+@asynccontextmanager
+async def open_workflow_service(repository, model_service, settings, *, knowledge_gate=None):
+    """One app owns retrieval warmup and one official SQLite connection."""
+    with ExitStack() as resources:
+        log = WorkflowLog()
+        if knowledge_gate is None:
+            knowledge_gate = resources.enter_context(create_live_knowledge_gate(settings, log=log))
+            await _settled(knowledge_gate.retrieval.warmup)
+        from app.query_resolver import QueryResolver
+        from app.query_expansion import QueryExpander
+        from app.aftersales_workflow import build_aftersales_subgraph
+        from app.business_data import MarkdownBusinessData
+        from app.ch06_repository import InteractionRepository,RefundRepository
+        from app.policy_retrieval import PolicyRetrieval
+        from app.knowledge_policy import load_policy, knowledge_fingerprints
+        from app.ch04_ingest import ROOT
+        from app.workflow_graph import _emit
+        business=MarkdownBusinessData(ROOT/'knowledge_db')
+        limits=AgentLimits(model_calls=(settings.max_agent_steps+2 if settings.layered_context else settings.agent_model_calls),tool_calls=settings.agent_tool_calls,
+            max_agent_steps=settings.max_agent_steps if settings.layered_context else None,
+            turn_tokens=settings.agent_turn_tokens,response_tokens=settings.response_token_reserve,
+            input_tokens=settings.context_token_budget-settings.response_token_reserve,
+            tool_result_tokens=settings.tool_result_max_tokens)
+        core=None
+        policy_retrieval=None
+        if hasattr(getattr(knowledge_gate,'retrieval',None),'corpus'):
+            policy=load_policy(ROOT/settings.ch06_knowledge_policy,knowledge_fingerprints(knowledge_gate.retrieval.corpus,settings),'policy')
+            policy_retrieval=PolicyRetrieval(knowledge_gate.retrieval,policy,settings)
+        from app.refund_service import RefundService
+        from app.ch06_prompts import ELIGIBILITY_SYSTEM
+        def refund_fingerprints():
+            digest=hashlib.sha256()
+            for filename in sorted(('returns-policy.md','after-sales-manual.md','product-specifications.md')):
+                digest.update((ROOT/'knowledge_db'/filename).read_bytes())
+            return {'policy_sources':digest.hexdigest(),
+                    'knowledge_policy':hashlib.sha256((ROOT/settings.ch06_knowledge_policy).read_bytes()).hexdigest(),
+                    'eligibility_prompt':hashlib.sha256(ELIGIBILITY_SYSTEM.encode()).hexdigest(),'chat_model':settings.chat_model}
+        refunds=RefundService(RefundRepository(repository.session_factory),business,model_service,limits,refund_fingerprints)
+        async def classifier(text):
+            return await classify_intent(text, model=model_service)
+        async def answer(keyword, filters=None):
+            return await knowledge_tool_answer(knowledge_gate, keyword, filters)
+        def tools_factory(conversation_id):
+            return scoped_tools_factory({'conversation_id':conversation_id})
+        def scoped_tools_factory(state):
+            return {name:tool for name,tool in build_tools(repository,state['conversation_id'],None,
+                knowledge_answer=answer,business_data=business,customer_id=state.get('confirmed',{}).get('customer_id')).items() if name in READ_TOOLS}
+        async with open_workflow_checkpointer(settings.workflow_checkpoint_path) as saver:
+            context_runtime=None
+            worker=None
+            if settings.layered_context:
+                from app.context_repository import ContextRepository
+                from app.context_runtime import ContextRuntime
+                from app.context_summary import SummaryWorker
+                from app.context_budget import settings_budget,estimate_tokens,validate_startup,check_provider_capacity
+                from app.agent_runtime import _schemas
+                schemas=_schemas(tools_factory(0))[0]
+                ledger=settings_budget(settings,prefix=estimate_tokens([SystemMessage(render_workflow_system_prompt())],schemas))
+                validate_startup(ledger,settings.history_steady_tokens)
+                if settings.verify_model_capacity:
+                    capacity,source=await check_provider_capacity(settings)
+                    from app.context_log import ContextLog
+                    ContextLog().write('context_capacity',{'model':settings.chat_model,
+                        'configured_window':settings.context_token_budget,
+                        'provider_capacity':capacity,'source':source})
+                context_repository=ContextRepository(repository.session_factory)
+                worker=SummaryWorker(context_repository,model_service)
+                context_runtime=ContextRuntime(repository,WorkflowRepository(repository.session_factory),
+                    context_repository,worker,settings,schemas=schemas)
+            if policy_retrieval is not None:
+                core=build_aftersales_subgraph(business=business,expander=QueryExpander(model_service),
+                    policy_retrieval=policy_retrieval,model=model_service,limits=limits,emit=_emit,
+                    log_request=context_runtime.log_aux_request if context_runtime else None)
+            compiled = build_workflow(model=model_service, classifier=classifier,
+                knowledge_gate=knowledge_gate, tools_factory=tools_factory,
+                limits=limits,log=log,checkpointer=saver,resolver=QueryResolver(model_service),
+                aftersales=core,scoped_tools_factory=scoped_tools_factory,business=business,context_runtime=context_runtime)
+            recovery_task=None
+            if worker:
+                worker.recover_callback=lambda:context_runtime.recover(compiled)
+                await worker.recover()
+                async def recovery_loop():
+                    while True:
+                        await asyncio.sleep(30)
+                        await worker.recover()
+                recovery_task=asyncio.create_task(recovery_loop())
+            try:
+                yield WorkflowService(repository, WorkflowRepository(repository.session_factory), compiled, settings, log=log,interactions=InteractionRepository(repository.session_factory),business=business,refunds=refunds,context_runtime=context_runtime)
+            finally:
+                if recovery_task:
+                    recovery_task.cancel()
+                    await asyncio.gather(recovery_task,return_exceptions=True)
+                if worker:await worker.close()

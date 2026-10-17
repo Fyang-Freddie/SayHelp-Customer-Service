@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "fingerprints": {
+    "corpus_digest": "1e7fc8ebedbf9d6c3bdf801d6d6888eff1108e8a508507eebf5212f380ea9b04",
+    "calibration_digest": "0f8419792add08ecc9e2ac70aba4e86ed27195a31010b889772347970d236a54",
+    "embedding_model": "BAAI/bge-m3",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "query_model": "deepseek-v4-flash",
+    "prompt_digest": "39a8ad550981ad5335f40472d5a54b504a57477f96631128470244caef61571a",
+    "context_token_budget": 4096,
+    "response_token_reserve": 512,
+    "token_counter": "langchain approximate chars_per_token=1.0",
+    "dense_k": 50,
+    "bm25_k": 50,
+    "rrf_k": 60,
+    "generation_k": 10,
+    "expansion_prompt": "58c9c6058306b7f6a0afd97fa142cd02354264f6bfa210675294b2e3ef3ee42b",
+    "query_mode": "policy:original+3-expansions/source-filter/RRF/one-rerank;faq:original-only",
+    "policy_rrf_k": 60,
+    "policy_candidates": 50,
+    "policy_top_k": 10
+  },
+  "modes": {
+    "policy": {
+      "threshold": -0.050571829080581665,
+      "false_accept": 0,
+      "false_reject": 0,
+      "enabled": true,
+      "observations": 18
+    },
+    "faq": {
+      "threshold": 6.11632776260376,
+      "false_accept": 0,
+      "false_reject": 0,
+      "enabled": true,
+      "observations": 6
+    }
+  }
+}

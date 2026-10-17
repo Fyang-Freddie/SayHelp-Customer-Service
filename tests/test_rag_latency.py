@@ -78,26 +78,25 @@ def test_concurrent_turns_keep_stage_measurements_separate(sessions,corpus):
 @pytest.mark.parametrize('fails',[False,True])
 def test_owned_pipeline_warms_before_startup_and_closes_on_failure(monkeypatch,fails):
     import app.main as main
+    import app.workflow_service as workflow
+    from contextlib import contextmanager
     from types import SimpleNamespace
-    from test_rag_chat import settings
+    from test_chat_api import settings
     calls=[]
-    class Store:
-        def __init__(self,**kwargs):pass
-        def close(self):calls.append('close')
     class Retrieval:
-        def __init__(self,*args,**kwargs):assert kwargs['diagnostics'] is False
         def warmup(self):
             calls.append('warmup')
             if fails:raise RuntimeError('unavailable')
-    monkeypatch.setattr(main,'read_current_corpus',lambda *a:object())
-    monkeypatch.setattr(main,'fingerprints',lambda *a:{})
-    monkeypatch.setattr(main.ConfidencePolicy,'load',lambda *a:object())
-    monkeypatch.setattr(main,'HybridMilvusStore',Store)
-    monkeypatch.setattr(main,'RagRetrieval',Retrieval)
+    @contextmanager
+    def gate(*args,**kwargs):
+        try: yield SimpleNamespace(retrieval=Retrieval())
+        finally: calls.append('close')
+    monkeypatch.setattr(workflow,'create_live_knowledge_gate',gate)
     app=main.create_app(settings(),model_service=object(),session_factory=object())
     async def run():
         async with app.router.lifespan_context(app):
             assert calls==['warmup']
+            assert isinstance(app.state.workflow_service,workflow.WorkflowService)
             calls.append('ready')
     if fails:
         with pytest.raises(RuntimeError):asyncio.run(run())

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from app.knowledge_chunking import chunk_markdown
+from app.ch04_ingest import DOCUMENTS
 
 KNOWLEDGE_DIR = Path(__file__).resolve().parents[1] / 'knowledge_db'
 
@@ -36,7 +37,8 @@ def sources_from_tool(content: str | None, directory: Path = KNOWLEDGE_DIR) -> l
     if not isinstance(payload, dict) or not isinstance(payload.get('matches'), list):
         return []
     documents = []
-    for path in directory.glob('*.md'):
+    for filename in sorted(DOCUMENTS):
+        path = directory / Path(filename).name
         try:
             stat = path.stat()
             documents.append((path.name, *_document_chunks(str(path), stat.st_mtime_ns, stat.st_size)))
@@ -62,7 +64,14 @@ def sources_from_tool(content: str | None, directory: Path = KNOWLEDGE_DIR) -> l
     return sources
 
 
-def public_messages(rows) -> list[dict]:
+def public_actions(actions) -> list[dict]:
+    return [{'id': item['action_id'], 'kind': item['kind'],
+             'label': '转人工' if item['kind'] == 'handoff' else '建工单',
+             'description': item['description'], 'ticket_type': item['ticket_type']}
+            for item in actions]
+
+
+def public_messages(rows, actions=None, *, interactions=None) -> list[dict]:
     result, sources, faq_calls = [], [], set()
     for row in rows:
         if row.role == 'user':
@@ -80,6 +89,10 @@ def public_messages(rows) -> list[dict]:
             evidence = snapshot if snapshot is not None else sources
             result.append({'id': str(row.id), 'role': row.role, 'content': row.content,
                            'created_at': row.created_at.isoformat(),
+                           'actions': public_actions((actions or {}).get(str(row.id), [])),
                            'sources': evidence if row.role == 'assistant' else [],
                            'citations': snapshot if row.role == 'assistant' and snapshot is not None else []})
+            interaction=(interactions or {}).get(str(row.id))
+            if interaction is not None:
+                result[-1]['interaction']={key:interaction[key] for key in ('interrupt_id','turn_id','kind','payload','status')}
     return result

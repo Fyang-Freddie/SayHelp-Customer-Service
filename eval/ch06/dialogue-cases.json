@@ -1,0 +1,686 @@
+[
+  {
+    "id": "dialogue-01-1",
+    "group": "dialogue-01",
+    "split": "calibration",
+    "raw": "我买的蓝牙耳机的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "蓝牙耳机"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-01-2",
+    "group": "dialogue-01",
+    "split": "calibration",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "蓝牙耳机"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的蓝牙耳机的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-01-3",
+    "group": "dialogue-01",
+    "split": "calibration",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "蓝牙耳机",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的蓝牙耳机的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-02-1",
+    "group": "dialogue-02",
+    "split": "calibration",
+    "raw": "我买的电饭煲的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "电饭煲"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-02-2",
+    "group": "dialogue-02",
+    "split": "calibration",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "电饭煲"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的电饭煲的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-02-3",
+    "group": "dialogue-02",
+    "split": "calibration",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "电饭煲",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的电饭煲的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-03-1",
+    "group": "dialogue-03",
+    "split": "calibration",
+    "raw": "我买的机械键盘的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "机械键盘"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-03-2",
+    "group": "dialogue-03",
+    "split": "calibration",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "机械键盘"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的机械键盘的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-03-3",
+    "group": "dialogue-03",
+    "split": "calibration",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "机械键盘",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的机械键盘的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-04-1",
+    "group": "dialogue-04",
+    "split": "calibration",
+    "raw": "我买的保温杯的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "保温杯"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-04-2",
+    "group": "dialogue-04",
+    "split": "calibration",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "保温杯"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的保温杯的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-04-3",
+    "group": "dialogue-04",
+    "split": "calibration",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "保温杯",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的保温杯的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-05-1",
+    "group": "dialogue-05",
+    "split": "calibration",
+    "raw": "我买的蓝牙音箱的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "蓝牙音箱"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-05-2",
+    "group": "dialogue-05",
+    "split": "calibration",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "蓝牙音箱"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的蓝牙音箱的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-05-3",
+    "group": "dialogue-05",
+    "split": "calibration",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "蓝牙音箱",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的蓝牙音箱的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-06-1",
+    "group": "dialogue-06",
+    "split": "calibration",
+    "raw": "我买的智能手环的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "智能手环"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-06-2",
+    "group": "dialogue-06",
+    "split": "calibration",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "智能手环"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的智能手环的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-06-3",
+    "group": "dialogue-06",
+    "split": "calibration",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "智能手环",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的智能手环的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-07-1",
+    "group": "dialogue-07",
+    "split": "acceptance",
+    "raw": "我买的移动硬盘的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "移动硬盘"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-07-2",
+    "group": "dialogue-07",
+    "split": "acceptance",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "移动硬盘"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的移动硬盘的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-07-3",
+    "group": "dialogue-07",
+    "split": "acceptance",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "移动硬盘",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的移动硬盘的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-08-1",
+    "group": "dialogue-08",
+    "split": "acceptance",
+    "raw": "我买的空气炸锅的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "空气炸锅"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-08-2",
+    "group": "dialogue-08",
+    "split": "acceptance",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "空气炸锅"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的空气炸锅的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-08-3",
+    "group": "dialogue-08",
+    "split": "acceptance",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "空气炸锅",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的空气炸锅的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-09-1",
+    "group": "dialogue-09",
+    "split": "acceptance",
+    "raw": "我买的充电器的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "充电器"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-09-2",
+    "group": "dialogue-09",
+    "split": "acceptance",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "充电器"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的充电器的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-09-3",
+    "group": "dialogue-09",
+    "split": "acceptance",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "充电器",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的充电器的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-10-1",
+    "group": "dialogue-10",
+    "split": "acceptance",
+    "raw": "我买的净水器的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "净水器"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-10-2",
+    "group": "dialogue-10",
+    "split": "acceptance",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "净水器"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的净水器的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-10-3",
+    "group": "dialogue-10",
+    "split": "acceptance",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "净水器",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的净水器的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-11-1",
+    "group": "dialogue-11",
+    "split": "acceptance",
+    "raw": "我买的显示器的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "显示器"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-11-2",
+    "group": "dialogue-11",
+    "split": "acceptance",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "显示器"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的显示器的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-11-3",
+    "group": "dialogue-11",
+    "split": "acceptance",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "显示器",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的显示器的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-12-1",
+    "group": "dialogue-12",
+    "split": "acceptance",
+    "raw": "我买的无线鼠标的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": true,
+    "required_terms": [
+      "无线鼠标"
+    ],
+    "history": [],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-12-2",
+    "group": "dialogue-12",
+    "split": "acceptance",
+    "raw": "它能退吗？",
+    "expected_intent": "退款退货",
+    "unchanged": false,
+    "required_terms": [
+      "无线鼠标"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的无线鼠标的物流到哪了？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  },
+  {
+    "id": "dialogue-12-3",
+    "group": "dialogue-12",
+    "split": "acceptance",
+    "raw": "先不退了，它的物流到哪了？",
+    "expected_intent": "物流",
+    "unchanged": false,
+    "required_terms": [
+      "无线鼠标",
+      "不退"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "我买的无线鼠标的物流到哪了？"
+      },
+      {
+        "role": "user",
+        "content": "它能退吗？"
+      }
+    ],
+    "confirmed": {},
+    "unresolved": []
+  }
+]

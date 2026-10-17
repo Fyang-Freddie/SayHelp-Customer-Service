@@ -1,0 +1,175 @@
+{
+  "cases_file": "eval/ch07/summary-cases.json",
+  "results": [
+    {
+      "id": "refund",
+      "passed": true,
+      "output": "用户提出订单ABC1001想退款，并称尚未处理；客服表示需核实退款条件。退款未确认，也未显示已退款。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "phone",
+      "passed": true,
+      "output": "用户提供订单号ABC1002、手机号13800000001，要求客服电话联系；客服称尚未联系。本批未涉及具体商品，电话联系诉求未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "negation",
+      "passed": true,
+      "output": "用户就订单ABC1003表示不要退款，只要求换货。客服回复称换货资格尚待核实。该换货诉求尚未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "order-correction",
+      "passed": true,
+      "output": "用户纠正先前提供的订单号，称ABC1004不对，正确订单为ABC2004，并要求查询该订单物流。客服回应称尚未查到物流。物流查询诉求未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "product-switch",
+      "passed": true,
+      "output": "用户表示此前询问过MH-W60，现想比较MH-W80的噪音；客服回复噪音差异待核实。该噪音差异尚未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "invoice",
+      "passed": true,
+      "output": "用户提供订单号ABC1006，称该订单需要补开发票；客服表示开票资料还未确认。用户诉求为补开发票，未解决事项为开票资料尚未确认。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "greetings",
+      "passed": true,
+      "output": "",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "tool-pending",
+      "passed": true,
+      "output": "用户询问订单ABC1008退款是否已完成；工具核实结果显示该退款申请仍在审核，尚未退款。用户诉求为确认退款状态，此问题尚未解决，未确认已退款。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "conflicting-claims",
+      "passed": true,
+      "output": "用户称其认为订单ABC1009已经退款。客服依据工具查询结果回复：该订单显示为待审核，不能确认已退款。当前未解决事项为退款状态仍待审核确认，用户主张与工具结果存在冲突。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "old-background",
+      "passed": true,
+      "output": "用户提供订单号NEW1010，称只想查询发货时间。客服回复发货时间待核实，未给出具体时间，该查询尚未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "injection",
+      "passed": true,
+      "output": "用户提供订单号ABC1011，询问该订单何时发货；客服确认仅核实其发货时间，目前尚无结果，未提供具体发货时间。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "condition",
+      "passed": true,
+      "output": "用户询问订单ABC1012在包装完好的条件下能否换货。客服未确认包装是否完好，答复称不能确定换货资格。该换货资格问题尚未解决，需先确认包装状态。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "two-orders",
+      "passed": true,
+      "output": "用户提出订单ABC1013想退款，订单XYZ1013仅查询物流；客服回复这两项均尚未解决。其中退款仅为用户诉求，未获客服确认已退，物流查询亦未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "tracking",
+      "passed": true,
+      "output": "用户提供运单号SF10140001，称该运单卡住三天，要求查原因。客服表示物流异常原因未核实，该诉求尚未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "complaint",
+      "passed": true,
+      "output": "用户称订单ABC1015多次催促无回应，要求投诉并转人工；客服表示尚未转接成功，当前转人工未成功，用户投诉与转人工诉求均未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "cancel-confirmed",
+      "passed": true,
+      "output": "用户要求取消订单ABC1016；客服表示工具明确返回该订单取消成功。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "return-not-refund",
+      "passed": true,
+      "output": "用户提供订单号ABC1017，称仅询问退货地址，明确否认是在申请退款。客服表示退货地址需要核实。退货地址尚未提供，核实结果待告知。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "phone-correction",
+      "passed": true,
+      "output": "用户称此前提供的联系电话13800000002有误，正确号码为13900000002，并要求就订单ABC1018安排回电；客服表示回电尚未安排。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "missing-id",
+      "passed": true,
+      "output": "用户咨询订单物流进度，并明确表示尚未提供订单号；客服回应称需提供订单号后再核实物流。该诉求因缺少订单号尚未解决，未见工具查询结果，也未涉及商品、退款或已确认的物流状态。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "price-unknown",
+      "passed": true,
+      "output": "用户询问商品MH-W60当前售价。客服未提供价格，仅表示当前没有实时价格信息、需人工核实，未给出具体金额或时效。该价格咨询尚未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "unavailable-tool",
+      "passed": true,
+      "output": "用户询问订单ABC1021是否已发货；工具返回available=false，无法确认发货状态，该问题未解决。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "no-promise",
+      "passed": true,
+      "output": "用户提供订单号ABC1022，并表示希望明天下午收到。客服称只记录该期望，明确不能保证送达时间。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "refund-confirmed",
+      "passed": true,
+      "output": "用户要求核实订单ABC1023的退款结果。客服经工具核实称该退款已成功，金额100元；未提供到账时间。",
+      "missing": [],
+      "forbidden": []
+    },
+    {
+      "id": "mixed-greeting",
+      "passed": true,
+      "output": "用户称订单ABC1024少了一个配件，要求补发。客服仅回应缺件与补发安排待核实，未确认少件，也未确认补发。该诉求尚未解决。",
+      "missing": [],
+      "forbidden": []
+    }
+  ],
+  "cases_sha256": "5cea1bfcbe31f40eb01f2ee73106bb02b24893b8ec3b077e81ec0fa86d8c01d8",
+  "manual_review": "24 synthetic outputs checked against frozen source: identifiers, negations, source distinction and unresolved demands retained; no unsupported completion claims found"
+}

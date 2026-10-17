@@ -1,0 +1,374 @@
+{
+  "suite": "knowledge",
+  "evaluated_at": "2026-10-07T17:13:23.772865+00:00",
+  "evaluation_split": "confirmatory",
+  "acceptance": {
+    "answerable_total": 6,
+    "unanswerable_total": 6,
+    "answerable_passed": 6,
+    "false_accepts": 0,
+    "false_rejects": 0,
+    "passed_without_gold_evidence": 0,
+    "service_or_logging_errors": 0,
+    "refusal_rate": 0.5,
+    "answerable_refusal_rate": 0.0,
+    "unanswerable_refusal_rate": 1.0
+  },
+  "criteria": {
+    "maximum_false_accepts": 0,
+    "minimum_answerable_pass_rate": 0.8,
+    "maximum_missing_gold": 0,
+    "maximum_service_errors": 0
+  },
+  "accepted": true,
+  "model_calls": 0,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "estimated": 0
+  },
+  "cases": [
+    {
+      "id": "confirm-a1",
+      "split": "confirmatory",
+      "question": "MH-HP12恒温多少度，连续通电建议不要超过多久？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/product-specs.md",
+        "section_path": "商品规格手册 / 恒温加热垫(型号 MH-HP12)",
+        "quote": "恒温 38℃,内置过热保护,连续通电不超过 12 小时为宜"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=5.6384616, threshold=2.2178346; 通过校准门槛",
+        "score": 5.638461589813232,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "40",
+        "33",
+        "14",
+        "37",
+        "42",
+        "44",
+        "36",
+        "38",
+        "35",
+        "41"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-a2",
+      "split": "confirmatory",
+      "question": "MH-W60水箱多少升，表面盘用的是什么材质？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/product-specs.md",
+        "section_path": "商品规格手册 / 自动饮水机 Pro 不锈钢(型号 MH-W60)",
+        "quote": "水箱容量:6L,304 不锈钢表面盘"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=6.4243584, threshold=2.2178346; 通过校准门槛",
+        "score": 6.424358367919922,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "38",
+        "36",
+        "42",
+        "14",
+        "41",
+        "35",
+        "34",
+        "43",
+        "39",
+        "37"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-a3",
+      "split": "confirmatory",
+      "question": "MH-LP100能给多重的猫用？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/product-specs.md",
+        "section_path": "商品规格手册 / 智能猫砂盆 Pro(型号 MH-LP100)",
+        "quote": "适用猫咪体重:1.5kg 至 8kg"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=5.2189555, threshold=2.2178346; 通过校准门槛",
+        "score": 5.2189555168151855,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "33",
+        "34",
+        "41",
+        "40",
+        "42",
+        "13",
+        "44",
+        "14",
+        "39",
+        "35"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-a4",
+      "split": "confirmatory",
+      "question": "MH-FD10没有市电时用什么电池应急？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/product-specs.md",
+        "section_path": "商品规格手册 / 自动喂食器 基础版(型号 MH-FD10)",
+        "quote": "4 节 5 号电池断电应急"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=3.8744845, threshold=2.2178346; 通过校准门槛",
+        "score": 3.8744845390319824,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "42",
+        "33",
+        "44",
+        "16",
+        "37",
+        "36",
+        "38",
+        "35",
+        "14",
+        "43"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-a5",
+      "split": "confirmatory",
+      "question": "商品发错货引起退换货，运费由谁承担？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/returns-policy.md",
+        "section_path": "退货退款政策 / 退换货运费承担",
+        "quote": "因商品质量问题、发错货、少发漏发导致的退换货,运费由平台承担"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=4.9231396, threshold=2.2178346; 通过校准门槛",
+        "score": 4.923139572143555,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "49",
+        "51",
+        "22",
+        "11",
+        "20",
+        "53",
+        "27",
+        "50",
+        "17",
+        "48"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-a6",
+      "split": "confirmatory",
+      "question": "退货核验通过后退款通过什么渠道退回，到账时间按什么规则？",
+      "answerable": true,
+      "evidence": {
+        "source_file": "knowledge_db/returns-policy.md",
+        "section_path": "退货退款政策 / 无理由退货 / 退款时效",
+        "quote": "退款原路退回,到账时效以平台售后规则为准"
+      },
+      "passed": true,
+      "gold_evidence_present": true,
+      "confidence": {
+        "sufficient": true,
+        "reason": "hybrid_rerank top1=4.2453833, threshold=2.2178346; 通过校准门槛",
+        "score": 4.245383262634277,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": null,
+      "citation_ids": [
+        "46",
+        "19",
+        "18",
+        "51",
+        "21",
+        "50",
+        "49",
+        "20",
+        "45",
+        "53"
+      ],
+      "low_confidence_recorded": false,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-n1",
+      "split": "confirmatory",
+      "question": "MH-HP12的欧盟CE证书编号和签发实验室名称是什么？",
+      "answerable": false,
+      "missing": "没有认证证书编号和实验室资料",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-2.1037776, threshold=2.2178346; 检索证据置信度低",
+        "score": -2.1037776470184326,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-n2",
+      "split": "confirmatory",
+      "question": "MH-W40滤芯微孔的精确直径是多少微米？",
+      "answerable": false,
+      "missing": "没有滤芯微孔尺寸参数",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-0.33377919, threshold=2.2178346; 检索证据置信度低",
+        "score": -0.3337791860103607,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-n3",
+      "split": "confirmatory",
+      "question": "MH-LP50内部PCB板的长宽尺寸和Gerber文件在哪？",
+      "answerable": false,
+      "missing": "没有内部PCB尺寸及制造文件",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-1.1519263, threshold=2.2178346; 检索证据置信度低",
+        "score": -1.1519262790679932,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-n4",
+      "split": "confirmatory",
+      "question": "喵喵优选公司的实缴注册资本和税务登记号码是什么？",
+      "answerable": false,
+      "missing": "没有企业注册资本和税务信息",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-4.5779281, threshold=2.2178346; 检索证据置信度低",
+        "score": -4.577928066253662,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-n5",
+      "split": "confirmatory",
+      "question": "宠物抗生素AM-7给两公斤幼猫服用的剂量是多少？",
+      "answerable": false,
+      "missing": "未收录药品且没有医疗用药资料",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-7.9886951, threshold=2.2178346; 检索证据置信度低",
+        "score": -7.98869514465332,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    },
+    {
+      "id": "confirm-n6",
+      "split": "confirmatory",
+      "question": "MH-FD30固件开发仓库的Git提交哈希是什么？",
+      "answerable": false,
+      "missing": "没有固件开发仓库及提交资料",
+      "passed": false,
+      "gold_evidence_present": null,
+      "confidence": {
+        "sufficient": false,
+        "reason": "hybrid_rerank top1=-3.2272913, threshold=2.2178346; 检索证据置信度低",
+        "score": -3.2272913455963135,
+        "threshold": 2.217834621667862
+      },
+      "stop_reason": "weak_evidence",
+      "citation_ids": [],
+      "low_confidence_recorded": true,
+      "logging_error": false
+    }
+  ],
+  "provider": "existing_read_only_knowledge_collection",
+  "collection": "knowledge_ch04",
+  "corpus_digest": "2ec492cefd17dac204b8ed00a4149a366e15117c2583db7026c06de3f75f175a",
+  "confidence_fingerprints": {
+    "corpus_digest": "2ec492cefd17dac204b8ed00a4149a366e15117c2583db7026c06de3f75f175a",
+    "calibration_digest": "cb607f3da8a7e5600d65fcf431b1be4935851030df7428226c1ce75de7c55ad3",
+    "embedding_model": "BAAI/bge-m3",
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "query_model": "none",
+    "prompt_digest": "39a8ad550981ad5335f40472d5a54b504a57477f96631128470244caef61571a",
+    "context_token_budget": 4096,
+    "response_token_reserve": 512,
+    "token_counter": "langchain approximate chars_per_token=1.0",
+    "dense_k": 50,
+    "bm25_k": 50,
+    "rrf_k": 60,
+    "generation_k": 10,
+    "query_mode": "raw-question-v1: PreparedQuery(question, question, question); synonyms=[]",
+    "calibration_method": "separable-label-gap-midpoint-v1"
+  },
+  "threshold": 2.217834621667862,
+  "cases_sha256": "5d86b75437f72a82712cc2d9678f794024e87206b1eefde3a37c7d3a06187398",
+  "confirmation_cases_sha256": "b8f7d6037740164a3aa162f087c663bb4c114f2e15bd7780d2a49c21ac46187f"
+}

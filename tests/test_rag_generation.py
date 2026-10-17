@@ -139,4 +139,4 @@ def test_upstream_requests_have_bounded_timeout_and_retry_budget(monkeypatch):
     captured=[]
     monkeypatch.setattr(module,'ChatOpenAI',lambda **kwargs:captured.append(kwargs))
     module.ModelService(Settings(chat_base_url='https://example.invalid',chat_model='test',chat_api_key='placeholder'))
-    assert captured[0].get('timeout')==180 and captured[0].get('max_retries')==1
+    assert captured[0].get('timeout')==180 and captured[0].get('max_retries')==0

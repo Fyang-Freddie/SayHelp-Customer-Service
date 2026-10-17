@@ -37,8 +37,8 @@ def test_env_file_loads_provider_settings_without_overriding_process_env(monkeyp
     assert settings.chat_base_url == "https://file.example/v1"
     assert settings.chat_model == "process-model"
     assert settings.chat_api_key == "file-key"
-    assert settings.context_token_budget == 4096
-    assert settings.response_token_reserve == 512
+    assert settings.context_token_budget == 65536
+    assert settings.response_token_reserve == 2000
     assert settings.max_conversations == 100
     assert settings.max_turns_per_conversation == 20
 

@@ -120,13 +120,19 @@ class HybridMilvusStore(MilvusKnowledgeStore):
         for start in range(0,len(ids),1000):
             self.client.delete(self.collection_name,ids=ids[start:start+1000])
 
-    def retrieve(self,query:PreparedQuery,vector,strategy,filters,*,diagnostics=True):
+    def retrieve(self,query:PreparedQuery,vector,strategy,filters,*,diagnostics=True,allowed_ids=None):
         from pymilvus import AnnSearchRequest,RRFRanker
         if strategy not in {'dense','bm25','hybrid','hybrid_rerank'}:
             raise ValueError('Unknown retrieval strategy')
         if not isinstance(query,PreparedQuery): raise ValueError('Prepared query required')
         search_text=_text(query.search_text,65535,'query')
         expr,params=compile_filters(filters)
+        if allowed_ids is not None:
+            if not isinstance(allowed_ids,frozenset): raise ValueError('Policy IDs must be a frozen set')
+            ids=sorted(_id(value) for value in allowed_ids)
+            if not ids: return StoreResult([],{}, {})
+            expr=f'({expr}) and id in {{allowed_ids}}' if expr else 'id in {allowed_ids}'
+            params={**params,'allowed_ids':ids}
         dense=validate_vector(vector) if strategy!='bm25' else None
         requests=[]
         if dense is not None:

@@ -15,7 +15,6 @@ from app.config import Settings
 from app.main import create_app
 from app.model_service import ModelService
 from app.schemas import AfterSalesExtraction
-from test_tools import FakeKnowledgeSearch
 
 
 @pytest.fixture(autouse=True)
@@ -23,7 +22,7 @@ def inject_test_storage(monkeypatch):
     """Extraction never touches storage, but app composition requires it."""
     engine = create_engine('sqlite:///:memory:')
     monkeypatch.setattr(__import__(__name__), 'create_app',
-                        partial(create_app, session_factory=sessionmaker(engine), knowledge_search=FakeKnowledgeSearch()))
+                        partial(create_app, session_factory=sessionmaker(engine)))
     try:
         yield
     finally:
@@ -218,7 +217,7 @@ def test_extract_validates_raw_json_from_real_chat_pipeline(
     async def run() -> httpx.Response:
         async with httpx.AsyncClient(transport=httpx.MockTransport(upstream)) as client:
             monkeypatch.setattr(module, "ChatOpenAI", lambda **kwargs: ChatOpenAI(
-                **kwargs, http_async_client=client,
+                **kwargs, http_async_client=client, http_socket_options=(),
             ))
             return await post(
                 create_app(settings(), ModelService(settings())),

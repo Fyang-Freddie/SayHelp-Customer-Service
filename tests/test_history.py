@@ -167,3 +167,23 @@ def test_context_recovers_later_complete_turn_after_failed_audit_rows():
     rows = [SimpleNamespace(role=role, content=content, tool_calls=None, tool_call_id=None)
             for role, content in [('user', 'failed'), ('user', 'recovered'), ('assistant', 'answer')]]
     assert [[m.content for m in turn] for turn in completed_turns(rows)] == [['recovered', 'answer']]
+
+
+@pytest.mark.parametrize('invalid', [None, 'duplicate', 'missing', 'empty_final'])
+def test_multi_batch_tool_history_keeps_stable_ids_and_rejects_incomplete(invalid):
+    from types import SimpleNamespace
+    from app.history import completed_turns
+    def row(id, role, content='', calls=None, call_id=None):
+        return SimpleNamespace(id=id, role=role, content=content, tool_calls=calls, tool_call_id=call_id)
+    rows = [row(1, 'user', 'question')]
+    for batch in range(2):
+        call_id = 'call-0' if invalid == 'duplicate' else f'call-{batch}'
+        rows.extend([row(2+batch*2, 'assistant', calls=[{'name':'query_order','args':{},'id':call_id}]),
+                     row(3+batch*2, 'tool', 'result', call_id=call_id)])
+    if invalid == 'missing': rows.pop()
+    rows.append(row(6, 'assistant', '' if invalid == 'empty_final' else 'final'))
+    result = completed_turns(rows)
+    if invalid: assert result == []
+    else:
+        assert [m.id for m in result[0]] == [str(i) for i in range(1, 7)]
+        assert [m.type for m in result[0]] == ['human','ai','tool','ai','tool','ai']

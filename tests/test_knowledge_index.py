@@ -185,7 +185,12 @@ def test_real_milvus_mysql_recovery(sessions):
     from pymilvus import MilvusClient
     from app.vector_store import MilvusKnowledgeStore
     from app.knowledge_index import index_pending
-    client = MilvusClient(uri=uri)
+    database = os.environ.get('TEST_MILVUS_DATABASE')
+    if database is not None:
+        import re
+        if not re.fullmatch(r'sayhelp_test_[0-9a-f]{32}', database):
+            pytest.fail('TEST_MILVUS_DATABASE must be a fresh sayhelp_test_<32hex> database')
+    client = MilvusClient(uri=uri, **({'db_name': database} if database else {}))
     if client.has_collection('knowledge'):
         client.close()
         pytest.fail('Real integration requires a disposable Milvus without knowledge collection')

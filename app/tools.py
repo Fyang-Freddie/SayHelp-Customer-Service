@@ -1,12 +1,12 @@
 """Five conversation-scoped customer service tools."""
 
-import random
 from typing import Annotated, Literal
 
 from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
 from app.repository import Repository
+from app.business_data import BusinessDataError
 from app.knowledge_types import KnowledgeFilters
 from app.knowledge_search import KnowledgeSearch, KnowledgeSearchUnavailable
 
@@ -36,28 +36,42 @@ class TicketInput(ToolInput):
     ticket_type: Literal['售后', '投诉', '咨询']
 
 
-def build_tools(repository: Repository, conversation_id: int, knowledge_search: KnowledgeSearch | None, *, knowledge_answer=None) -> dict[str, BaseTool]:
+def build_tools(repository: Repository, conversation_id: int, knowledge_search: KnowledgeSearch | None, *, knowledge_answer=None, ticket_request_key: str | None = None, business_data=None, customer_id: str | None = None) -> dict[str, BaseTool]:
     """Capture the active conversation; the model cannot supply its identity."""
+    def scoped_business(order_id, logistics=False):
+        if not customer_id:
+            return {'available': False, 'reason': 'customer_id_required', 'message': '请提供客户ID，以便查询您的订单。'}
+        try:
+            if logistics:
+                return {'available': True, **business_data.get_logistics(customer_id, order_id)}
+            items = [item.to_dict() for item in business_data.list_items(customer_id) if item.order_id == order_id]
+            if not items:
+                raise BusinessDataError('not_found')
+            return {'available': True, 'order_id': order_id, 'items': items}
+        except BusinessDataError as error:
+            return {'available': False, 'reason': error.code, 'message': '无法确认该订单记录，请核对客户ID和订单号或联系人工。'}
+
     @tool(args_schema=OrderInput)
     def query_order(order_id: str) -> dict:
-        """用客户提供的订单号查询订单演示数据；结果是随机模拟数据，必须明确标注。"""
-        return {'mock': True, 'label': '随机模拟订单数据', 'order_id': order_id,
-                'status': random.choice(['待付款', '待发货', '已发货', '已完成']),
-                'amount': random.choice([99.0, 159.0, 299.0])}
+        """按当前客户与提供的订单号精确查询订单商品项；缺客户ID时要求补充，不猜测记录。"""
+        if business_data is not None:
+            return scoped_business(order_id)
+        return {'order_id': order_id, 'available': False, 'reason': 'data_source_not_connected',
+                'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
 
     @tool(args_schema=ProductInput)
     def query_product(product_query: str) -> dict:
-        """用商品名称或编号查询商品演示数据；结果是随机模拟数据，必须明确标注。"""
-        return {'mock': True, 'label': '随机模拟商品数据', 'product_query': product_query,
-                'price': random.choice([59.0, 129.0, 259.0]),
-                'stock': random.choice([0, 12, 38, 100])}
+        """查询商品资料；未接入真实文档检索时说明数据源尚未接入，不编造价格、库存或规格。"""
+        return {'product_query': product_query, 'available': False, 'reason': 'data_source_not_connected',
+                'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
 
     @tool(args_schema=OrderInput)
     def query_logistics(order_id: str) -> dict:
-        """用客户提供的订单号或运单号查询物流演示数据；结果是随机模拟数据，必须明确标注。"""
-        return {'mock': True, 'label': '随机模拟物流数据', 'order_id': order_id,
-                'status': random.choice(['等待揽收', '运输中', '派送中', '已签收']),
-                'location': random.choice(['发货仓库', '中转站', '当地配送站'])}
+        """按当前客户与订单号精确查询物流；缺客户ID时要求补充，不猜测物流状态。"""
+        if business_data is not None:
+            return scoped_business(order_id, logistics=True)
+        return {'order_id': order_id, 'available': False, 'reason': 'data_source_not_connected',
+                'message': '数据源尚未接入，无法查询真实记录，请人工核实'}
 
     @tool(args_schema=FaqInput)
     def query_faq(keyword: str, filters: KnowledgeFilters | None = None) -> dict:
@@ -75,8 +89,8 @@ def build_tools(repository: Repository, conversation_id: int, knowledge_search: 
     @tool(args_schema=TicketInput)
     def create_ticket(description: str, ticket_type: Literal['售后', '投诉', '咨询']) -> dict:
         """为当前会话创建售后、投诉或咨询人工工单。仅表示待人工处理，不表示问题已解决。"""
-        number = repository.create_ticket(conversation_id, description, ticket_type)
-        return {'ticket_no': number, 'status': '待处理', 'message': '已创建工单并转人工，等待处理'}
+        number = repository.create_ticket(conversation_id, description, ticket_type, request_key=ticket_request_key)
+        return {'ticket_no': number, 'status': '待处理', 'message': '已创建工单，等待处理'}
 
     if knowledge_answer is not None:
         @tool('query_faq', args_schema=FaqInput)

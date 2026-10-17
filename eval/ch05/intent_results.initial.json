@@ -1,0 +1,722 @@
+{
+  "suite": "intent",
+  "evaluated_at": "2026-10-07T16:52:01.688857+00:00",
+  "core": {
+    "correct": 35,
+    "total": 35,
+    "minimum_correct": 33
+  },
+  "boundary": {
+    "correct": 7,
+    "total": 7
+  },
+  "mandatory": {
+    "correct": 20,
+    "total": 20
+  },
+  "accepted": true,
+  "model_calls": 42,
+  "usage": {
+    "input_tokens": 17142,
+    "output_tokens": 1576,
+    "estimated": 0
+  },
+  "cases": [
+    {
+      "id": "logistics-1",
+      "split": "core",
+      "text": "订单 1001 的物流到哪了",
+      "expected": "物流",
+      "mandatory": true,
+      "predicted": "物流",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 411,
+        "output_tokens": 22,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "logistics-2",
+      "split": "core",
+      "text": "帮我查一下快递什么时候送到",
+      "expected": "物流",
+      "mandatory": true,
+      "predicted": "物流",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 407,
+        "output_tokens": 35,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "logistics-3",
+      "split": "core",
+      "text": "我的包裹现在在哪个城市？",
+      "expected": "物流",
+      "mandatory": true,
+      "predicted": "物流",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 408,
+        "output_tokens": 7,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "logistics-4",
+      "split": "core",
+      "text": "订单0001002已经发货，查运输进度",
+      "expected": "物流",
+      "mandatory": true,
+      "predicted": "物流",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 411,
+        "output_tokens": 44,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "logistics-5",
+      "split": "core",
+      "text": "为什么物流轨迹三天没更新了",
+      "expected": "物流",
+      "mandatory": true,
+      "predicted": "物流",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 408,
+        "output_tokens": 18,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "order-1",
+      "split": "core",
+      "text": "查一下订单1001的订单状态",
+      "expected": "订单",
+      "predicted": "订单",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 409,
+        "output_tokens": 86,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "order-2",
+      "split": "core",
+      "text": "我的订单付款成功了吗？",
+      "expected": "订单",
+      "predicted": "订单",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 407,
+        "output_tokens": 23,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "order-3",
+      "split": "core",
+      "text": "帮我看看订单里买了哪些商品",
+      "expected": "订单",
+      "predicted": "订单",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 408,
+        "output_tokens": 22,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "order-4",
+      "split": "core",
+      "text": "我想确认订单1002的收货地址",
+      "expected": "订单",
+      "predicted": "订单",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 409,
+        "output_tokens": 19,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "order-5",
+      "split": "core",
+      "text": "这笔订单一共支付了多少钱",
+      "expected": "订单",
+      "predicted": "订单",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 408,
+        "output_tokens": 20,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "product-1",
+      "split": "core",
+      "text": "这款耳机支持蓝牙5.3吗",
+      "expected": "商品咨询",
+      "predicted": "商品咨询",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 409,
+        "output_tokens": 53,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "product-2",
+      "split": "core",
+      "text": "A款和B款有什么功能区别？",
+      "expected": "商品咨询",
+      "predicted": "商品咨询",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 410,
+        "output_tokens": 8,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "product-3",
+      "split": "core",
+      "text": "这件上衣有什么颜色和尺码",
+      "expected": "商品咨询",
+      "predicted": "商品咨询",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 408,
+        "output_tokens": 180,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "product-4",
+      "split": "core",
+      "text": "这款手机的电池容量是多少",
+      "expected": "商品咨询",
+      "predicted": "商品咨询",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 406,
+        "output_tokens": 22,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "product-5",
+      "split": "core",
+      "text": "这个充电器可以给笔记本充电吗",
+      "expected": "商品咨询",
+      "predicted": "商品咨询",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 409,
+        "output_tokens": 21,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "refund-1",
+      "split": "core",
+      "text": "我要退款",
+      "expected": "退款退货",
+      "mandatory": true,
+      "predicted": "退款退货",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 403,
+        "output_tokens": 76,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "refund-2",
+      "split": "core",
+      "text": "收到货不喜欢，怎么退货",
+      "expected": "退款退货",
+      "mandatory": true,
+      "predicted": "退款退货",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 407,
+        "output_tokens": 19,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "refund-3",
+      "split": "core",
+      "text": "售后帮我退一下订单1001的钱",
+      "expected": "退款退货",
+      "mandatory": true,
+      "predicted": "退款退货",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 409,
+        "output_tokens": 21,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "refund-4",
+      "split": "core",
+      "text": "七天无理由退货有什么条件？",
+      "expected": "退款退货",
+      "mandatory": true,
+      "predicted": "退款退货",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 408,
+        "output_tokens": 61,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "refund-5",
+      "split": "core",
+      "text": "想了解退换货政策和退款到账时间",
+      "expected": "退款退货",
+      "mandatory": true,
+      "predicted": "退款退货",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 411,
+        "output_tokens": 27,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "aftersales-1",
+      "split": "core",
+      "text": "耳机坏了，怎么申请维修",
+      "expected": "售后",
+      "predicted": "售后",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 407,
+        "output_tokens": 31,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "aftersales-2",
+      "split": "core",
+      "text": "我收到的配件少了一件，请补发",
+      "expected": "售后",
+      "predicted": "售后",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 410,
+        "output_tokens": 34,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "aftersales-3",
+      "split": "core",
+      "text": "屏幕碎了还在保修期内吗",
+      "expected": "售后",
+      "predicted": "售后",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 407,
+        "output_tokens": 76,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "aftersales-4",
+      "split": "core",
+      "text": "我的设备开不了机，请协助处理售后",
+      "expected": "售后",
+      "predicted": "售后",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 411,
+        "output_tokens": 47,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "aftersales-5",
+      "split": "core",
+      "text": "收到的衣服尺码不合适，我要换一个尺码",
+      "expected": "售后",
+      "predicted": "售后",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 412,
+        "output_tokens": 63,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "complaint-1",
+      "split": "core",
+      "text": "我要投诉",
+      "expected": "投诉",
+      "mandatory": true,
+      "predicted": "投诉",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 403,
+        "output_tokens": 7,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "complaint-2",
+      "split": "core",
+      "text": "客服态度太差，我要正式投诉",
+      "expected": "投诉",
+      "mandatory": true,
+      "predicted": "投诉",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 409,
+        "output_tokens": 7,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "complaint-3",
+      "split": "core",
+      "text": "请登记对你们售后服务的投诉",
+      "expected": "投诉",
+      "mandatory": true,
+      "predicted": "投诉",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 408,
+        "output_tokens": 53,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "complaint-4",
+      "split": "core",
+      "text": "一直不给退款，我要投诉并要求退款",
+      "expected": "投诉",
+      "mandatory": true,
+      "predicted": "投诉",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 409,
+        "output_tokens": 37,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "complaint-5",
+      "split": "core",
+      "text": "快递员态度恶劣，我要投诉快递服务",
+      "expected": "投诉",
+      "mandatory": true,
+      "predicted": "投诉",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 410,
+        "output_tokens": 46,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "greeting-1",
+      "split": "core",
+      "text": "你好",
+      "expected": "闲聊",
+      "mandatory": true,
+      "predicted": "闲聊",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 402,
+        "output_tokens": 7,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "greeting-2",
+      "split": "core",
+      "text": "早上好呀",
+      "expected": "闲聊",
+      "mandatory": true,
+      "predicted": "闲聊",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 404,
+        "output_tokens": 7,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "greeting-3",
+      "split": "core",
+      "text": "您好",
+      "expected": "闲聊",
+      "mandatory": true,
+      "predicted": "闲聊",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 402,
+        "output_tokens": 40,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "greeting-4",
+      "split": "core",
+      "text": "谢谢你，辛苦了",
+      "expected": "闲聊",
+      "mandatory": true,
+      "predicted": "闲聊",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 404,
+        "output_tokens": 44,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "greeting-5",
+      "split": "core",
+      "text": "在吗？",
+      "expected": "闲聊",
+      "mandatory": true,
+      "predicted": "闲聊",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 404,
+        "output_tokens": 27,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-1",
+      "split": "boundary",
+      "text": "订单1001不是要退款，只查物流到哪了",
+      "expected": "物流",
+      "predicted": "物流",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 414,
+        "output_tokens": 39,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-2",
+      "split": "boundary",
+      "text": "我不想投诉，想知道怎么退款",
+      "expected": "退款退货",
+      "predicted": "退款退货",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 407,
+        "output_tokens": 67,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-3",
+      "split": "boundary",
+      "text": "我不是要退款，我要换货",
+      "expected": "售后",
+      "predicted": "售后",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 408,
+        "output_tokens": 66,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-4",
+      "split": "boundary",
+      "text": "你好，耳机有没有降噪功能？",
+      "expected": "商品咨询",
+      "predicted": "商品咨询",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 409,
+        "output_tokens": 20,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-5",
+      "split": "boundary",
+      "text": "你们真让人生气！查查包裹到哪了",
+      "expected": "物流",
+      "predicted": "物流",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 412,
+        "output_tokens": 30,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-6",
+      "split": "boundary",
+      "text": "不是物流问题，请查订单1001是否付款成功",
+      "expected": "订单",
+      "predicted": "订单",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 413,
+        "output_tokens": 26,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-7",
+      "split": "boundary",
+      "text": "我要投诉：耳机坏了，你们还不给退款",
+      "expected": "投诉",
+      "predicted": "投诉",
+      "model_calls": 1,
+      "success": true,
+      "correct": true,
+      "error_type": null,
+      "usage": {
+        "input_tokens": 411,
+        "output_tokens": 18,
+        "estimated": 0
+      }
+    }
+  ],
+  "provider_model": "deepseek-v4-flash",
+  "prompt_sha256": "a095e3b842803ef75120a960e81007219bd01993eed353b5cef16209bf927ef1",
+  "cases_sha256": "8e9b1a5528750d2c49196f3b18a9d3b42a917dbb86e39ab03f7513351b1dd8aa",
+  "provider": "configured_real_provider"
+}

@@ -38,3 +38,24 @@ class AfterSalesExtraction(BaseModel):
 class PinRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     is_pinned: StrictBool
+
+
+class TicketConfirmationRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    action_id: Annotated[str, StringConstraints(min_length=1, max_length=64, pattern=r'\S')]
+    description: NonEmptyText
+    ticket_type: Literal['售后', '投诉', '咨询']
+
+
+class InteractionResumeRequest(BaseModel):
+    model_config=ConfigDict(extra='forbid',strict=True)
+    turn_id: Annotated[str,StringConstraints(min_length=1,max_length=64,pattern=r'\S')]
+    request_id: Annotated[str,StringConstraints(min_length=1,max_length=128,pattern=r'\S')]
+    value: dict
+
+
+class RefundSubmissionRequest(BaseModel):
+    model_config=ConfigDict(extra='forbid',strict=True)
+    action_id: Annotated[str,StringConstraints(min_length=1,max_length=64,pattern=r'\S')]
+    reason_code: Annotated[str,StringConstraints(min_length=1,max_length=64,pattern=r'^[a-z][a-z0-9_]*$')]
+    request_id: Annotated[str,StringConstraints(min_length=1,max_length=128,pattern=r'\S')]

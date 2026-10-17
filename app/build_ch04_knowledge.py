@@ -14,7 +14,9 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--manifest',type=Path,default=ROOT/'eval/ch04/corpus.json')
+    parser.add_argument('--manifest',type=Path,default=ROOT/'eval/ch06/corpus.json')
+    parser.add_argument('--collection',default='knowledge_ch06')
+    parser.add_argument('--env-file',type=Path,default=Path.cwd()/'.env')
     parser.add_argument('--batch-size',type=int,default=32)
     parser.add_argument('--dry-run',action='store_true')
     args=parser.parse_args(argv)
@@ -31,9 +33,9 @@ def main(argv=None):
                                 'sample_range':[chunks[0].source_start_line,chunks[0].source_end_line]})
         except Exception:
             raise SystemExit('Corpus dry-run failed; check explicit manifest and source files') from None
-        print(json.dumps({'mode':'dry_run','documents':len(sources),'chunks':sum(s['chunks'] for s in sources),'sources':sources},ensure_ascii=False))
+        print(json.dumps({'mode':'dry_run','collection':args.collection,'documents':len(sources),'chunks':sum(s['chunks'] for s in sources),'sources':sources},ensure_ascii=False))
         return
-    values=dotenv_values(Path.cwd()/'.env')
+    values=dotenv_values(args.env_file)
     def value(name,default=None):
         return os.environ.get(name,values.get(name)) or default
     url=value('DATABASE_URL')
@@ -49,7 +51,7 @@ def main(argv=None):
         initialize_ch04_database(url)
         factory=make_session_factory(url)
         snapshot=ingest_corpus(factory,args.manifest)
-        store=HybridMilvusStore(uri=value('MILVUS_URI','http://127.0.0.1:19530'),collection_name=value('KNOWLEDGE_COLLECTION','knowledge_ch04'))
+        store=HybridMilvusStore(uri=value('MILVUS_URI','http://127.0.0.1:19530'),collection_name=args.collection)
         summary=build_index(factory,BgeM3Embedder(cache_dir=value('BGE_CACHE_DIR')),store,snapshot,args.batch_size)
         print(json.dumps({'mode':'built',**asdict(summary)},ensure_ascii=False))
     except Exception:

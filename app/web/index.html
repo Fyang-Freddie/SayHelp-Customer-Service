@@ -118,6 +118,14 @@
     .sources-label { color: #8a96a9; font-size: 11px; width: 100%; }
     .source-button { max-width: 100%; border: 1px solid #dbe3fb; border-radius: 7px; background: #fff; color: #5264b8; font-size: 11px; padding: 5px 8px; text-align: left; overflow-wrap: anywhere; }
     .source-button:hover { background: #edf1ff; }
+    .reply-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .source-dialog.ticket-dialog { width: min(520px, calc(100vw - 32px)); }
+    .ticket-form { padding: 20px 24px; display: grid; gap: 12px; }
+    .ticket-form label { display: grid; gap: 7px; font-size: 13px; }
+    .ticket-form textarea, .ticket-form select { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); background: var(--bg); }
+    .ticket-form textarea { min-height: 110px; max-height: 200px; }
+    .ticket-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .ticket-status { margin: 0; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; white-space: pre-wrap; }
     .source-dialog { width: min(850px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); padding: 0; border: 1px solid #dce4f5; border-radius: 18px; box-shadow: var(--shadow); color: var(--ink); }
     .source-dialog::backdrop { background: rgba(27,39,65,.38); }
     .source-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 24px 14px; border-bottom: 1px solid var(--line); }
@@ -261,6 +269,20 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
+
+    .interaction-panel,.refund-panel {margin-top:14px;padding:16px;border:1px solid #dce5df;border-radius:14px;background:#f6faf7;color:#273e32;max-width:620px}
+    .interaction-heading {font-weight:650;margin:0 0 8px;font-size:14px}
+    .interaction-context {font-size:12px;color:#607366;margin:0 0 12px;line-height:1.6}
+    .order-card {display:block;width:100%;text-align:left;margin:8px 0;padding:14px;border:1px solid #d3dfd7;border-radius:10px;background:white;color:inherit;cursor:pointer;transition:border-color .15s,background .15s}
+    .order-card:hover:not(:disabled) {border-color:#498460;background:#eef7f0}
+    .order-card strong {display:block;font-size:14px;margin-bottom:5px}
+    .order-card small {display:block;color:#68786d;line-height:1.7;overflow-wrap:anywhere}
+    .order-card:disabled {opacity:.6;cursor:default}
+    .interaction-cancel {border:0;background:none;color:#68786d;text-decoration:underline;cursor:pointer;padding:6px 0}
+    .refund-panel select {display:block;width:100%;padding:10px;margin:10px 0;border:1px solid #cbd8ce;border-radius:8px;background:white;color:inherit}
+    .refund-submit {border:0;border-radius:8px;background:#326c4a;color:white;padding:10px 16px;cursor:pointer}
+    .refund-submit:disabled {opacity:.5;cursor:default}
+    .refund-status {font-size:13px;line-height:1.7;margin-top:10px;overflow-wrap:anywhere}
   </style>
 </head>
 <body>
@@ -322,6 +344,15 @@
     </main>
   </div>
   <button class="history-backdrop" id="historyBackdrop" type="button" aria-label="关闭历史对话"></button>
+  <dialog class="source-dialog ticket-dialog" id="ticketDialog" aria-labelledby="ticketTitle">
+    <div class="source-header"><h2 id="ticketTitle">确认建工单</h2></div>
+    <form class="ticket-form" id="ticketForm">
+      <label for="ticketDescription">问题描述<textarea id="ticketDescription" required></textarea></label>
+      <label for="ticketType">工单类型<select id="ticketType"><option>售后</option><option>投诉</option><option>咨询</option></select></label>
+      <p class="ticket-status" id="ticketStatus" role="status" aria-live="polite"></p>
+      <div class="ticket-buttons"><button class="top-action" id="ticketCancel" type="button">取消</button><button class="top-action" id="ticketSubmit" type="submit">确认建单</button></div>
+    </form>
+  </dialog>
   <dialog class="source-dialog" id="sourceDialog" aria-labelledby="sourceTitle">
     <div class="source-header"><div><h2 id="sourceTitle">来源原文</h2><p class="source-path" id="sourcePath"></p></div><button class="top-action" id="sourceClose" type="button" autofocus>关闭</button></div>
     <div class="source-content"><h3>本次回答使用的知识片段</h3><pre class="source-original" id="sourceExcerpt"></pre><p class="source-status" id="sourceStatus"></p><section id="fullDocument" hidden><h3>完整文档原文</h3><pre class="source-original" id="sourceDocument"></pre></section></div>
@@ -363,6 +394,192 @@
       let conversationId = null;
       let busy = false;
       let followLatest = true;
+      let conversationEpoch = 0;
+      let chatAbort = null;
+      const deletedConversations = new Set();
+      const actionStates = new Map();
+      const resumeKeys = new Map();
+      const refundStates = new Map();
+      const ticketDialog = document.getElementById("ticketDialog");
+      const ticketDescription = document.getElementById("ticketDescription");
+      const ticketType = document.getElementById("ticketType");
+      const ticketStatus = document.getElementById("ticketStatus");
+      const ticketSubmit = document.getElementById("ticketSubmit");
+      const ticketCancel = document.getElementById("ticketCancel");
+      let ticketContext = null;
+
+      function invalidateConversationView() {
+        conversationEpoch++;
+        chatAbort?.abort();
+        chatAbort = null;
+        ticketContext = null;
+        if (ticketDialog.open) ticketDialog.close();
+      }
+      function currentAction(context) {
+        return context && context.epoch === conversationEpoch && context.conversationId === conversationId &&
+          context.view.wrap.isConnected && !deletedConversations.has(context.conversationId) &&
+          !historyMutating.has(context.conversationId);
+      }
+      function updateTicketDialog(context) {
+        if (ticketContext !== context || !ticketDialog.open || !currentAction(context)) return;
+        const state = context.state;
+        ticketDescription.value = state.payload?.description ?? context.action.description ?? "";
+        ticketType.value = state.payload?.ticket_type ?? context.action.ticket_type ?? "咨询";
+        ticketDescription.readOnly = Boolean(state.payload);
+        ticketType.disabled = Boolean(state.payload);
+        ticketSubmit.disabled = state.pending || Boolean(state.result) || state.stale;
+        ticketSubmit.textContent = state.payload && !state.result ? "重试原提交" : "确认建单";
+        ticketCancel.textContent = state.result ? "关闭" : "取消";
+        ticketStatus.textContent = state.pending ? "正在提交，请稍候…" : state.result ?
+          "工单 " + state.result.ticket_no + " · " + state.result.status + " · " + state.result.message : state.error || "确认后将创建工单。";
+      }
+      function renderActions(view, actions, ownerId) {
+        if (!view.messageId || !Array.isArray(actions) || !ownerId) return;
+        const controls = document.createElement("div");
+        controls.className = "reply-actions";
+        const epoch = conversationEpoch;
+        const seen = new Set();
+        for (const action of actions) {
+          if (!action || typeof action.id !== "string" || !action.id || seen.has(action.id) || !["handoff", "create_ticket"].includes(action.kind)) continue;
+          seen.add(action.id);
+          const key = JSON.stringify([ownerId, action.id]);
+          if (!actionStates.has(key)) actionStates.set(key, {pending: false, payload: null, result: null, stale: false, error: "", handedOff: false});
+          const state = actionStates.get(key);
+          const context = {view, action, state, conversationId: ownerId, epoch};
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "top-action";
+          button.dataset.kind = action.kind;
+          button.textContent = action.kind === "handoff" ? "转人工" : "建工单";
+          button.disabled = action.kind === "handoff" && state.handedOff;
+          button.addEventListener("click", () => {
+            if (!currentAction(context)) return;
+            if (action.kind === "handoff") {
+              if (state.handedOff) return;
+              state.handedOff = true;
+              button.disabled = true;
+              addNotice("已转接人工客服");
+              addMessage("assistant", "您好,我是SayHelp,请问有什么可以帮您的");
+            } else {
+              ticketContext = context;
+              ticketDialog.showModal();
+              updateTicketDialog(context);
+            }
+          });
+          controls.append(button);
+        }
+        if (controls.children.length) view.wrap.append(controls);
+        scrollToBottom();
+      }
+      ticketCancel.addEventListener("click", () => { ticketContext = null; ticketDialog.close(); });
+      ticketDialog.addEventListener("cancel", () => { ticketContext = null; });
+      document.getElementById("ticketForm").addEventListener("submit", async event => {
+        event.preventDefault();
+        const context = ticketContext;
+        if (!currentAction(context)) { ticketDialog.close(); ticketContext = null; return; }
+        const state = context.state;
+        if (state.pending || state.result || state.stale) return;
+        const description = ticketDescription.value.trim();
+        if (!state.payload && !description) { ticketStatus.textContent = "请填写问题描述。"; return; }
+        // Retain the attempted payload even after transport failure: only explicit identical retries are safe.
+        state.payload ||= {action_id: context.action.id, description, ticket_type: ticketType.value};
+        state.pending = true;
+        state.error = "";
+        updateTicketDialog(context);
+        try {
+          const response = await fetch("/v1/conversations/" + encodeURIComponent(context.conversationId) + "/tickets", {
+            method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(state.payload)
+          });
+          if (response.status === 404) { state.stale = true; throw new Error("这项建议已失效或对话已删除，请重新打开有效对话。"); }
+          if (response.status === 409) throw new Error("对话正在处理中或提交内容冲突，请稍后重试原提交。");
+          if (response.status === 422) { state.payload = null; throw new Error("请检查问题描述与工单类型后确认。"); }
+          if (!response.ok) throw new Error("建单结果未知，请重试原提交；请勿修改提交内容。");
+          const result = await response.json();
+          if (typeof result.ticket_no !== "string" || typeof result.status !== "string" || typeof result.message !== "string") throw new Error("建单结果未知，请重试原提交；请勿修改提交内容。");
+          state.result = result;
+        } catch (error) {
+          state.error = error instanceof TypeError || error instanceof SyntaxError ? "建单结果未知，请重试原提交；请勿修改提交内容。" : error.message;
+        } finally {
+          state.pending = false;
+          if (ticketContext?.state === state) updateTicketDialog(ticketContext);
+        }
+      });
+
+      function renderInteraction(view, interaction, ownerId) {
+        if (!interaction || !ownerId) return;
+        view.wrap.querySelector(".interaction-panel")?.remove();
+        const panel=document.createElement("section");panel.className="interaction-panel";
+        const heading=document.createElement("p");heading.className="interaction-heading";
+        const payload=interaction.payload || {};
+        heading.textContent=interaction.status==="waiting" ? (interaction.kind==="order_selection" ? "选择要处理的订单商品" : "等待你补充信息") : interaction.status==="processing" ? "正在处理你的选择" : "本次选择已结束";
+        panel.append(heading);
+        if (payload.query) {const detail=document.createElement("p");detail.className="interaction-context";detail.textContent="问题："+payload.query+(payload.intent?.intent ? " · "+payload.intent.intent : "");panel.append(detail);}
+        const epoch=conversationEpoch;
+        const current=()=>epoch===conversationEpoch && ownerId===conversationId && panel.isConnected;
+        if (interaction.kind==="order_selection") {
+          for (const item of payload.orders || []) {
+            const card=document.createElement("button");card.type="button";card.className="order-card";
+            card.disabled=interaction.status!=="waiting";
+            const title=document.createElement("strong");title.textContent=item.product_name+" · "+item.variant;
+            const description=document.createElement("small");description.textContent="订单 "+item.order_id+" / "+item.item_id+"　"+item.quantity+" 件　实付 ¥"+item.paid_amount;
+            const status=document.createElement("small");status.textContent=item.order_status+" · "+item.aftersales_status+" · 下单 "+(item.ordered_at || "未知").replace("T"," ");
+            card.append(title,description,status);
+            card.addEventListener("click",async()=>{
+              if (!current() || busy || card.disabled) return;
+              const value={customer_id:payload.customer_id,order_id:item.order_id,item_id:item.item_id,data_digest:payload.data_digest};
+              const key=interaction.interrupt_id+JSON.stringify(value);
+              if (!resumeKeys.has(key)) resumeKeys.set(key,crypto.randomUUID());
+              panel.querySelectorAll("button").forEach(button=>button.disabled=true);
+              await sendMessage("",{url:"/v1/conversations/"+encodeURIComponent(ownerId)+"/interactions/"+encodeURIComponent(interaction.interrupt_id)+"/resume",body:{turn_id:interaction.turn_id,request_id:resumeKeys.get(key),value}});
+              if (current()) await openConversation(ownerId);
+            });
+            panel.append(card);
+          }
+        } else if (interaction.status==="waiting") {
+          const hint=document.createElement("p");hint.className="interaction-context";hint.textContent="在下方输入框回复即可继续。";panel.append(hint);
+        }
+        if (interaction.status==="waiting") {
+          const cancel=document.createElement("button");cancel.type="button";cancel.className="interaction-cancel";cancel.textContent="取消本次操作";
+          cancel.addEventListener("click",async()=>{
+            if (!current() || busy) return;cancel.disabled=true;
+            try {const response=await fetch("/v1/conversations/"+encodeURIComponent(ownerId)+"/interactions/"+encodeURIComponent(interaction.interrupt_id)+"/cancel",{method:"POST"});if(!response.ok)throw new Error("暂时无法取消，请刷新后重试。");if(current())await openConversation(ownerId);}
+            catch(error){if(current()){addNotice(error.message);cancel.disabled=false;}}
+          });panel.append(cancel);
+        }
+        view.wrap.append(panel);
+      }
+
+      function renderRefundForm(view, form, ownerId) {
+        if (!form || !ownerId) return;
+        const panel=document.createElement("form");panel.className="refund-panel";
+        const heading=document.createElement("p");heading.className="interaction-heading";heading.textContent="提交退款申请";
+        const summary=document.createElement("p");summary.className="interaction-context";summary.textContent=form.item.product_name+" · "+form.item.variant+"\n"+form.item.order_id+" / "+form.item.item_id+"　"+form.item.quantity+" 件　申请金额 ¥"+form.item.paid_amount;
+        const select=document.createElement("select");select.required=true;select.setAttribute("aria-label","退款原因");
+        const empty=document.createElement("option");empty.value="";empty.textContent="请选择退款原因";select.append(empty);
+        for(const reason of form.reasons || []){const option=document.createElement("option");option.value=reason.code;option.textContent=reason.label;select.append(option);}
+        const submit=document.createElement("button");submit.type="submit";submit.className="refund-submit";submit.textContent="确认提交申请";
+        const status=document.createElement("div");status.className="refund-status";status.setAttribute("aria-live","polite");status.textContent="提交后等待处理，不代表资金已退回。";
+        const key=ownerId+":"+form.action_id;
+        if(!refundStates.has(key))refundStates.set(key,{requestId:crypto.randomUUID(),reason:null,pending:false,result:null});
+        const state=refundStates.get(key);const epoch=conversationEpoch;
+        if(form.receipt){state.result=form.receipt;state.reason=form.receipt.reason_code;}
+        if(state.reason)select.value=state.reason;
+        const current=()=>epoch===conversationEpoch && ownerId===conversationId && panel.isConnected;
+        if(form.status!=="active"){submit.disabled=true;select.disabled=true;status.textContent=form.status==="submitted" ? "退款申请已提交，等待处理。" : "此申请入口已失效，请重新咨询确认。";}
+        if(state.result){submit.disabled=true;select.disabled=true;status.textContent="申请号 "+state.result.refund_no+" · 退款申请已提交，等待处理。";}
+        panel.addEventListener("submit",async event=>{
+          event.preventDefault();if(!current() || busy || state.pending || state.result || form.status!=="active" || !select.value)return;
+          if(state.reason && state.reason!==select.value)state.requestId=crypto.randomUUID();state.reason=select.value;
+          state.pending=true;submit.disabled=true;select.disabled=true;setBusy(true);status.textContent="正在复核并提交申请…";
+          try{
+            const response=await fetch("/v1/conversations/"+encodeURIComponent(ownerId)+"/refunds",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action_id:form.action_id,reason_code:state.reason,request_id:state.requestId})});
+            if(!response.ok)throw new Error(response.status===409 ? "需要重新确认退款条件，请继续对话。" : "结果暂未确认，可使用相同原因重试或刷新查看。");
+            state.result=await response.json();if(current())status.textContent="申请号 "+state.result.refund_no+" · "+state.result.message;
+          }catch(error){if(current())status.textContent=error.message;}
+          finally{state.pending=false;if(current()){setBusy(false);submit.disabled=Boolean(state.result);select.disabled=Boolean(state.result);}}
+        });
+        panel.append(heading,summary,select,submit,status);view.wrap.append(panel);
+      }
 
       function rememberConversation(id) {
         try { localStorage.setItem("sayhelp.activeConversation", id || "new"); } catch (_) {}
@@ -448,7 +665,7 @@
       function markActiveHistory() {
         historyList.querySelectorAll("[data-conversation]").forEach(button => {
           button.setAttribute("aria-current", String(button.dataset.conversation === conversationId));
-          button.disabled = busy || historyMutating.has(button.dataset.conversation);
+          button.disabled = historyMutating.has(button.dataset.conversation);
         });
         historyList.querySelectorAll("[data-manage]").forEach(button => {
           button.disabled = historyMutating.has(button.dataset.manage) || (busy && button.dataset.manage === conversationId);
@@ -470,12 +687,18 @@
           title.append(badge);
         }
         title.append(document.createTextNode(item.title));
+        if (item.has_summary) {
+          const badge = document.createElement("span");
+          badge.className = "history-pin";
+          badge.textContent = "已摘要";
+          title.append(badge);
+        }
         button.title = item.title;
         const date = document.createElement("span");
         date.className = "history-date";
         date.textContent = item.updated_at.replace("T", " ").slice(0, 16);
         button.append(title, date);
-        button.addEventListener("click", () => { if (!busy && !historyMutating.has(item.id)) openConversation(item.id); });
+        button.addEventListener("click", () => { if (!historyMutating.has(item.id)) openConversation(item.id); });
         const more = document.createElement("button");
         more.type = "button";
         more.className = "history-dots";
@@ -507,7 +730,10 @@
             method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({is_pinned: !item.is_pinned})
           } : {method: "DELETE"});
           if (!response.ok) throw new Error(response.status === 409 ? "该对话正在回复中，请回复结束后再操作。" : response.status === 404 ? "这段历史对话已不存在，请刷新列表。" : "操作失败，记录未更新，请稍后重试。");
-          if (action === "delete" && conversationId === item.id) resetConversation(false);
+          if (action === "delete") {
+            deletedConversations.add(item.id);
+            if (conversationId === item.id) resetConversation(false);
+          }
           historyStatus(action === "delete" ? "已删除对话" : item.is_pinned ? "已取消置顶" : "已置顶");
           await loadHistory();
         } catch (error) { historyStatus(error.message); }
@@ -522,7 +748,7 @@
         historyMore.disabled = true;
         try {
           const query = append && historyCursor ? "?before=" + encodeURIComponent(historyCursor) : "";
-          const response = await fetch("/v1/conversations" + query, {signal: historyAbort.signal});
+          const response = await fetch("/api/conversations" + query, {signal: historyAbort.signal});
           if (!response.ok) throw new Error("历史暂时无法加载，请稍后重试。");
           const data = await response.json();
           if (requestId !== historyRequest) return [];
@@ -543,7 +769,7 @@
           markActiveHistory();
           return data.conversations;
         } catch (error) {
-          if (error.name !== "AbortError" && requestId === historyRequest) historyStatus(error.message);
+          // Optional sidebar data must not interrupt the current conversation.
           return [];
         } finally {
           if (requestId === historyRequest) { historyLoading = false; historyMore.disabled = false; }
@@ -552,13 +778,15 @@
       historyMore.addEventListener("click", () => loadHistory(true));
 
       async function openConversation(id) {
-        if (busy) return;
+        invalidateConversationView();
+        const epoch = conversationEpoch;
         setBusy(true);
         toggleHistory(false);
         try {
-          const response = await fetch("/v1/conversations/" + encodeURIComponent(id) + "/messages");
+          const response = await fetch("/api/conversations/" + encodeURIComponent(id) + "/messages");
           if (!response.ok) throw new Error(response.status === 404 ? "这段历史对话已不存在。" : "历史对话加载失败，请稍后重试。");
           const data = await response.json();
+          if (epoch !== conversationEpoch || deletedConversations.has(id) || deletedConversations.has(data.conversation_id)) return;
           conversationId = data.conversation_id;
           rememberConversation(conversationId);
           messages.replaceChildren();
@@ -566,19 +794,25 @@
           followLatest = true;
           for (const item of data.messages) {
             const view = addMessage(item.role, item.content);
-            if (item.role === "assistant") decorateAnswer(view, item.content, item.citations?.length ? item.citations : (item.sources || []));
+            if (item.role === "assistant") {
+              view.messageId = item.id;
+              decorateAnswer(view, item.content, item.citations?.length ? item.citations : (item.sources || []));
+              renderActions(view, item.actions, conversationId);
+              if(item.interaction)renderInteraction(view,item.interaction,conversationId);
+              if(item.refund_form)renderRefundForm(view,item.refund_form,conversationId);
+            }
           }
           scrollToBottom(true);
           markActiveHistory();
         } catch (error) {
-          addNotice(error.message);
+          if (epoch === conversationEpoch) addNotice(error.message);
         } finally {
-          setBusy(false);
+          if (epoch === conversationEpoch) setBusy(false);
         }
       }
 
       function sourceDocumentUrl(source) {
-        const names = new Set(["after-sales-manual.md", "product-faq.md", "product-specs.md", "returns-policy.md"]);
+        const names = new Set(["after-sales-manual.md", "product-specifications.md", "returns-policy.md"]);
         const file = typeof source.source_file === "string" ? source.source_file.replace(/^knowledge_db\//, "") : "";
         if (!names.has(file)) return null;
         const expected = "/v1/knowledge/documents/" + encodeURIComponent(file);
@@ -708,7 +942,7 @@
       function setBusy(value) {
         busy = value;
         sendButton.disabled = value || !input.value.trim();
-        newChatButtons.forEach(button => button.disabled = value);
+        newChatButtons.forEach(button => button.disabled = false);
         presence.textContent = value ? "正在回复…" : "随时为你服务";
         footerStatus.textContent = value ? "客服输入中" : "在线";
         markActiveHistory();
@@ -752,12 +986,13 @@
         scrollToBottom();
       }
 
-      function makeRenderer(bubble) {
+      function makeRenderer(bubble, isCurrent) {
         let pending = "";
         let frame = 0;
         function flush() {
           if (frame) cancelAnimationFrame(frame);
           frame = 0;
+          if (!isCurrent()) { pending = ""; return; }
           if (pending) {
             bubble.textContent += pending;
             pending = "";
@@ -789,33 +1024,43 @@
         return { name, payload: JSON.parse(data.join("\n")) };
       }
 
-      async function sendMessage(rawText) {
+      async function sendMessage(rawText, resumeRequest = null) {
         const text = rawText.trim();
-        if (!text || busy) return;
+        if ((!text && !resumeRequest) || busy) return;
         welcome.hidden = true;
         followLatest = true;
-        addMessage("user", text);
+        if (!resumeRequest) addMessage("user", text);
         input.value = "";
         input.style.height = "auto";
         setBusy(true);
 
+        const epoch = conversationEpoch;
+        const controller = new AbortController();
+        chatAbort = controller;
         const view = addMessage("assistant", "");
+        const isCurrent = () => epoch === conversationEpoch && view.wrap.isConnected;
         const { bubble, trace } = view;
         let answerSources = [];
+        let answerActions = null;
+        let finalMessageId = null;
         const indicator = document.createElement("span");
         indicator.className = "typing";
         indicator.innerHTML = "<span></span><span></span><span></span>";
         bubble.append(indicator);
-        const renderer = makeRenderer(bubble);
+        const renderer = makeRenderer(bubble, isCurrent);
         let receivedToken = false;
         let done = false;
+        let paused = false;
+        let pendingInteraction = null;
+        let refundForm = null;
         let errorText = "";
 
         try {
-          const response = await fetch("/v1/chat/stream", {
+          const response = await fetch(resumeRequest?.url || "/v1/chat/stream", {
             method: "POST",
             headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
-            body: JSON.stringify({ message: text, conversation_id: conversationId })
+            body: JSON.stringify(resumeRequest?.body || { message: text, conversation_id: conversationId }),
+            signal: controller.signal
           });
           if (!response.ok) {
             if (response.status === 404) throw new Error("会话已失效，请点“新对话”后重试。");
@@ -829,6 +1074,7 @@
           const decoder = new TextDecoder();
           let buffer = "";
           function handleFrame(frame) {
+            if (!isCurrent()) return;
             const item = readEvent(frame);
             if (!item) return;
             if (item.name === "session") {
@@ -851,6 +1097,17 @@
             } else if (item.name === "citations" || item.name === "sources") {
               const evidence = item.name === "citations" ? item.payload.citations : item.payload.sources;
               answerSources = Array.isArray(evidence) ? evidence : [];
+            } else if (item.name === "actions") {
+              answerActions = item.payload;
+            } else if (item.name === "interaction_required") {
+              pendingInteraction=item.payload;indicator.remove();bubble.textContent=item.payload.payload?.message || "请补充信息后继续。";receivedToken=true;
+            } else if (item.name === "paused") {
+              paused=true;trace.hidden=false;trace.textContent="等待你的选择或回复";
+            } else if (item.name === "refund_form") {
+              refundForm=item.payload;
+            } else if (item.name === "workflow_stage") {
+              const labels={order:"正在读取所选订单…",expansion:"正在准备政策检索…",policy:"正在检索退款与售后条款…",eligibility:"正在结合订单核对条件…"};
+              trace.hidden=false;trace.textContent=labels[item.payload.stage] || "正在处理…";
             } else if (item.name === "token") {
               if (!receivedToken) {
                 receivedToken = true;
@@ -861,11 +1118,13 @@
               throw new Error("回复中断，请重试。");
             } else if (item.name === "done") {
               done = true;
+              finalMessageId = item.payload.message_id;
               if (!trace.hidden) { trace.dataset.state = "complete"; trace.textContent = "回答已完成"; }
             }
           }
           while (true) {
             const { value, done: streamEnded } = await reader.read();
+            if (!isCurrent()) { await reader.cancel(); return; }
             if (streamEnded) break;
             buffer += decoder.decode(value, { stream: true });
             buffer = buffer.replace(/\r\n/g, "\n");
@@ -877,13 +1136,22 @@
           }
           buffer += decoder.decode();
           if (buffer.trim()) handleFrame(buffer.replace(/\r\n/g, "\n").trim());
-          if (!done) throw new Error("连接提前中断，请重试。");
+          if (!done && !paused) throw new Error("连接提前中断，请重试。");
           await renderer.drain();
+          if (!isCurrent()) return;
           decorateAnswer(view, bubble.textContent, answerSources);
+          if(pendingInteraction)renderInteraction(view,pendingInteraction,conversationId);
+          if(refundForm)renderRefundForm(view,refundForm,conversationId);
+          if (answerActions && answerActions.message_id === finalMessageId) {
+            view.messageId = finalMessageId;
+            renderActions(view, answerActions.actions, conversationId);
+          }
         } catch (error) {
           errorText = error instanceof Error ? error.message : "发送失败，请重试。";
           await renderer.drain();
         } finally {
+          if (!isCurrent()) return;
+          chatAbort = null;
           indicator.remove();
           if (!receivedToken) {
             bubble.textContent = errorText ? "暂时没能回复。" : "暂时没有收到文字回复。";
@@ -915,6 +1183,8 @@
         }
       });
       function resetConversation(focus = true) {
+        invalidateConversationView();
+        setBusy(false);
         closeHistoryMenu();
         conversationId = null;
         rememberConversation(null);
@@ -929,7 +1199,7 @@
         sendButton.disabled = true;
         if (focus) input.focus();
       }
-      newChatButtons.forEach(button => button.addEventListener("click", () => { if (!busy) resetConversation(); }));
+      newChatButtons.forEach(button => button.addEventListener("click", () => resetConversation()));
       document.querySelectorAll("[data-prompt]").forEach(button => {
         button.addEventListener("click", () => sendMessage(button.dataset.prompt));
       });

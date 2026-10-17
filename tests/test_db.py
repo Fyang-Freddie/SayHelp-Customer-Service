@@ -145,7 +145,7 @@ def test_ticket_insert_updates_conversation_atomically(sessions):
     with sessions() as session:
         ticket = session.get(Ticket, numbers[0])
         assert (ticket.conversation_id, ticket.description, ticket.ticket_type, ticket.status) == (cid, '商品破损，请联系我', '售后', '待处理')
-    assert repo.get_conversation(cid).status == '已转人工'
+    assert repo.get_conversation(cid).status == '进行中'
     other = repo.create_conversation('guest-rollback')
     with pytest.raises((ValueError, IntegrityError)):
         repo.create_ticket(other, 'bad type', '退货')

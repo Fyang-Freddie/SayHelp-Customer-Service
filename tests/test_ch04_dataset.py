@@ -81,9 +81,11 @@ def test_unknown_annotation_has_no_gold(sessions,corpus,tmp_path):
     assert api().bind_gold(cases,snapshot,sessions)[0].gold_ids==[]
 
 
-def test_frozen_real_dataset_balance_and_all_anchors(sessions):
+def test_frozen_real_dataset_balance_and_all_anchors(sessions,monkeypatch):
     from pathlib import Path
     from app.ch04_ingest import ingest_corpus,ROOT
+    from tests.ch04_support import activate_legacy_corpus
+    activate_legacy_corpus(monkeypatch)
     dataset=api()
     calibration=dataset.load_cases(ROOT/'eval/ch04/calibration.json')
     test=dataset.load_cases(ROOT/'eval/ch04/test.json')

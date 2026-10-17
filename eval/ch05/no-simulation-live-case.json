@@ -1,0 +1,26 @@
+{
+  "authored_before_execution": true,
+  "case": "multi-step",
+  "mode": "workflow",
+  "question": "先查询订单1001的订单状态，只有结果为已发货或已完成时，再查询它的物流；否则不要查物流。",
+  "expected": {
+    "intent": "订单",
+    "tool_names": [
+      "query_order"
+    ],
+    "answer": "明确订单数据源尚未接入；不捏造订单状态、金额、物流位置或记录不存在，不继续查物流",
+    "model_source": "live configured provider",
+    "ticket_writes": 0
+  },
+  "budget": {
+    "previous_attempts": 9,
+    "authorized_total_limit": 10,
+    "new_attempt_limit": 1,
+    "retry": false
+  },
+  "status": "completed; labelled core checks passed",
+  "attempted_at": "2026-10-09T16:22:07.421487+00:00",
+  "cumulative_attempts": 10,
+  "result_path": "eval/ch05/no-simulation-live-result.json",
+  "observation": "Answer also offers a future waybill lookup despite the logistics source being unavailable. Independent review classified this as a minor wording limitation; core checks passed and approval stands. No additional paid run."
+}

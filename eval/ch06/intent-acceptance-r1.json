@@ -1,0 +1,3616 @@
+{
+  "total": 110,
+  "correct": 101,
+  "query_correct": 106,
+  "confusion": [
+    {
+      "expected": "其他",
+      "actual": "其他",
+      "count": 15
+    },
+    {
+      "expected": "售后",
+      "actual": "售后",
+      "count": 12
+    },
+    {
+      "expected": "商品咨询",
+      "actual": "商品咨询",
+      "count": 10
+    },
+    {
+      "expected": "投诉",
+      "actual": "其他",
+      "count": 2
+    },
+    {
+      "expected": "投诉",
+      "actual": "投诉",
+      "count": 8
+    },
+    {
+      "expected": "物流",
+      "actual": "物流",
+      "count": 23
+    },
+    {
+      "expected": "订单",
+      "actual": "其他",
+      "count": 2
+    },
+    {
+      "expected": "订单",
+      "actual": "订单",
+      "count": 9
+    },
+    {
+      "expected": "退款退货",
+      "actual": "退款退货",
+      "count": 19
+    },
+    {
+      "expected": "闲聊",
+      "actual": "闲聊",
+      "count": 10
+    }
+  ],
+  "cases": [
+    {
+      "id": "intent-011",
+      "split": "acceptance",
+      "raw": "我买的电饭煲预计几天到？",
+      "expected_intent": "物流",
+      "query": "我买的电饭煲预计几天到？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的电饭煲预计几天到？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1176,
+        "output_tokens": 158,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-012",
+      "split": "acceptance",
+      "raw": "包裹显示签收但我没拿到，查下配送。",
+      "expected_intent": "物流",
+      "query": "包裹显示签收但我没拿到，查下配送。",
+      "query_ok": true,
+      "resolution": {
+        "query": "包裹显示签收但我没拿到，查下配送。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1184,
+        "output_tokens": 356,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-013",
+      "split": "acceptance",
+      "raw": "运单的最新状态是什么？",
+      "expected_intent": "物流",
+      "query": "运单的最新状态是什么？",
+      "query_ok": true,
+      "resolution": {
+        "query": "运单的最新状态是什么？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 245,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-014",
+      "split": "acceptance",
+      "raw": "周末会安排发货吗？",
+      "expected_intent": "物流",
+      "query": "周末会安排发货吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "周末会安排发货吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 162,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-015",
+      "split": "acceptance",
+      "raw": "我的手机壳物流更新了吗？",
+      "expected_intent": "物流",
+      "query": "我的手机壳物流更新了吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我的手机壳物流更新了吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1174,
+        "output_tokens": 308,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-016",
+      "split": "acceptance",
+      "raw": "快递卡在路上三天了，请查物流。",
+      "expected_intent": "物流",
+      "query": "快递卡在路上三天了，请查物流。",
+      "query_ok": true,
+      "resolution": {
+        "query": "快递卡在路上三天了，请查物流。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1179,
+        "output_tokens": 178,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-017",
+      "split": "acceptance",
+      "raw": "请告诉我快递单号。",
+      "expected_intent": "物流",
+      "query": "请告诉我快递单号。",
+      "query_ok": true,
+      "resolution": {
+        "query": "请告诉我快递单号。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 193,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-018",
+      "split": "acceptance",
+      "raw": "我的键盘已经出库了吗？",
+      "expected_intent": "物流",
+      "query": "我的键盘已经出库了吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我的键盘已经出库了吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1172,
+        "output_tokens": 307,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-019",
+      "split": "acceptance",
+      "raw": "查一下这个订单的配送进度。",
+      "expected_intent": "物流",
+      "query": "查一下这个订单的配送进度。",
+      "query_ok": true,
+      "resolution": {
+        "query": "查一下这个订单的配送进度。",
+        "changed": false,
+        "unresolved_references": [
+          "这个订单"
+        ]
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1175,
+        "output_tokens": 181,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-020",
+      "split": "acceptance",
+      "raw": "我只想知道包裹在哪，不申请退款。",
+      "expected_intent": "物流",
+      "query": "我只想知道包裹在哪，不申请退款。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我只想知道包裹在哪，不申请退款。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1180,
+        "output_tokens": 289,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-031",
+      "split": "acceptance",
+      "raw": "查询我的交易记录。",
+      "expected_intent": "订单",
+      "query": "查询我的交易记录。",
+      "query_ok": true,
+      "resolution": {
+        "query": "查询我的交易记录。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1168,
+        "output_tokens": 213,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-032",
+      "split": "acceptance",
+      "raw": "我想看订单总金额。",
+      "expected_intent": "订单",
+      "query": "我想看订单总金额。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我想看订单总金额。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 164,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-033",
+      "split": "acceptance",
+      "raw": "如何支付刚提交的订单？",
+      "expected_intent": "订单",
+      "query": "如何支付刚提交的订单？",
+      "query_ok": true,
+      "resolution": {
+        "query": "如何支付刚提交的订单？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1172,
+        "output_tokens": 192,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-034",
+      "split": "acceptance",
+      "raw": "订单备注可以补充吗？",
+      "expected_intent": "订单",
+      "query": "订单备注可以补充吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "订单备注可以补充吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1170,
+        "output_tokens": 168,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-035",
+      "split": "acceptance",
+      "raw": "我需要下载电子发票。",
+      "expected_intent": "订单",
+      "query": "我需要下载电子发票。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我需要下载电子发票。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 127,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-036",
+      "split": "acceptance",
+      "raw": "订单里买了哪些商品？",
+      "expected_intent": "订单",
+      "query": "订单里买了哪些商品？",
+      "query_ok": true,
+      "resolution": {
+        "query": "订单里买了哪些商品？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.99,
+      "reason": "low_confidence",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.99,
+        "商品咨询": 0.01,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1170,
+        "output_tokens": 202,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-037",
+      "split": "acceptance",
+      "raw": "未付款订单多久自动关闭？",
+      "expected_intent": "订单",
+      "query": "未付款订单多久自动关闭？",
+      "query_ok": true,
+      "resolution": {
+        "query": "未付款订单多久自动关闭？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1173,
+        "output_tokens": 120,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-038",
+      "split": "acceptance",
+      "raw": "我想更改发票类型。",
+      "expected_intent": "订单",
+      "query": "我想更改发票类型。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我想更改发票类型。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1168,
+        "output_tokens": 186,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-039",
+      "split": "acceptance",
+      "raw": "订单已经支付了多少金额？",
+      "expected_intent": "订单",
+      "query": "订单已经支付了多少金额？",
+      "query_ok": true,
+      "resolution": {
+        "query": "订单已经支付了多少金额？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1172,
+        "output_tokens": 197,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-040",
+      "split": "acceptance",
+      "raw": "帮我核实订单编号。",
+      "expected_intent": "订单",
+      "query": "帮我核实订单编号。",
+      "query_ok": true,
+      "resolution": {
+        "query": "帮我核实订单编号。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.99,
+      "reason": "low_confidence",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.99,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.01
+      },
+      "usage": {
+        "input_tokens": 1168,
+        "output_tokens": 203,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-051",
+      "split": "acceptance",
+      "raw": "打印机支持双面打印吗？",
+      "expected_intent": "商品咨询",
+      "query": "打印机支持双面打印吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "打印机支持双面打印吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1172,
+        "output_tokens": 228,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-052",
+      "split": "acceptance",
+      "raw": "笔记本支架可以调节高度吗？",
+      "expected_intent": "商品咨询",
+      "query": "笔记本支架可以调节高度吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "笔记本支架可以调节高度吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1174,
+        "output_tokens": 140,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-053",
+      "split": "acceptance",
+      "raw": "这个充电器支持快充吗？",
+      "expected_intent": "商品咨询",
+      "query": "这个充电器支持快充吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "这个充电器支持快充吗？",
+        "changed": false,
+        "unresolved_references": [
+          "这个"
+        ]
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1173,
+        "output_tokens": 258,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-054",
+      "split": "acceptance",
+      "raw": "蓝牙音箱防水吗？",
+      "expected_intent": "商品咨询",
+      "query": "蓝牙音箱防水吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "蓝牙音箱防水吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1167,
+        "output_tokens": 182,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-055",
+      "split": "acceptance",
+      "raw": "请介绍一下净水器的功能。",
+      "expected_intent": "商品咨询",
+      "query": "请介绍一下净水器的功能。",
+      "query_ok": true,
+      "resolution": {
+        "query": "请介绍一下净水器的功能。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1173,
+        "output_tokens": 142,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-056",
+      "split": "acceptance",
+      "raw": "这款洗面奶适合油性皮肤吗？",
+      "expected_intent": "商品咨询",
+      "query": "这款洗面奶适合油性皮肤吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "这款洗面奶适合油性皮肤吗？",
+        "changed": false,
+        "unresolved_references": [
+          "这款"
+        ]
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1177,
+        "output_tokens": 730,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-057",
+      "split": "acceptance",
+      "raw": "这个手机壳兼容哪些型号？",
+      "expected_intent": "商品咨询",
+      "query": "这个手机壳兼容哪些型号？",
+      "query_ok": true,
+      "resolution": {
+        "query": "这个手机壳兼容哪些型号？",
+        "changed": false,
+        "unresolved_references": [
+          "这个手机壳"
+        ]
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1174,
+        "output_tokens": 264,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-058",
+      "split": "acceptance",
+      "raw": "首次使用耳机怎么配对？",
+      "expected_intent": "商品咨询",
+      "query": "首次使用耳机怎么配对？",
+      "query_ok": true,
+      "resolution": {
+        "query": "首次使用耳机怎么配对？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 147,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-059",
+      "split": "acceptance",
+      "raw": "如何给智能手环设置闹钟？",
+      "expected_intent": "商品咨询",
+      "query": "如何给智能手环设置闹钟？",
+      "query_ok": true,
+      "resolution": {
+        "query": "如何给智能手环设置闹钟？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1176,
+        "output_tokens": 190,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-060",
+      "split": "acceptance",
+      "raw": "这条数据线有多长？",
+      "expected_intent": "商品咨询",
+      "query": "这条数据线有多长？",
+      "query_ok": true,
+      "resolution": {
+        "query": "这条数据线有多长？",
+        "changed": false,
+        "unresolved_references": [
+          "这条"
+        ]
+      },
+      "intent": "商品咨询",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 1.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 195,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-071",
+      "split": "acceptance",
+      "raw": "我买的课程兑换码能退款吗？",
+      "expected_intent": "退款退货",
+      "query": "我买的课程兑换码能退款吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的课程兑换码能退款吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1176,
+        "output_tokens": 276,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-072",
+      "split": "acceptance",
+      "raw": "签收已经八天，还能退货吗？",
+      "expected_intent": "退款退货",
+      "query": "签收已经八天，还能退货吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "签收已经八天，还能退货吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1177,
+        "output_tokens": 128,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-073",
+      "split": "acceptance",
+      "raw": "退货需要保留原包装吗？",
+      "expected_intent": "退款退货",
+      "query": "退货需要保留原包装吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "退货需要保留原包装吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1172,
+        "output_tokens": 128,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-074",
+      "split": "acceptance",
+      "raw": "收到的商品破损，我要退钱。",
+      "expected_intent": "退款退货",
+      "query": "收到的商品破损，我要退钱。",
+      "query_ok": true,
+      "resolution": {
+        "query": "收到的商品破损，我要退钱。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1175,
+        "output_tokens": 183,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-075",
+      "split": "acceptance",
+      "raw": "我想知道这单能退多少钱。",
+      "expected_intent": "退款退货",
+      "query": "我想知道这单能退多少钱。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我想知道这单能退多少钱。",
+        "changed": false,
+        "unresolved_references": [
+          "这单"
+        ]
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1174,
+        "output_tokens": 286,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-076",
+      "split": "acceptance",
+      "raw": "申请退货需要寄到哪里？",
+      "expected_intent": "退款退货",
+      "query": "申请退货需要寄到哪里？",
+      "query_ok": true,
+      "resolution": {
+        "query": "申请退货需要寄到哪里？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 134,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-077",
+      "split": "acceptance",
+      "raw": "耳机用了两次，现在想退货。",
+      "expected_intent": "退款退货",
+      "query": "耳机用了两次，现在想退货。",
+      "query_ok": true,
+      "resolution": {
+        "query": "耳机用了两次，现在想退货。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1175,
+        "output_tokens": 171,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-078",
+      "split": "acceptance",
+      "raw": "包裹还没收到，我不要了，要退款。",
+      "expected_intent": "退款退货",
+      "query": "包裹还没收到，我不要了，要退款。",
+      "query_ok": true,
+      "resolution": {
+        "query": "包裹还没收到，我不要了，要退款。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1181,
+        "output_tokens": 246,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-079",
+      "split": "acceptance",
+      "raw": "退回的商品已经签收，为什么没退款？",
+      "expected_intent": "退款退货",
+      "query": "退回的商品已经签收，为什么没退款？",
+      "query_ok": true,
+      "resolution": {
+        "query": "退回的商品已经签收，为什么没退款？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1181,
+        "output_tokens": 250,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-080",
+      "split": "acceptance",
+      "raw": "我很生气，但现在只要求退货退款。",
+      "expected_intent": "退款退货",
+      "query": "我很生气，但现在只要求退货退款。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我很生气，但现在只要求退货退款。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1179,
+        "output_tokens": 259,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-091",
+      "split": "acceptance",
+      "raw": "我想知道维修需要哪些材料。",
+      "expected_intent": "售后",
+      "query": "我想知道维修需要哪些材料。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我想知道维修需要哪些材料。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1174,
+        "output_tokens": 255,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-092",
+      "split": "acceptance",
+      "raw": "我的音箱故障怎么处理？",
+      "expected_intent": "售后",
+      "query": "我的音箱故障怎么处理？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我的音箱故障怎么处理？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 237,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-093",
+      "split": "acceptance",
+      "raw": "买的鼠标失灵了，要求更换。",
+      "expected_intent": "售后",
+      "query": "买的鼠标失灵了，要求更换。",
+      "query_ok": true,
+      "resolution": {
+        "query": "买的鼠标失灵了，要求更换。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1175,
+        "output_tokens": 188,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-094",
+      "split": "acceptance",
+      "raw": "保修是否包含人工费用？",
+      "expected_intent": "售后",
+      "query": "保修是否包含人工费用？",
+      "query_ok": true,
+      "resolution": {
+        "query": "保修是否包含人工费用？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 125,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-095",
+      "split": "acceptance",
+      "raw": "净水器漏水，想安排检修。",
+      "expected_intent": "售后",
+      "query": "净水器漏水，想安排检修。",
+      "query_ok": true,
+      "resolution": {
+        "query": "净水器漏水，想安排检修。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1175,
+        "output_tokens": 191,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-096",
+      "split": "acceptance",
+      "raw": "商品寄去维修以后多久寄回？",
+      "expected_intent": "售后",
+      "query": "商品寄去维修以后多久寄回？",
+      "query_ok": true,
+      "resolution": {
+        "query": "商品寄去维修以后多久寄回？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.01,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.99,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1176,
+        "output_tokens": 132,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-097",
+      "split": "acceptance",
+      "raw": "我少收到一根数据线，帮我补寄。",
+      "expected_intent": "售后",
+      "query": "我少收到一根数据线，帮我补寄。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我少收到一根数据线，帮我补寄。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1180,
+        "output_tokens": 156,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-098",
+      "split": "acceptance",
+      "raw": "耳机损坏，先看看能不能修。",
+      "expected_intent": "售后",
+      "query": "耳机损坏，先看看能不能修。",
+      "query_ok": true,
+      "resolution": {
+        "query": "耳机损坏，先看看能不能修。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1175,
+        "output_tokens": 273,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-099",
+      "split": "acceptance",
+      "raw": "我不退款，只申请换货。",
+      "expected_intent": "售后",
+      "query": "我不退款，只申请换货。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我不退款，只申请换货。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 0.98,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.02,
+        "售后": 0.98,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1173,
+        "output_tokens": 141,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-100",
+      "split": "acceptance",
+      "raw": "这台手环开不了机，如何申请售后？",
+      "expected_intent": "售后",
+      "query": "这台手环开不了机，如何申请售后？",
+      "query_ok": true,
+      "resolution": {
+        "query": "这台手环开不了机，如何申请售后？",
+        "changed": false,
+        "unresolved_references": [
+          "这台手环"
+        ]
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1181,
+        "output_tokens": 261,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-111",
+      "split": "acceptance",
+      "raw": "我现在不办退款，只投诉服务。",
+      "expected_intent": "投诉",
+      "query": "我现在不办退款，只投诉服务。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我现在不办退款，只投诉服务。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 1.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1177,
+        "output_tokens": 223,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-112",
+      "split": "acceptance",
+      "raw": "我要投诉客服泄露信息。",
+      "expected_intent": "投诉",
+      "query": "我要投诉客服泄露信息。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我要投诉客服泄露信息。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 1.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 211,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-113",
+      "split": "acceptance",
+      "raw": "我要求调查店员的不当行为。",
+      "expected_intent": "投诉",
+      "query": "我要求调查店员的不当行为。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我要求调查店员的不当行为。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 1.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1175,
+        "output_tokens": 205,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-114",
+      "split": "acceptance",
+      "raw": "这次服务争议请升级处理。",
+      "expected_intent": "投诉",
+      "query": "这次服务争议请升级处理。",
+      "query_ok": true,
+      "resolution": {
+        "query": "这次服务争议请升级处理。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 1.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1173,
+        "output_tokens": 440,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-115",
+      "split": "acceptance",
+      "raw": "如何提交正式投诉材料？",
+      "expected_intent": "投诉",
+      "query": "如何提交正式投诉材料？",
+      "query_ok": true,
+      "resolution": {
+        "query": "如何提交正式投诉材料？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 1.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 164,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-116",
+      "split": "acceptance",
+      "raw": "我要投诉售后人员推诿责任。",
+      "expected_intent": "投诉",
+      "query": "我要投诉售后人员推诿责任。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我要投诉售后人员推诿责任。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.99,
+      "reason": "low_confidence",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.01,
+        "投诉": 0.99,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1177,
+        "output_tokens": 153,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-117",
+      "split": "acceptance",
+      "raw": "我的投诉为什么没有回复？",
+      "expected_intent": "投诉",
+      "query": "我的投诉为什么没有回复？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我的投诉为什么没有回复？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.99,
+      "reason": "low_confidence",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.99,
+        "闲聊": 0.0,
+        "其他": 0.01
+      },
+      "usage": {
+        "input_tokens": 1172,
+        "output_tokens": 128,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-118",
+      "split": "acceptance",
+      "raw": "请记录一条服务质量投诉。",
+      "expected_intent": "投诉",
+      "query": "请记录一条服务质量投诉。",
+      "query_ok": true,
+      "resolution": {
+        "query": "请记录一条服务质量投诉。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 1.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1172,
+        "output_tokens": 127,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-119",
+      "split": "acceptance",
+      "raw": "我希望主管处理我的投诉。",
+      "expected_intent": "投诉",
+      "query": "我希望主管处理我的投诉。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我希望主管处理我的投诉。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 1.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1172,
+        "output_tokens": 142,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-120",
+      "split": "acceptance",
+      "raw": "我要对客服的失职追责。",
+      "expected_intent": "投诉",
+      "query": "我要对客服的失职追责。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我要对客服的失职追责。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "投诉",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 1.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1174,
+        "output_tokens": 176,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-131",
+      "split": "acceptance",
+      "raw": "谢谢，已经明白了。",
+      "expected_intent": "闲聊",
+      "query": "谢谢，已经明白了。",
+      "query_ok": true,
+      "resolution": {
+        "query": "谢谢，已经明白了。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.99,
+        "其他": 0.01
+      },
+      "usage": {
+        "input_tokens": 1167,
+        "output_tokens": 140,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-132",
+      "split": "acceptance",
+      "raw": "午安。",
+      "expected_intent": "闲聊",
+      "query": "午安。",
+      "query_ok": true,
+      "resolution": {
+        "query": "午安。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 1.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1160,
+        "output_tokens": 133,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-133",
+      "split": "acceptance",
+      "raw": "祝你工作顺利。",
+      "expected_intent": "闲聊",
+      "query": "祝你工作顺利。",
+      "query_ok": true,
+      "resolution": {
+        "query": "祝你工作顺利。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 1.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1165,
+        "output_tokens": 132,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-134",
+      "split": "acceptance",
+      "raw": "今天过得好吗？",
+      "expected_intent": "闲聊",
+      "query": "今天过得好吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "今天过得好吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 1.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1166,
+        "output_tokens": 156,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-135",
+      "split": "acceptance",
+      "raw": "哈哈，谢谢啦。",
+      "expected_intent": "闲聊",
+      "query": "哈哈，谢谢啦。",
+      "query_ok": true,
+      "resolution": {
+        "query": "哈哈，谢谢啦。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 1.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1165,
+        "output_tokens": 134,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-136",
+      "split": "acceptance",
+      "raw": "回头见。",
+      "expected_intent": "闲聊",
+      "query": "回头见。",
+      "query_ok": true,
+      "resolution": {
+        "query": "回头见。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.99,
+        "其他": 0.01
+      },
+      "usage": {
+        "input_tokens": 1161,
+        "output_tokens": 159,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-137",
+      "split": "acceptance",
+      "raw": "你叫什么名字？",
+      "expected_intent": "闲聊",
+      "query": "你叫什么名字？",
+      "query_ok": true,
+      "resolution": {
+        "query": "你叫什么名字？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 0.98,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.98,
+        "其他": 0.02
+      },
+      "usage": {
+        "input_tokens": 1165,
+        "output_tokens": 132,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-138",
+      "split": "acceptance",
+      "raw": "我来打个招呼。",
+      "expected_intent": "闲聊",
+      "query": "我来打个招呼。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我来打个招呼。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 1.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1165,
+        "output_tokens": 139,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-139",
+      "split": "acceptance",
+      "raw": "下午好呀。",
+      "expected_intent": "闲聊",
+      "query": "下午好呀。",
+      "query_ok": true,
+      "resolution": {
+        "query": "下午好呀。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 1.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1163,
+        "output_tokens": 135,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-140",
+      "split": "acceptance",
+      "raw": "你可以陪我聊一会儿吗？",
+      "expected_intent": "闲聊",
+      "query": "你可以陪我聊一会儿吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "你可以陪我聊一会儿吗？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "闲聊",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 1.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 138,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-151",
+      "split": "acceptance",
+      "raw": "帮我翻译一篇论文。",
+      "expected_intent": "其他",
+      "query": "帮我翻译一篇论文。",
+      "query_ok": true,
+      "resolution": {
+        "query": "帮我翻译一篇论文。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 1.0,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 1.0
+      },
+      "usage": {
+        "input_tokens": 1168,
+        "output_tokens": 159,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-152",
+      "split": "acceptance",
+      "raw": "计算这个积分。",
+      "expected_intent": "其他",
+      "query": "计算这个积分。",
+      "query_ok": true,
+      "resolution": {
+        "query": "计算这个积分。",
+        "changed": false,
+        "unresolved_references": [
+          "这个积分"
+        ]
+      },
+      "intent": "其他",
+      "confidence": 0.99,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.01,
+        "其他": 0.99
+      },
+      "usage": {
+        "input_tokens": 1165,
+        "output_tokens": 355,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-153",
+      "split": "acceptance",
+      "raw": "推荐一条欧洲旅游路线。",
+      "expected_intent": "其他",
+      "query": "推荐一条欧洲旅游路线。",
+      "query_ok": true,
+      "resolution": {
+        "query": "推荐一条欧洲旅游路线。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.83,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.09,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.06,
+        "其他": 0.85
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 119,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-154",
+      "split": "acceptance",
+      "raw": "我的汽车保险怎么理赔？",
+      "expected_intent": "其他",
+      "query": "我的汽车保险怎么理赔？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我的汽车保险怎么理赔？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.6,
+      "reason": "low_confidence",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.09,
+        "退款退货": 0.01,
+        "售后": 0.65,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.25
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 121,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-155",
+      "split": "acceptance",
+      "raw": "解释一下量子纠缠。",
+      "expected_intent": "其他",
+      "query": "解释一下量子纠缠。",
+      "query_ok": true,
+      "resolution": {
+        "query": "解释一下量子纠缠。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.78,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.19,
+        "其他": 0.81
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 175,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-156",
+      "split": "acceptance",
+      "raw": "给我写一首长诗。",
+      "expected_intent": "其他",
+      "query": "给我写一首长诗。",
+      "query_ok": true,
+      "resolution": {
+        "query": "给我写一首长诗。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.91,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.08,
+        "其他": 0.92
+      },
+      "usage": {
+        "input_tokens": 1168,
+        "output_tokens": 167,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-157",
+      "split": "acceptance",
+      "raw": "预测明年的房价。",
+      "expected_intent": "其他",
+      "query": "预测明年的房价。",
+      "query_ok": true,
+      "resolution": {
+        "query": "预测明年的房价。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.95,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.01,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.03,
+        "其他": 0.96
+      },
+      "usage": {
+        "input_tokens": 1167,
+        "output_tokens": 181,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-158",
+      "split": "acceptance",
+      "raw": "帮我创建一个游戏账号。",
+      "expected_intent": "其他",
+      "query": "帮我创建一个游戏账号。",
+      "query_ok": true,
+      "resolution": {
+        "query": "帮我创建一个游戏账号。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.99,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.01,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.99
+      },
+      "usage": {
+        "input_tokens": 1170,
+        "output_tokens": 118,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-159",
+      "split": "acceptance",
+      "raw": "修复我的数据库脚本。",
+      "expected_intent": "其他",
+      "query": "修复我的数据库脚本。",
+      "query_ok": true,
+      "resolution": {
+        "query": "修复我的数据库脚本。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.93,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.06,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.9400000000000001
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 204,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "intent-160",
+      "split": "acceptance",
+      "raw": "请替我写法律诉状。",
+      "expected_intent": "其他",
+      "query": "请替我写法律诉状。",
+      "query_ok": true,
+      "resolution": {
+        "query": "请替我写法律诉状。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 1.0,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 1.0
+      },
+      "usage": {
+        "input_tokens": 1170,
+        "output_tokens": 135,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-13",
+      "split": "acceptance",
+      "raw": "它能退款吗？",
+      "expected_intent": "退款退货",
+      "query": "它能退款吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "它能退款吗？",
+        "changed": false,
+        "unresolved_references": [
+          "它"
+        ]
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1164,
+        "output_tokens": 185,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-14",
+      "split": "acceptance",
+      "raw": "照上次那样。",
+      "expected_intent": "其他",
+      "query": "照上次那样。",
+      "query_ok": false,
+      "resolution": {
+        "query": "照上次那样。",
+        "changed": false,
+        "unresolved_references": [
+          "上次那样"
+        ]
+      },
+      "intent": "其他",
+      "confidence": 1.0,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 1.0
+      },
+      "usage": {
+        "input_tokens": 1164,
+        "output_tokens": 237,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-15",
+      "split": "acceptance",
+      "raw": "我想同时换地址和投诉客服，都要办理。",
+      "expected_intent": "其他",
+      "query": "我想同时换地址和投诉客服，都要办理。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我想同时换地址和投诉客服，都要办理。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.94,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.02,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.03,
+        "闲聊": 0.0,
+        "其他": 0.95
+      },
+      "usage": {
+        "input_tokens": 1183,
+        "output_tokens": 210,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-16",
+      "split": "acceptance",
+      "raw": "先不退了，查快递。",
+      "expected_intent": "物流",
+      "query": "先不退了，查快递。",
+      "query_ok": true,
+      "resolution": {
+        "query": "先不退了，查快递。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 0.99,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.99,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.01,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1170,
+        "output_tokens": 397,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-17",
+      "split": "acceptance",
+      "raw": "别给我维修了，我要退款。",
+      "expected_intent": "退款退货",
+      "query": "别给我维修了，我要退款。",
+      "query_ok": true,
+      "resolution": {
+        "query": "别给我维修了，我要退款。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1174,
+        "output_tokens": 364,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-18",
+      "split": "acceptance",
+      "raw": "不退款了，帮我保修。",
+      "expected_intent": "售后",
+      "query": "不退款了，帮我保修。",
+      "query_ok": true,
+      "resolution": {
+        "query": "不退款了，帮我保修。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1171,
+        "output_tokens": 329,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-19",
+      "split": "acceptance",
+      "raw": "这笔付款是否成功？",
+      "expected_intent": "订单",
+      "query": "这笔付款是否成功？",
+      "query_ok": false,
+      "resolution": {
+        "query": "这笔付款是否成功？",
+        "changed": false,
+        "unresolved_references": [
+          "这笔付款"
+        ]
+      },
+      "intent": "订单",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 1.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1168,
+        "output_tokens": 615,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-20",
+      "split": "acceptance",
+      "raw": "开票和换货同等重要，请同时办。",
+      "expected_intent": "其他",
+      "query": "开票和换货同等重要，请同时办。",
+      "query_ok": true,
+      "resolution": {
+        "query": "开票和换货同等重要，请同时办。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 0.61,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.05,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.29,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.66
+      },
+      "usage": {
+        "input_tokens": 1181,
+        "output_tokens": 177,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-21",
+      "split": "acceptance",
+      "raw": "我抱怨几句，但要办理的是退货。",
+      "expected_intent": "退款退货",
+      "query": "我抱怨几句，但要办理的是退货。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我抱怨几句，但要办理的是退货。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1179,
+        "output_tokens": 219,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-22",
+      "split": "acceptance",
+      "raw": "我只想补发少的配件，不要退款。",
+      "expected_intent": "售后",
+      "query": "我只想补发少的配件，不要退款。",
+      "query_ok": true,
+      "resolution": {
+        "query": "我只想补发少的配件，不要退款。",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "售后",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 1.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1179,
+        "output_tokens": 245,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-23",
+      "split": "acceptance",
+      "raw": "%#……随机乱码",
+      "expected_intent": "其他",
+      "query": "%#……随机乱码",
+      "query_ok": true,
+      "resolution": {
+        "query": "%#……随机乱码",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "其他",
+      "confidence": 1.0,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 1.0
+      },
+      "usage": {
+        "input_tokens": 1167,
+        "output_tokens": 262,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "boundary-24",
+      "split": "acceptance",
+      "raw": "上面那个处理完没？",
+      "expected_intent": "其他",
+      "query": "上面那个处理完没？",
+      "query_ok": false,
+      "resolution": {
+        "query": "上面那个处理完没？",
+        "changed": false,
+        "unresolved_references": [
+          "上面那个"
+        ]
+      },
+      "intent": "其他",
+      "confidence": 0.81,
+      "reason": "valid_other",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.17,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.83
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 222,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-07-1",
+      "split": "acceptance",
+      "raw": "我买的移动硬盘的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "我买的移动硬盘的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的移动硬盘的物流到哪了？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1178,
+        "output_tokens": 180,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-07-2",
+      "split": "acceptance",
+      "raw": "它能退吗？",
+      "expected_intent": "退款退货",
+      "query": "我买的移动硬盘能退吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的移动硬盘能退吗？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1191,
+        "output_tokens": 386,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-07-3",
+      "split": "acceptance",
+      "raw": "先不退了，它的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "先不退了，移动硬盘的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "先不退了，移动硬盘的物流到哪了？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1217,
+        "output_tokens": 556,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-08-1",
+      "split": "acceptance",
+      "raw": "我买的空气炸锅的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "我买的空气炸锅的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的空气炸锅的物流到哪了？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1179,
+        "output_tokens": 182,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-08-2",
+      "split": "acceptance",
+      "raw": "它能退吗？",
+      "expected_intent": "退款退货",
+      "query": "空气炸锅能退吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "空气炸锅能退吗？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1189,
+        "output_tokens": 679,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-08-3",
+      "split": "acceptance",
+      "raw": "先不退了，它的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "先不退了，空气炸锅的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "先不退了，空气炸锅的物流到哪了？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1218,
+        "output_tokens": 614,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-09-1",
+      "split": "acceptance",
+      "raw": "我买的充电器的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "我买的充电器的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的充电器的物流到哪了？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1176,
+        "output_tokens": 159,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-09-2",
+      "split": "acceptance",
+      "raw": "它能退吗？",
+      "expected_intent": "退款退货",
+      "query": "它能退吗？",
+      "query_ok": false,
+      "resolution": {
+        "query": "它能退吗？",
+        "changed": false,
+        "unresolved_references": [
+          "它"
+        ]
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1184,
+        "output_tokens": 260,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-09-3",
+      "split": "acceptance",
+      "raw": "先不退了，它的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "先不退了，充电器的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "先不退了，充电器的物流到哪了？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1215,
+        "output_tokens": 521,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-10-1",
+      "split": "acceptance",
+      "raw": "我买的净水器的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "我买的净水器的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的净水器的物流到哪了？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1177,
+        "output_tokens": 274,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-10-2",
+      "split": "acceptance",
+      "raw": "它能退吗？",
+      "expected_intent": "退款退货",
+      "query": "我买的净水器能退吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的净水器能退吗？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1190,
+        "output_tokens": 655,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-10-3",
+      "split": "acceptance",
+      "raw": "先不退了，它的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "先不退了，我买的净水器的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "先不退了，我买的净水器的物流到哪了？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1219,
+        "output_tokens": 524,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-11-1",
+      "split": "acceptance",
+      "raw": "我买的显示器的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "我买的显示器的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的显示器的物流到哪了？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1176,
+        "output_tokens": 178,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-11-2",
+      "split": "acceptance",
+      "raw": "它能退吗？",
+      "expected_intent": "退款退货",
+      "query": "我买的显示器能退吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的显示器能退吗？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1189,
+        "output_tokens": 478,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-11-3",
+      "split": "acceptance",
+      "raw": "先不退了，它的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "先不退了，显示器的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "先不退了，显示器的物流到哪了？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1215,
+        "output_tokens": 616,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-12-1",
+      "split": "acceptance",
+      "raw": "我买的无线鼠标的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "我买的无线鼠标的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的无线鼠标的物流到哪了？",
+        "changed": false,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1178,
+        "output_tokens": 262,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-12-2",
+      "split": "acceptance",
+      "raw": "它能退吗？",
+      "expected_intent": "退款退货",
+      "query": "我买的无线鼠标能退吗？",
+      "query_ok": true,
+      "resolution": {
+        "query": "我买的无线鼠标能退吗？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "退款退货",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 0.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 1.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1191,
+        "output_tokens": 499,
+        "estimated": 0
+      }
+    },
+    {
+      "id": "dialogue-12-3",
+      "split": "acceptance",
+      "raw": "先不退了，它的物流到哪了？",
+      "expected_intent": "物流",
+      "query": "先不退了，我买的无线鼠标的物流到哪了？",
+      "query_ok": true,
+      "resolution": {
+        "query": "先不退了，我买的无线鼠标的物流到哪了？",
+        "changed": true,
+        "unresolved_references": []
+      },
+      "intent": "物流",
+      "confidence": 1.0,
+      "reason": "accepted",
+      "model": "jev-1.13.0",
+      "probabilities": {
+        "物流": 1.0,
+        "订单": 0.0,
+        "商品咨询": 0.0,
+        "退款退货": 0.0,
+        "售后": 0.0,
+        "投诉": 0.0,
+        "闲聊": 0.0,
+        "其他": 0.0
+      },
+      "usage": {
+        "input_tokens": 1220,
+        "output_tokens": 992,
+        "estimated": 0
+      }
+    }
+  ],
+  "fingerprints": {
+    "model": "jev-1.13.0",
+    "criteria": "73fcfacd85713aa678dd7571686d06b04285d8338f72b6b34b785b8aef39d994",
+    "resolver": "ab45eea5e97aa62dd959f28b7ac31dbd2633668741eaa6739748d25ee9ddce73",
+    "chat_model": "deepseek-v4-flash",
+    "cases": "6fd22bcd1c795668441d475c88155815f134e6c533dc1453d8a349f85ebd8592"
+  },
+  "cumulative_attempts": {
+    "jev": 332,
+    "chat": 353
+  }
+}
