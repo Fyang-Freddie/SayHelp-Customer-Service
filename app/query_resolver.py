@@ -39,12 +39,13 @@ def resolver_messages(raw,history,confirmed,*,context=None):
 class QueryResolver:
     def __init__(self,model): self.model=model
 
-    async def resolve(self,raw: str,history: list,confirmed: dict,*,context=None):
+    async def resolve(self,raw: str,history: list,confirmed: dict,*,context=None,on_request=None):
         if not isinstance(raw,str) or not raw.strip() or len(raw)>4000:
             raise QueryResolutionError('invalid_query')
         messages,rows,known=resolver_messages(raw,history,confirmed,context=context)
         from app.context_budget import estimate_tokens
         estimate=estimate_tokens(messages)
+        if on_request is not None:on_request(messages)
         try: response=await self.model.resolve_query(messages)
         except Exception: raise QueryResolutionError('query_provider_error',Usage(estimated=estimate)) from None
         if not isinstance(response,AIMessage): raise QueryResolutionError('query_invalid_response',Usage(estimated=estimate))

@@ -50,15 +50,14 @@ def test_fixed_prefix_and_background_order():
     assert '政策' in messages[-1].content
 
 
-def test_pending_summary_uses_remaining_capacity_or_fails_closed():
+def test_pending_summary_keeps_source_while_foreground_stays_in_budget():
     from app.context_history import build_context_view, compose_model_messages
-    from app.context_budget import validate_request
-    from app.history import InputBudgetExceeded
+    from app.context_budget import estimate_tokens,validate_request
     view=build_context_view(ContextSnapshot(1),turns(),ledger(100))
-    # Intermediate budget overflow is visible, never silently discarded.
-    assert view.pending_turns and view.layer2[0].content=='原话订单123'
+    assert view.pending_turns and view.pending_turns[0].messages[0].content=='原话订单123'
+    assert estimate_tokens([*view.layer2,*view.layer1])<=view.ledger.history
     messages=compose_model_messages(SystemMessage('固定'),view,HumanMessage('现在'),[],[])
-    with pytest.raises(InputBudgetExceeded):validate_request(messages,[],100,200)
+    assert validate_request(messages,[],100,200)>0
 def test_resolver_budget_payload_includes_summary_and_entire_view():
     from app.query_resolver import resolver_messages
     from types import SimpleNamespace
@@ -69,4 +68,24 @@ def test_resolver_budget_payload_includes_summary_and_entire_view():
     assert [r['content'] for r in rows]==['早期用户原话','最近原话']
     assert 'ABC123456' in str(messages)
 
-\n
+
+def test_large_completed_turn_borrows_unused_history_without_dead_end():
+    from app.context_history import build_context_view
+    from app.context_budget import estimate_tokens
+    oversized=TurnRecord('large',1,2,(HumanMessage('用'*1500),AIMessage('答'*1500)))
+    raw=estimate_tokens(oversized.messages)
+    budget=ledger(raw+100)
+    assert budget.layer1<raw<budget.history
+    view=build_context_view(ContextSnapshot(1),[oversized],budget)
+    assert view.layer1==oversized.messages
+    assert view.layer2==()
+
+
+def test_large_completed_turn_still_allows_next_turn_while_summary_pending():
+    from app.context_history import build_context_view
+    oversized=TurnRecord('large',1,2,(HumanMessage('用'*1500),AIMessage('答'*1500)))
+    budget=ledger(1600)
+    view=build_context_view(ContextSnapshot(1),[oversized],budget,current_user_msg_id=3)
+    assert view.layer1==()
+    assert view.layer1_from_msg_id==3
+    assert view.pending_turns==[oversized] or view.pending_turns==(oversized,)

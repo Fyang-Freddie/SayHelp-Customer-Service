@@ -19,12 +19,16 @@ class ContextLog:
             self.path.parent.mkdir(parents=True,exist_ok=True)
             with self.path.open('a',encoding='utf8') as stream:stream.write(line+'\n')
 
-    def model_request(self,cid,turn,phase,messages,tools,ledger,summary=''):
+    def model_request(self,cid,turn,phase,messages,tools,ledger,summary='',
+                      *,max_output_tokens=None,summary_upto_msg_id=None,layer1_from_msg_id=None):
         self.write('model_ctx',{'conversation_id':cid,'turn_id':turn,'phase':phase,
             'summary':summary,'messages':[m.model_dump(mode='json') for m in messages],
             'tools':tools,'tools_bound':bool(tools),'window_count':len(messages),
             'tools_digest':hashlib.sha256(json.dumps(tools,sort_keys=True,ensure_ascii=False).encode()).hexdigest(),
-            'tokens':asdict(ledger) if is_dataclass(ledger) else ledger})
+            'tokens':asdict(ledger) if is_dataclass(ledger) else ledger,
+            'max_output_tokens':max_output_tokens,
+            'summary_upto_msg_id':summary_upto_msg_id,
+            'layer1_from_msg_id':layer1_from_msg_id})
 
     def history(self,cid,turn,view):
         self.write('history_ctx',{'conversation_id':cid,'turn_id':turn,

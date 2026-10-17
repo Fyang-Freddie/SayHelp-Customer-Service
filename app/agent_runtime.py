@@ -132,7 +132,8 @@ async def agent_step(state: WorkflowState, *, model: AgentModel, tools: dict,
     # Establish the complete fallback batch invariant before adding any pending
     # calls to history. Every result admission below preserves this same bound.
     minimum_results = [_result_budget_error(c) for c in selected.tool_calls]
-    if not _fits_final(messages + [selected] + minimum_results, Usage(**update['usage']), limits):
+    if (_estimate(minimum_results)>limits.tool_result_tokens or
+            not _fits_final(messages + [selected] + minimum_results, Usage(**update['usage']), limits)):
         return {**update, 'status': 'answer', 'stop_reason': 'tool_result_budget'}
     return {**update, 'messages': [selected], 'status': 'tools'}
 
@@ -227,6 +228,10 @@ async def execute_calls(state: WorkflowState, *, tools: dict, limits: AgentLimit
     selected = messages[-1]
     if not isinstance(selected, AIMessage) or not selected.tool_calls or not _valid_calls(selected, _ids(messages[:-1])):
         return {'status': 'answer', 'stop_reason': 'invalid_tool_calls'}
+    if _estimate([_result_budget_error(c) for c in selected.tool_calls])>limits.tool_result_tokens:
+        # A directly restored/injected selection cannot produce a legal paired
+        # result batch. Stop before running any tool or sending an oversized one.
+        return {'status':'stopped','stop_reason':'tool_result_budget'}
     count = state.get('tool_calls', 0)
     results, suggestions = [], list(state.get('suggestions', []))
     citations = list(state.get('citations', []))

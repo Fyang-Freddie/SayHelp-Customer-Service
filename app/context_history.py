@@ -48,7 +48,7 @@ def reconcile_history(rows: Sequence, checkpoint_messages: Sequence[BaseMessage]
     return tuple(turns)
 
 
-def _shorten(messages):
+def shorten_messages(messages):
     names={call['id']:call['name'] for m in messages if isinstance(m,AIMessage) for call in m.tool_calls}
     result=[]
     for message in messages:
@@ -62,7 +62,7 @@ def _shorten(messages):
 
 
 def build_context_view(snapshot: ContextSnapshot, turns: Sequence[TurnRecord],
-                       ledger: BudgetLedger) -> ContextView:
+                       ledger: BudgetLedger, *, current_user_msg_id: int | None = None) -> ContextView:
     eligible=[t for t in turns if t.completed and t.last_msg_id>(snapshot.summary_upto_msg_id or 0)]
     layer1_turns=[t for t in eligible if t.first_msg_id>=(snapshot.layer1_from_msg_id or 0)]
     original=[m for t in layer1_turns for m in t.messages]
@@ -74,12 +74,25 @@ def build_context_view(snapshot: ContextSnapshot, turns: Sequence[TurnRecord],
         if len(candidate)<=len(trimmed) and estimate_tokens(candidate)<=ledger.layer1: break
         layer1_turns.pop(0)
     if eligible and not layer1_turns:
-        raise InputBudgetExceeded('上下文预算不足: 最近完整一轮无法原样保留')
-    boundary=layer1_turns[0].first_msg_id if layer1_turns else snapshot.layer1_from_msg_id
+        newest=eligible[-1]
+        if estimate_tokens(newest.messages)<=ledger.history:
+            # An unusually long complete turn may borrow unused L2 space.
+            layer1_turns=[newest]
+        elif current_user_msg_id is None:
+            raise InputBudgetExceeded('上下文预算不足: 最近完整一轮无法原样保留')
+    boundary=(layer1_turns[0].first_msg_id if layer1_turns else
+              current_user_msg_id if eligible else snapshot.layer1_from_msg_id)
     pending=tuple(t for t in eligible if boundary is not None and t.first_msg_id<boundary)
-    layer2=tuple(m for t in pending for m in _shorten(t.messages))
+    raw_layer1=tuple(m for t in layer1_turns for m in t.messages)
+    available=max(0,ledger.history-estimate_tokens(raw_layer1))
+    selected=[]
+    for turn in reversed(pending):
+        candidate=[*shorten_messages(turn.messages),*selected]
+        if estimate_tokens(candidate)>available: break
+        selected=candidate
+    layer2=tuple(selected)
     summary='\n'.join(f"[摘要第{s['ordinal']}段] {s['content']}" for s in snapshot.summaries if s['content'])
-    return ContextView(snapshot,tuple(m for t in layer1_turns for m in t.messages),layer2,
+    return ContextView(snapshot,raw_layer1,layer2,
                        summary,ledger,boundary,pending)
 
 

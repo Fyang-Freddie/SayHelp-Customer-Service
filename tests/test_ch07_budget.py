@@ -79,3 +79,47 @@ def test_new_config_overrides_legacy_without_loading_secrets(monkeypatch, tmp_pa
     assert settings.context_token_budget == 18000
     assert settings.response_token_reserve == 2000
     assert settings.max_agent_steps == 3
+
+
+def test_startup_rejects_provider_capacity_below_configured_window():
+    from app.context_budget import validate_provider_capacity
+    from app.config import Settings
+    from app.history import InputBudgetExceeded
+    settings=Settings('https://api.deepseek.com','deepseek-v4-flash','test',
+        context_token_budget=18000,response_token_reserve=2000,layered_context=True)
+    models={'data':[{'id':'deepseek-flash','context_window':8192,'max_output_tokens':2048}]}
+    with pytest.raises(InputBudgetExceeded,match='上下文预算不足'):
+        validate_provider_capacity(settings,models)
+    good={'data':[{'id':'deepseek-flash','context_window':1000000,'max_output_tokens':2048}]}
+    assert validate_provider_capacity(settings,good)==1000000
+
+
+def test_capacity_probe_uses_model_endpoint_and_checks_declared_output(monkeypatch):
+    import asyncio
+    import httpx
+    from app.context_budget import check_provider_capacity
+    from app.config import Settings
+    from app.history import InputBudgetExceeded
+    seen=[]
+    def handler(request):
+        seen.append((str(request.url),request.headers.get('authorization')))
+        return httpx.Response(200,json={'data':[{'id':'deepseek-flash',
+            'context_window':32768,'max_output_tokens':1024}]})
+    original=httpx.AsyncClient
+    monkeypatch.setattr(httpx,'AsyncClient',lambda **kwargs:original(
+        transport=httpx.MockTransport(handler),**kwargs))
+    settings=Settings('https://api.deepseek.com/v1','deepseek-v4-flash','fixture-key',
+        context_token_budget=18000,response_token_reserve=2000,layered_context=True)
+    with pytest.raises(InputBudgetExceeded,match='上下文预算不足'):
+        asyncio.run(check_provider_capacity(settings))
+    assert seen==[('https://api.deepseek.com/v1/models','Bearer fixture-key')]
+
+
+def test_explicit_capacity_override_is_labeled_unverified():
+    import asyncio
+    from app.context_budget import check_provider_capacity
+    from app.config import Settings
+    settings=Settings('https://example.invalid/v1','fixture-model','fixture-key',
+        context_token_budget=18000,response_token_reserve=2000,
+        provider_context_window=32768,layered_context=True)
+    assert asyncio.run(check_provider_capacity(settings))==(32768,'configured_unverified')

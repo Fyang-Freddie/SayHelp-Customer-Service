@@ -8,6 +8,12 @@ from pydantic import BaseModel, Field
 class RecapAnswer(BaseModel):
     answer: str = Field(min_length=1,max_length=4000)
 
+
+class RecapResponseError(ValueError):
+    def __init__(self,message,usage_metadata=None):
+        super().__init__(message)
+        self.usage_metadata=usage_metadata
+
 _RECAP=re.compile(r'回顾|复述|还记得|总结.{0,12}(?:聊天|对话|之前|前面)|'
     r'(?:最开始|最早|一开始|最初|之前|刚才|前面).{0,24}(?:怎么说|说了什么|问了什么|提过什么|诉求|问过)')
 _ACTION=re.compile(r'(?:帮我|替我|给我|请|现在|直接|立即).{0,12}'

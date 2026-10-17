@@ -17,6 +17,20 @@ def test_three_distinct_queries_only():
     result,_=expand({'queries':['未拆封耳机退货资格','未拆封耳机退款条件','未拆封耳机退货运费']})
     assert len(result.queries)==3 and set(result.model_dump())=={'queries'}
 
+
+def test_request_callback_sees_exact_expansion_payload():
+    from app.query_expansion import QueryExpander
+    class Spy(Model):
+        async def expand_query(self,messages):
+            self.sent=[message.model_dump(mode='json') for message in messages]
+            return await super().expand_query(messages)
+    model=Spy({'queries':['未拆封耳机退货资格','未拆封耳机退款条件','未拆封耳机退货运费']})
+    captured=[]
+    asyncio.run(QueryExpander(model).expand('耳机未拆封，能退吗？',
+        SimpleNamespace(to_dict=lambda:{'product_name':'耳机','variant':'黑色'}),
+        on_request=lambda messages:captured.extend(message.model_dump(mode='json') for message in messages)))
+    assert captured==model.sent
+
 @pytest.mark.parametrize('payload',[
  {'queries':['耳机退货']}, {'queries':['未拆封耳机退货']*3},
  {'queries':['未拆封耳机退货','未拆封耳机退款','未拆封耳机退货流程'],'intent':'退款退货'},

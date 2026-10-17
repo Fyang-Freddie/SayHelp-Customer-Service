@@ -48,6 +48,8 @@ class Settings:
     history_target_turns: int = 32
     history_steady_tokens: int = 1024
     layered_context: bool = False  # Legacy programmatic fixtures opt in explicitly; production from_env always enables it.
+    provider_context_window: int | None = None
+    verify_model_capacity: bool = False
     max_conversations: int = 100
     max_turns_per_conversation: int = 20
     milvus_uri: str = 'http://127.0.0.1:19530'
@@ -161,6 +163,9 @@ class Settings:
             history_target_turns=positive_int('HISTORY_TARGET_TURNS', 32),
             history_steady_tokens=positive_int('HISTORY_STEADY_TOKENS', 1024),
             layered_context=True,
+            provider_context_window=(positive_int('MODEL_PROVIDER_CONTEXT_WINDOW',1)
+                                     if value('MODEL_PROVIDER_CONTEXT_WINDOW') is not None else None),
+            verify_model_capacity=True,
             max_conversations=positive_int("MAX_CONVERSATIONS", 100),
             max_turns_per_conversation=positive_int("MAX_TURNS_PER_CONVERSATION", 20),
             database_url=required("DATABASE_URL"),

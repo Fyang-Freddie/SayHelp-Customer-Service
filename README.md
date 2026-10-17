@@ -378,6 +378,8 @@ python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8001 --w
 
 默认窗口 `MODEL_CONTEXT_WINDOW=65536`。演示配置为 `MODEL_CONTEXT_WINDOW=18000 MAX_OUTPUT_TOKENS=2000 MAX_USER_INPUT_TOKENS=2000 MAX_AGENT_STEPS=3 TOOL_RESULT_MAX_TOKENS=1200 RERANK_TOP_K=5`。知识证据的冻结校准预算另由 `KNOWLEDGE_CONTEXT_TOKEN_BUDGET=4096` 与 `KNOWLEDGE_RESPONSE_TOKEN_RESERVE=512` 保持；更改它们会触发知识策略指纹校验，不会隐式放宽门槛。
 
+启动还会从上游 `/models` 读取所选模型的 `context_window` 与输出上限，配置超出真实容量便拒绝启动；无法读取的兼容服务须按官方资料显式设置 `MODEL_PROVIDER_CONTEXT_WINDOW`，日志会标为 `configured_unverified`，不要把人工声明当作上游实测。DeepSeek 旧别名 `deepseek-v4-flash` 按其官方映射查询当前 `deepseek-flash` 容量。
+
 真实验收脚本读取现有服务端配置和冻结的 24 轮样例，发起真实模型、Jev、MySQL 与 Milvus 请求，并使用持久化额度账本。预先启动 MySQL 和 Milvus；以下 `--env-file` 改成你的实际服务端配置路径，绝不把 `.env` 提交到 Git。`--dry-run` 不发送请求。
 
 ```powershell

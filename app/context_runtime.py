@@ -5,7 +5,7 @@ import hashlib
 import json
 from langchain_core.messages import HumanMessage, SystemMessage
 from app.context_budget import estimate_tokens, settings_budget, validate_request
-from app.context_history import reconcile_history,build_context_view,compose_model_messages
+from app.context_history import reconcile_history,build_context_view,compose_model_messages,shorten_messages
 from app.context_log import ContextLog
 from app.prompts import render_workflow_system_prompt
 from app.summary_prompts import summary_messages
@@ -22,6 +22,16 @@ class ContextRuntime:
         self.log=log or ContextLog()
         self.schemas=list(schemas)
         self.snapshots={}
+
+    def log_aux_request(self,state,phase,messages,max_output_tokens):
+        cid,turn=state['conversation_id'],state['turn_id']
+        snapshot=self.snapshots.get((cid,turn))
+        summary='\n'.join(f"[摘要第{s['ordinal']}段] {s['content']}" for s in snapshot.summaries) if snapshot else ''
+        self.log.model_request(cid,turn,phase,messages,[],{
+            'actual_input':estimate_tokens(messages),'window':self.settings.context_token_budget},summary,
+            max_output_tokens=max_output_tokens,
+            summary_upto_msg_id=snapshot.summary_upto_msg_id if snapshot else None,
+            layer1_from_msg_id=snapshot.layer1_from_msg_id if snapshot else None)
 
     async def recover(self,graph):
         for cid in await asyncio.to_thread(self.context_repository.expired_conversations):
@@ -53,7 +63,8 @@ class ContextRuntime:
         summary_tokens=estimate_tokens([HumanMessage(summary)]) if summary else 0
         ledger=settings_budget(self.settings,prefix=estimate_tokens([SystemMessage(render_workflow_system_prompt())],self.schemas),
             evidence=evidence_tokens,summary=summary_tokens+64,user=estimate_tokens([current]))
-        view=build_context_view(snapshot,turns,ledger)
+        current_id=int(current.id) if str(current.id).isdigit() else None
+        view=build_context_view(snapshot,turns,ledger,current_user_msg_id=current_id)
         boundary=view.layer1_from_msg_id
         if boundary is not None and boundary!=snapshot.layer1_from_msg_id:
             moved=await asyncio.to_thread(self.context_repository.advance_layer1,cid,snapshot.version,boundary)
@@ -69,28 +80,44 @@ class ContextRuntime:
                 view=replace(view,snapshot=snapshot)
             else:
                 latest=await asyncio.to_thread(self.context_repository.load,cid)
-                snapshot=replace(snapshot,version=latest.version,
-                    layer1_from_msg_id=max(boundary,latest.layer1_from_msg_id or boundary))
+                # The competing commit may have advanced the summary as well as
+                # L1. A candidate boundary that failed CAS is not persisted.
+                snapshot=latest
                 self.snapshots[key]=snapshot
-                view=build_context_view(snapshot,turns,ledger)
-        used=estimate_tokens(view.layer2)
-        if self.worker and view.pending_turns and used>ledger.layer2:
-            pending=list(view.pending_turns)
+                view=build_context_view(snapshot,turns,ledger,current_user_msg_id=current_id)
+        scheduling=view
+        for attempt in range(2):
+            used=estimate_tokens([m for t in scheduling.pending_turns for m in shorten_messages(t.messages)])
+            if not self.worker or not scheduling.pending_turns or used<=ledger.layer2:break
+            pending=list(scheduling.pending_turns)
             # Summarize a contiguous prefix; every batch must itself fit the model.
             while pending:
                 try:
-                    validate_request(summary_messages(view.summary_text,pending),[],512,self.settings.context_token_budget)
+                    validate_request(summary_messages(scheduling.summary_text,pending),[],512,self.settings.context_token_budget)
                     break
                 except InputBudgetExceeded: pending.pop()
-            if pending:
-                digest=hashlib.sha256(json.dumps([m.model_dump(mode='json') for t in pending for m in t.messages],ensure_ascii=False,sort_keys=True).encode()).hexdigest()
+            if not pending:break
+            digest=hashlib.sha256(json.dumps([m.model_dump(mode='json') for t in pending for m in t.messages],ensure_ascii=False,sort_keys=True).encode()).hexdigest()
+            try:
                 claim=await asyncio.to_thread(self.context_repository.claim,cid,pending[0].first_msg_id,pending[-1].last_msg_id,digest,
                     excluded_message_ids=excluded)
-                self.log.write('summary trigger' if claim else 'summary skip',{'conversation_id':cid,'turn_id':turn,
+            except ValueError:
+                self.log.write('summary skip',{'conversation_id':cid,'turn_id':turn,
                     'from_msg_id':pending[0].first_msg_id,'upto_msg_id':pending[-1].last_msg_id,
-                    'message':f'summary trigger 层2 约 {used} token > 预算 {ledger.layer2}',
-                    'reason':'over_budget' if claim else 'running_or_covered','duration_ms':0})
-                if claim:self.worker.submit(claim,pending,view.summary_text)
+                    'reason':'boundary_changed','duration_ms':0})
+                if attempt:
+                    break
+                latest=await asyncio.to_thread(self.context_repository.load,cid)
+                # Keep this turn's model view frozen; only the claim uses fresh
+                # committed coverage after a concurrent summary completion.
+                scheduling=build_context_view(latest,turns,ledger,current_user_msg_id=current_id)
+                continue
+            self.log.write('summary trigger' if claim else 'summary skip',{'conversation_id':cid,'turn_id':turn,
+                'from_msg_id':pending[0].first_msg_id,'upto_msg_id':pending[-1].last_msg_id,
+                'message':f'summary trigger 层2 约 {used} token > 预算 {ledger.layer2}',
+                'reason':'over_budget' if claim else 'running_or_covered','duration_ms':0})
+            if claim:self.worker.submit(claim,pending,scheduling.summary_text)
+            break
         return view
 
     async def model_state(self,state,tools,*,phase):
@@ -102,9 +129,12 @@ class ContextRuntime:
         index=next(i for i in range(len(all_messages)-1,-1,-1) if all_messages[i].type=='human')
         messages=compose_model_messages(SystemMessage(render_workflow_system_prompt()),view,
             all_messages[index],evidence,all_messages[index+1:])
-        tokens=validate_request(messages,tools,self.settings.response_token_reserve,self.settings.context_token_budget)
+        validate_request(messages,tools,self.settings.response_token_reserve,self.settings.context_token_budget)
         def log_request(actual_messages,actual_tools):
             self.log.model_request(state['conversation_id'],state['turn_id'],phase,actual_messages,actual_tools,
-                {**vars(view.ledger),'actual_input':estimate_tokens(actual_messages,actual_tools)},view.summary_text)
+                {**vars(view.ledger),'actual_input':estimate_tokens(actual_messages,actual_tools)},view.summary_text,
+                max_output_tokens=512 if phase=='select' else self.settings.response_token_reserve,
+                summary_upto_msg_id=view.snapshot.summary_upto_msg_id,
+                layer1_from_msg_id=view.layer1_from_msg_id)
         # This transient callback is never returned as a graph update or checkpointed.
         return {**state,'messages':messages,'_log_model_request':log_request}

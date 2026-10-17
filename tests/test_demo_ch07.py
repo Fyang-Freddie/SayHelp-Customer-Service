@@ -29,7 +29,8 @@ def test_live_preflight_rejects_remaining_allowance_before_requests(tmp_path):
     from app.config import Settings
     meter=EvaluationBudget(tmp_path/'meter.sqlite')
     settings=Settings('x','x','x',layered_context=True,context_token_budget=18000,response_token_reserve=2000)
-    for _ in range(25):meter.reserve('jev','jev_dialogue')
+    for _ in range(48):meter.reserve('jev','jev_dialogue')
+    assert meter.remaining('jev','jev_dialogue')==23
     with pytest.raises(EvaluationLimitExceeded):preflight(settings,meter,24)
 
 

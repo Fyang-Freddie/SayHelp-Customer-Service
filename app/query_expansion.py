@@ -17,11 +17,12 @@ class QueryExpansionError(ValueError):
 
 class QueryExpander:
     def __init__(self,model): self.model=model
-    async def expand(self,query,item):
+    async def expand(self,query,item,*,on_request=None):
         item_data=item.to_dict()
         facts={key:item_data[key] for key in ('product_name','variant','quantity','ordered_at','signed_at','signature_applicable') if key in item_data}
         messages=[SystemMessage(content=EXPANSION_SYSTEM),HumanMessage(content=json.dumps({'query':query,'item':facts},ensure_ascii=False))]
         estimate=sum(len(str(m.content)) for m in messages)
+        if on_request is not None:on_request(messages)
         try: result=await self.model.expand_query(messages)
         except Exception: raise QueryExpansionError('expansion_provider_error',Usage(estimated=estimate)) from None
         if not isinstance(result,AIMessage): raise QueryExpansionError('expansion_invalid_response',Usage(estimated=estimate))

@@ -1,5 +1,6 @@
 """Bounded real usage comparison for the fixed prompt/tools and Chinese inputs."""
-import argparse,asyncio,json,os,sys
+import argparse,asyncio,hashlib,json,os,sys
+from importlib.metadata import version
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from langchain_core.messages import HumanMessage,SystemMessage
@@ -7,6 +8,16 @@ from app.context_budget import estimate_tokens
 from app.prompts import render_workflow_system_prompt
 from app.agent_runtime import _schemas
 from app.tools import build_tools
+
+
+def calibration_provenance(schemas):
+    """Fingerprint the exact stable prompt and bound tool shape used here."""
+    prompt=render_workflow_system_prompt()
+    serialized=json.dumps(schemas,ensure_ascii=False,sort_keys=True,separators=(',',':'))
+    return {'prompt_sha256':hashlib.sha256(prompt.encode()).hexdigest(),
+            'tools_sha256':hashlib.sha256(serialized.encode()).hexdigest(),
+            'versions':{name:version(name) for name in
+                ('langchain-core','langgraph','langchain-openai')}}
 
 
 async def main(args):
@@ -19,6 +30,7 @@ async def main(args):
     model=ModelService(Settings.from_env())
     async def unused(*args,**kwargs):raise AssertionError('No tools executed during calibration')
     schemas=_schemas(build_tools(None,0,None,knowledge_answer=unused))[0]
+    provenance=calibration_provenance(schemas)
     texts=['你好。','订单ABC123456需要核实，请保留手机号13800000001。',
            '商品📦需要核实；用户说法和工具事实不能混淆。'*8,
            '我要投诉配送沟通问题，尚未得到答复。'*32,
@@ -38,7 +50,8 @@ async def main(args):
             'ratio':round(estimated/usage['input_tokens'],4),
             'model':response.response_metadata.get('model_name')})
         Path(args.output).parent.mkdir(parents=True,exist_ok=True)
-        Path(args.output).write_text(json.dumps({'chars_per_token':1.0,'results':rows},ensure_ascii=False,indent=2),encoding='utf8')
+        Path(args.output).write_text(json.dumps({'chars_per_token':1.0,
+            'provenance':provenance,'results':rows},ensure_ascii=False,indent=2),encoding='utf8')
         print(json.dumps(rows[-1]),flush=True)
     if any(row['estimated']<row['provider_input'] for row in rows):raise SystemExit('Estimator requires recalibration before acceptance')
 

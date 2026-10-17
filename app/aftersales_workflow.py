@@ -25,7 +25,10 @@ def stopped(reason):
     return {'status':'fallback','stop_reason':reason,'eligibility':{}}
 
 
-def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,emit):
+def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,emit,log_request=None):
+    def request_callback(state,phase,output_tokens):
+        return (lambda messages:log_request(state,phase,messages,output_tokens)) if log_request else None
+
     async def paid(state,phase,inputs,operation,output_tokens):
         estimate=_estimate([AIMessage(content=json.dumps(inputs,ensure_ascii=False))])+200
         reason=budget_reason(state,limits,estimate,output_tokens)
@@ -45,7 +48,9 @@ def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,
         return {'status':'order' if state.get('selected_order') else 'choose' if state.get('confirmed',{}).get('customer_id') else 'customer','eligibility':{}}
 
     async def ask_customer(state):
-        question,fields=await paid(state,'ask_customer',state['resolved_question'],lambda:model.ask_customer(state['resolved_question'],max_tokens=limits.response_tokens),limits.response_tokens)
+        callback=request_callback(state,'ask_customer',limits.response_tokens)
+        kwargs={'on_request':callback} if callback else {}
+        question,fields=await paid(state,'ask_customer',state['resolved_question'],lambda:model.ask_customer(state['resolved_question'],max_tokens=limits.response_tokens,**kwargs),limits.response_tokens)
         if question is not None:fields.update(clarification=question,status='waiting_customer')
         return fields
 
@@ -95,7 +100,9 @@ def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,
         await emit('workflow_stage',{'stage':'expansion'})
         try:item=await item_for(state)
         except ValueError:return stopped('order_data_changed')
-        result,fields=await paid(state,'expand',[state['resolved_question'],item.to_dict()],lambda:expander.expand(state['resolved_question'],item),1024)
+        callback=request_callback(state,'expand',1024)
+        kwargs={'on_request':callback} if callback else {}
+        result,fields=await paid(state,'expand',[state['resolved_question'],item.to_dict()],lambda:expander.expand(state['resolved_question'],item,**kwargs),1024)
         if result is not None:fields.update(queries=result.queries,status='retrieve')
         return fields
 
@@ -111,7 +118,9 @@ def build_aftersales_subgraph(*,business,expander,policy_retrieval,model,limits,
         try:item=await item_for(state)
         except ValueError:return stopped('order_data_changed')
         facts={**state.get('facts',{}),'intent':state['intent']}
-        decision,fields=await paid(state,'eligibility',[state['resolved_question'],item.to_dict(),state['evidence'],facts],lambda:model.judge_eligibility(state['resolved_question'],item,state['evidence'],facts,max_tokens=limits.response_tokens),limits.response_tokens)
+        callback=request_callback(state,'eligibility',limits.response_tokens)
+        kwargs={'on_request':callback} if callback else {}
+        decision,fields=await paid(state,'eligibility',[state['resolved_question'],item.to_dict(),state['evidence'],facts],lambda:model.judge_eligibility(state['resolved_question'],item,state['evidence'],facts,max_tokens=limits.response_tokens,**kwargs),limits.response_tokens)
         if decision is None:return fields
         allowed={str(c.get('chunk_id')) for c in state['citations']}
         if not set(decision.evidence_ids)<=allowed or (decision.status=='eligible' and (decision.missing_facts or not decision.evidence_ids)):

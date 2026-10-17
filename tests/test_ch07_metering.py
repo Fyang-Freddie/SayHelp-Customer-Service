@@ -4,6 +4,23 @@ import pytest
 from langchain_core.messages import AIMessage, AIMessageChunk
 
 
+def test_approved_jev_extension_preserves_old_ledger_and_allows_exactly_one_new_profile(tmp_path):
+    from app.ch07_evaluation import EvaluationBudget,EvaluationLimitExceeded
+    path=tmp_path/'calls.sqlite'
+    original=EvaluationBudget(path,limits={'chat':600,'jev':64},
+        buckets={'jev_dialogue':48})
+    old=[original.reserve('jev','jev_dialogue') for _ in range(47)]
+    extended=EvaluationBudget(path)
+    assert extended.remaining('jev','jev_dialogue')==24
+    new=[extended.reserve('jev','jev_dialogue') for _ in range(24)]
+    assert len(set(old+new))==71
+    assert extended.remaining('jev','jev_dialogue')==0
+    with pytest.raises(EvaluationLimitExceeded):extended.reserve('jev','jev_dialogue')
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT count(*) FROM calls WHERE bucket=?',
+            ('jev_dialogue',)).fetchone()[0]==71
+
+
 def test_bound_structured_and_failed_calls_share_durable_quota(tmp_path,monkeypatch):
     from app.ch07_evaluation import EvaluationBudget,EvaluationLimitExceeded,MeteredModel
     path=tmp_path/'calls.sqlite'
@@ -85,5 +102,3 @@ def test_recap_provider_requires_valid_json_answer_before_public_output():
     provider.payload='<｜｜DSML｜｜ calls>query_order(ABC123)'
     import pytest
     with pytest.raises(ValueError):asyncio.run(service.recap_reply(messages,max_tokens=512))
-
-\n

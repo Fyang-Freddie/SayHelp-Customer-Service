@@ -146,6 +146,24 @@ def test_tool_batch_peak_is_enforced():
     asyncio.run(run())
 
 
+def test_tool_selection_rejects_fallback_batch_larger_than_x():
+    from app.agent_runtime import AgentLimits,agent_step,execute_calls
+    async def run():
+        calls=[dict(name='query_order',args={},id='a'*100),dict(name='query_order',args={},id='b'*100)]
+        class Model:
+            async def select(self,*args,**kwargs):return AIMessage('',tool_calls=calls)
+        async def emit(*args):pass
+        limits=AgentLimits(turn_tokens=100000,input_tokens=50000,tool_result_tokens=20)
+        prior=[HumanMessage('查询')]
+        selected=await agent_step({'messages':prior,'usage':{}},model=Model(),tools={},limits=limits,emit=emit)
+        assert selected['status']=='answer' and selected['stop_reason']=='tool_result_budget'
+        assert not selected.get('messages')
+        direct=await execute_calls({'messages':[prior[0],AIMessage('',tool_calls=calls)]},
+            tools={},limits=limits,emit=emit)
+        assert direct['status']=='stopped' and not direct.get('messages')
+    asyncio.run(run())
+
+
 def test_react_steps_are_separate_from_query_resolution_calls():
     from app.agent_runtime import AgentLimits,agent_step
     async def run():
@@ -184,4 +202,126 @@ def test_default_window_initialization_is_not_logged_as_downgrade(tmp_path):
             'messages':[HumanMessage('然后呢',id='3')]})
         assert len(view.layer1)==2 and not view.layer2
         assert '层1 降级' not in (tmp_path/'app.log').read_text(encoding='utf8')
+    asyncio.run(run())
+
+
+def test_summary_completion_during_boundary_cas_uses_committed_snapshot(tmp_path,monkeypatch):
+    from app.context_runtime import ContextRuntime
+    from app.context_log import ContextLog
+    from app.context_budget import calculate_budget
+    from app import context_runtime as runtime_module
+    budget=replace(calculate_budget(window=18000,prefix=0,evidence=0,summary=0,output=1,
+        user=1,steps=1,selection=1,tool_results=1,protocol=32,target_turns=8,steady=1024),
+        history=1400,layer1=980,layer2=420)
+    monkeypatch.setattr(runtime_module,'settings_budget',lambda *a,**k:budget)
+    rows=[]
+    for n in range(4):
+        rows.extend([SimpleNamespace(id=n*2+1,role='user',content='问'*600,tool_calls=None),
+                     SimpleNamespace(id=n*2+2,role='assistant',content='答'*600,tool_calls=None)])
+    latest=ContextSnapshot(1,version=2,summary_upto_msg_id=2,layer1_from_msg_id=7,
+        summaries=({'ordinal':1,'from_msg_id':1,'upto_msg_id':2,'content':'第一轮要核实订单。'},))
+    class Repo:
+        def load_messages(self,cid):return rows
+    class ContextRepo:
+        loads=0
+        def load(self,cid):
+            self.loads+=1
+            return ContextSnapshot(cid) if self.loads==1 else latest
+        def advance_layer1(self,*args):return False
+        def claim(self,cid,start,end,*args,**kwargs):
+            assert start==3 and end==6
+            return None
+    class Worker:
+        def submit(self,*args):raise AssertionError('no claim')
+    async def run():
+        runtime=ContextRuntime(Repo(),None,ContextRepo(),Worker(),
+            Settings('x','x','x',context_token_budget=18000,response_token_reserve=2000),
+            ContextLog(tmp_path/'app.log'))
+        view=await runtime.history_view({'conversation_id':1,'turn_id':'current','raw_question':'然后呢',
+            'messages':[HumanMessage('然后呢',id='9')]})
+        assert view.snapshot==latest
+        assert '第一轮要核实订单' in view.summary_text
+        assert view.layer1_from_msg_id==7
+    asyncio.run(run())
+
+
+def test_summary_completion_between_view_and_claim_retries_uncovered_suffix(tmp_path,monkeypatch):
+    from app.context_runtime import ContextRuntime
+    from app.context_log import ContextLog
+    from app.context_budget import calculate_budget
+    from app import context_runtime as runtime_module
+    budget=replace(calculate_budget(window=18000,prefix=0,evidence=0,summary=0,output=1,
+        user=1,steps=1,selection=1,tool_results=1,protocol=32,target_turns=8,steady=1024),
+        history=1400,layer1=980,layer2=420)
+    monkeypatch.setattr(runtime_module,'settings_budget',lambda *a,**k:budget)
+    rows=[]
+    for n in range(4):
+        rows.extend([SimpleNamespace(id=n*2+1,role='user',content='问'*600,tool_calls=None),
+                     SimpleNamespace(id=n*2+2,role='assistant',content='答'*600,tool_calls=None)])
+    latest=ContextSnapshot(1,version=2,summary_upto_msg_id=2,layer1_from_msg_id=7,
+        summaries=({'ordinal':1,'from_msg_id':1,'upto_msg_id':2,'content':'第一轮要核实订单。'},))
+    class Repo:
+        def load_messages(self,cid):return rows
+    class ContextRepo:
+        loads=0;claims=[]
+        def load(self,cid):
+            self.loads+=1
+            return ContextSnapshot(cid) if self.loads==1 else latest
+        def advance_layer1(self,*args):return True
+        def claim(self,cid,start,end,*args,**kwargs):
+            self.claims.append((start,end))
+            if len(self.claims)==1:raise ValueError('Summary would skip uncovered history')
+            assert start==3 and end==6
+            return None
+    class Worker:
+        def submit(self,*args):raise AssertionError('no claim')
+    async def run():
+        context=ContextRepo()
+        runtime=ContextRuntime(Repo(),None,context,Worker(),
+            Settings('x','x','x',context_token_budget=18000,response_token_reserve=2000),
+            ContextLog(tmp_path/'app.log'))
+        view=await runtime.history_view({'conversation_id':1,'turn_id':'current','raw_question':'然后呢',
+            'messages':[HumanMessage('然后呢',id='9')]})
+        assert context.claims==[(1,6),(3,6)]
+        assert view.layer1_from_msg_id==7
+    asyncio.run(run())
+
+
+def test_recap_retry_charges_failed_attempt_and_respects_turn_limit(tmp_path):
+    from app.workflow_graph import build_workflow
+    from app.context_runtime import ContextRuntime
+    from app.context_log import ContextLog
+    from app.workflow_log import WorkflowLog
+    from app.agent_runtime import AgentLimits
+    from app.context_recap import recap_messages
+    from app.context_budget import estimate_tokens
+    class Repo:
+        def load_messages(self,cid):return []
+    class ContextRepo:
+        def load(self,cid):return ContextSnapshot(cid)
+    class Model:
+        calls=0
+        async def recap_reply(self,*args,**kwargs):
+            self.calls+=1
+            if self.calls==1:raise ValueError('invalid JSON')
+            return AIMessage('此前提到订单ABC123',usage_metadata={'input_tokens':100,'output_tokens':20})
+    async def forbidden(*a,**k):raise AssertionError('recap should not use business model')
+    async def run():
+        settings=Settings('x','x','x',context_token_budget=18000,response_token_reserve=512,layered_context=True)
+        runtime=ContextRuntime(Repo(),None,ContextRepo(),None,settings,ContextLog(tmp_path/'app.log'))
+        original={'conversation_id':1,'turn_id':'recap-charge','raw_question':'回顾一下之前聊的订单',
+                  'messages':[HumanMessage('回顾一下之前聊的订单',id='1')]}
+        prepared=await runtime.model_state(original,[],phase='recap')
+        input_tokens=estimate_tokens(recap_messages(prepared['messages']))
+        model=Model()
+        limits=AgentLimits(input_tokens=18000,response_tokens=512,turn_tokens=input_tokens+513)
+        graph=build_workflow(model=model,classifier=forbidden,knowledge_gate=None,
+            tools_factory=lambda cid: (_ for _ in ()).throw(AssertionError('tools')),
+            limits=limits,log=WorkflowLog(tmp_path/'workflow'),checkpointer=None,
+            resolver=SimpleNamespace(resolve=forbidden),context_runtime=runtime)
+        result=await graph.ainvoke(original)
+        assert model.calls==1
+        assert result['stop_reason']=='context_budget'
+        assert result['model_calls']==1
+        assert result['usage']['estimated']>=input_tokens+512
     asyncio.run(run())

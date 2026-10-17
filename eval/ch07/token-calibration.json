@@ -1,5 +1,15 @@
 {
   "chars_per_token": 1.0,
+  "provenance": {
+    "status": "reconstructed_from_current_source_after_original_run",
+    "prompt_sha256": "e5fa7e1a54639d6bdb03ecce3bce3817a89f1704f28f45054bbebdd7ded80aa3",
+    "tools_sha256": "7f6cb1340fc6d21a3c3a8ecb141e8b0465136783312eb60928e84ea51927d1c4",
+    "versions": {
+      "langchain-core": "1.6.6",
+      "langgraph": "1.2.2",
+      "langchain-openai": "1.6.7"
+    }
+  },
   "results": [
     {
       "case": 1,

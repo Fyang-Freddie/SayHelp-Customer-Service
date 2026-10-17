@@ -341,10 +341,10 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
             input_tokens=settings.context_token_budget-settings.response_token_reserve,
             tool_result_tokens=settings.tool_result_max_tokens)
         core=None
+        policy_retrieval=None
         if hasattr(getattr(knowledge_gate,'retrieval',None),'corpus'):
             policy=load_policy(ROOT/settings.ch06_knowledge_policy,knowledge_fingerprints(knowledge_gate.retrieval.corpus,settings),'policy')
-            core=build_aftersales_subgraph(business=business,expander=QueryExpander(model_service),
-                policy_retrieval=PolicyRetrieval(knowledge_gate.retrieval,policy,settings),model=model_service,limits=limits,emit=_emit)
+            policy_retrieval=PolicyRetrieval(knowledge_gate.retrieval,policy,settings)
         from app.refund_service import RefundService
         from app.ch06_prompts import ELIGIBILITY_SYSTEM
         def refund_fingerprints():
@@ -371,15 +371,25 @@ async def open_workflow_service(repository, model_service, settings, *, knowledg
                 from app.context_repository import ContextRepository
                 from app.context_runtime import ContextRuntime
                 from app.context_summary import SummaryWorker
-                from app.context_budget import settings_budget,estimate_tokens,validate_startup
+                from app.context_budget import settings_budget,estimate_tokens,validate_startup,check_provider_capacity
                 from app.agent_runtime import _schemas
                 schemas=_schemas(tools_factory(0))[0]
                 ledger=settings_budget(settings,prefix=estimate_tokens([SystemMessage(render_workflow_system_prompt())],schemas))
                 validate_startup(ledger,settings.history_steady_tokens)
+                if settings.verify_model_capacity:
+                    capacity,source=await check_provider_capacity(settings)
+                    from app.context_log import ContextLog
+                    ContextLog().write('context_capacity',{'model':settings.chat_model,
+                        'configured_window':settings.context_token_budget,
+                        'provider_capacity':capacity,'source':source})
                 context_repository=ContextRepository(repository.session_factory)
                 worker=SummaryWorker(context_repository,model_service)
                 context_runtime=ContextRuntime(repository,WorkflowRepository(repository.session_factory),
                     context_repository,worker,settings,schemas=schemas)
+            if policy_retrieval is not None:
+                core=build_aftersales_subgraph(business=business,expander=QueryExpander(model_service),
+                    policy_retrieval=policy_retrieval,model=model_service,limits=limits,emit=_emit,
+                    log_request=context_runtime.log_aux_request if context_runtime else None)
             compiled = build_workflow(model=model_service, classifier=classifier,
                 knowledge_gate=knowledge_gate, tools_factory=tools_factory,
                 limits=limits,log=log,checkpointer=saver,resolver=QueryResolver(model_service),

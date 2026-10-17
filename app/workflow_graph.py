@@ -148,8 +148,16 @@ def build_workflow(*, model: AgentModel,
         if reason:return {**fields,'status':'fallback','stop_reason':reason}
         fields['model_calls']=1
         try:
-            resolution,usage=await resolver.resolve(state['raw_question'],history,confirmed,
-                **({'context':context_view} if context_view is not None else {}))
+            request_options={'context':context_view} if context_view is not None else {}
+            from app.query_resolver import QueryResolver
+            if context_runtime and isinstance(resolver,QueryResolver):
+                request_options['on_request']=lambda actual:context_runtime.log.model_request(
+                    state['conversation_id'],state['turn_id'],'resolve',actual,[],
+                    {'actual_input':_estimate(actual),'window':context_runtime.settings.context_token_budget},
+                    context_view.summary_text,max_output_tokens=1024,
+                    summary_upto_msg_id=context_view.snapshot.summary_upto_msg_id,
+                    layer1_from_msg_id=context_view.layer1_from_msg_id)
+            resolution,usage=await resolver.resolve(state['raw_question'],history,confirmed,**request_options)
             fields.update(resolved_question=resolution.query,resolution=resolution.model_dump(),usage=usage.to_dict())
             if resolution.unresolved_references:fields.update(status='fallback',stop_reason='unresolved_reference')
             if usage.total>limits.turn_tokens:fields.update(status='fallback',stop_reason='token_budget')
@@ -246,28 +254,46 @@ def build_workflow(*, model: AgentModel,
         input_tokens=_estimate(messages)
         if budget_reason(state,limits,input_tokens,limits.response_tokens):
             return _fixed(state,'抱歉，当前无法在预算内可靠回顾这段会话。',stop_reason='context_budget')
+        usage=Usage(**state.get('usage',{}))
+        calls=state.get('model_calls',0)
         for attempt in range(2):
-            await runtime_emit('model_start',{'phase':'recap','model_calls':attempt+1,'tools_bound':False})
+            if (calls>=limits.model_calls or
+                usage.total+input_tokens+limits.response_tokens>limits.turn_tokens):
+                return _fixed(state,'抱歉，当前无法在预算内可靠回顾这段会话。',
+                    stop_reason='context_budget',model_calls=calls,usage=usage.to_dict())
+            calls+=1
+            await runtime_emit('model_start',{'phase':'recap','model_calls':calls,'tools_bound':False})
             prepared['_log_model_request'](messages,[])
+            reply=None
             try:
                 with (evaluation_scope('retry') if attempt else nullcontext()):
                     reply=await model.recap_reply(messages,max_tokens=limits.response_tokens)
                 if not isinstance(reply,AIMessage) or not isinstance(reply.content,str) or not reply.content.strip():
                     raise ValueError('Invalid recap answer')
                 answer=reply.content.strip()
-                usage=(Usage(reply.usage_metadata['input_tokens'],reply.usage_metadata['output_tokens'])
-                    if reply.usage_metadata else Usage(estimated=input_tokens+_estimate([reply])))
+                metadata=reply.usage_metadata
+                usage=(Usage(usage.input_tokens+metadata['input_tokens'],
+                    usage.output_tokens+metadata['output_tokens'],usage.estimated)
+                    if metadata else Usage(usage.input_tokens,usage.output_tokens,
+                        usage.estimated+input_tokens+_estimate([reply])))
                 await runtime_emit('token',{'text':answer})
-                await runtime_emit('model_end',{'phase':'recap','model_calls':attempt+1,'usage':usage.to_dict()})
+                await runtime_emit('model_end',{'phase':'recap','model_calls':calls,'usage':usage.to_dict()})
                 return {'answer':answer,'messages':[AIMessage(content=answer,id=f"{state['turn_id']}:assistant")],
-                    'status':'done','model_calls':attempt+1,'usage':usage.to_dict(),'stop_reason':'complete'}
+                    'status':'done','model_calls':calls,'usage':usage.to_dict(),'stop_reason':'complete'}
             except Exception as error:
                 if not isinstance(error,(ValueError,ConnectionError,TimeoutError)) and \
                         type(error).__name__ not in {'OpenAIConnectionError','APIConnectionError','APITimeoutError'}:
                     raise
-                await runtime_emit('model_error',{'phase':'recap','model_calls':attempt+1,
-                    'error_type':type(error).__name__})
-        return _fixed(state,'抱歉，当前无法可靠复述此前的对话，请稍后重试。',stop_reason='invalid_recap')
+                metadata=(getattr(error,'usage_metadata',None) or
+                    getattr(reply,'usage_metadata',None))
+                usage=(Usage(usage.input_tokens+metadata['input_tokens'],
+                    usage.output_tokens+metadata['output_tokens'],usage.estimated)
+                    if metadata else Usage(usage.input_tokens,usage.output_tokens,
+                        usage.estimated+input_tokens+limits.response_tokens))
+                await runtime_emit('model_error',{'phase':'recap','model_calls':calls,
+                    'error_type':type(error).__name__,'usage':usage.to_dict()})
+        return _fixed(state,'抱歉，当前无法可靠复述此前的对话，请稍后重试。',
+            stop_reason='invalid_recap',model_calls=calls,usage=usage.to_dict())
 
     child = StateGraph(WorkflowState)
     child.add_node('agent_step', observed('agent_step', select_node))
@@ -277,7 +303,7 @@ def build_workflow(*, model: AgentModel,
     child.add_conditional_edges('agent_step', lambda s: s['status'],
         {'tools': 'execute_calls', 'answer': 'stream_answer', 'stopped': END})
     child.add_conditional_edges('execute_calls', lambda s: s['status'],
-        {'select': 'agent_step', 'answer': 'stream_answer'})
+        {'select': 'agent_step', 'answer': 'stream_answer', 'stopped': END})
     child.add_edge('stream_answer', END)
 
     outer = StateGraph(WorkflowState)
