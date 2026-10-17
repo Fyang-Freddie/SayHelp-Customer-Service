@@ -1,0 +1,1326 @@
+{
+  "version": 1,
+  "description": "Jev-only Chinese customer-service intent recalibration; two disjoint frozen prompt splits.",
+  "cases": [
+    {
+      "id": "cal-物流-01",
+      "split": "calibration",
+      "query": "订单TB202611000001发出后现在走到哪了？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-01",
+      "split": "acceptance",
+      "query": "请查TB202611000001包裹的最新运输轨迹。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-02",
+      "split": "calibration",
+      "query": "这件商品的快递预计何时送到？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-02",
+      "split": "acceptance",
+      "query": "能看看这单配送到哪一步了吗？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-03",
+      "split": "calibration",
+      "query": "运单号SF83001三天没更新，查下物流异常。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-03",
+      "split": "acceptance",
+      "query": "SF83002一直停在揽收状态，帮我核实运输进度。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-04",
+      "split": "calibration",
+      "query": "我只问发货时间，不办理退货。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-04",
+      "split": "acceptance",
+      "query": "暂时不退，先告诉我什么时候能发出。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-05",
+      "split": "calibration",
+      "query": "订单已签收了吗？我想看物流记录。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-05",
+      "split": "acceptance",
+      "query": "帮我查一下快递是否已经妥投。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-06",
+      "split": "calibration",
+      "query": "快递显示派送中，今天还能送达吗？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-06",
+      "split": "acceptance",
+      "query": "物流状态是运输中，预计到货时间有吗？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-07",
+      "split": "calibration",
+      "query": "这单分两个包裹吗，分别到哪了？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-07",
+      "split": "acceptance",
+      "query": "拆单寄出的两件货都到哪里了？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-08",
+      "split": "calibration",
+      "query": "退回仓库的运单轨迹可以查吗？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-08",
+      "split": "acceptance",
+      "query": "我寄回去的包裹现在到达退货仓了吗？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-09",
+      "split": "calibration",
+      "query": "物流说已投递但我没收到，先核实签收信息。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-09",
+      "split": "acceptance",
+      "query": "快递显示签收而我没拿到，请先查派送记录。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-10",
+      "split": "calibration",
+      "query": "请查承运商和运单号，不用申请退款。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-10",
+      "split": "acceptance",
+      "query": "我只想知道这笔订单由哪家快递配送。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-11",
+      "split": "calibration",
+      "query": "换货包裹什么时候发货？只查配送状态。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-11",
+      "split": "acceptance",
+      "query": "补寄件的快递单号和运输进度是什么？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-12",
+      "split": "calibration",
+      "query": "查下这单是否还在仓库等待发出。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-12",
+      "split": "acceptance",
+      "query": "订单已经出库交给快递了吗？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-13",
+      "split": "calibration",
+      "query": "为什么快递转运了两次还没到？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-13",
+      "split": "acceptance",
+      "query": "包裹配送路线异常，能查最新节点吗？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-14",
+      "split": "calibration",
+      "query": "我更关心到货，不想讨论售后政策。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-14",
+      "split": "acceptance",
+      "query": "先看预计送达日期，其他问题以后再说。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-物流-15",
+      "split": "calibration",
+      "query": "订单TB202611000014的物流到哪了？",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "hold-物流-15",
+      "split": "acceptance",
+      "query": "查TB202611000015的发货与签收记录。",
+      "expected_intent": "物流"
+    },
+    {
+      "id": "cal-订单-01",
+      "split": "calibration",
+      "query": "订单TB202611000001的实付金额是多少？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-01",
+      "split": "acceptance",
+      "query": "查一下TB202611000001付款记录和总价。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-02",
+      "split": "calibration",
+      "query": "这笔交易的发票抬头能修改吗？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-02",
+      "split": "acceptance",
+      "query": "我要查看订单发票信息，不是退款。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-03",
+      "split": "calibration",
+      "query": "订单里的收货地址写错了，能改地址吗？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-03",
+      "split": "acceptance",
+      "query": "发货前可以修改这单的收件地址吗？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-04",
+      "split": "calibration",
+      "query": "帮我取消尚未付款的订单。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-04",
+      "split": "acceptance",
+      "query": "这笔待支付订单能直接取消吗？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-05",
+      "split": "calibration",
+      "query": "我买了几件商品，订单明细是什么？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-05",
+      "split": "acceptance",
+      "query": "请列出该订单各商品项和数量。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-06",
+      "split": "calibration",
+      "query": "付款成功了但页面还显示待支付，请核实。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-06",
+      "split": "acceptance",
+      "query": "这单的交易状态和支付状态一致吗？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-07",
+      "split": "calibration",
+      "query": "我需要这笔订单的下单时间。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-07",
+      "split": "acceptance",
+      "query": "帮忙查订单创建日期和交易记录。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-08",
+      "split": "calibration",
+      "query": "订单号忘了，能根据客户ID列出订单吗？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-08",
+      "split": "acceptance",
+      "query": "我想看自己名下有哪些历史订单。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-09",
+      "split": "calibration",
+      "query": "优惠券有没有在这笔订单里抵扣？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-09",
+      "split": "acceptance",
+      "query": "查这单的优惠金额，不是退款进度。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-10",
+      "split": "calibration",
+      "query": "可以合并两个未发货订单吗？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-10",
+      "split": "acceptance",
+      "query": "两笔订单能不能改为一个交易单？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-11",
+      "split": "calibration",
+      "query": "我只想核对订单规格，不申请售后。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-11",
+      "split": "acceptance",
+      "query": "帮我确认订单里选的是哪个型号。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-12",
+      "split": "calibration",
+      "query": "这单是不是重复扣款，请核对支付记录。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-12",
+      "split": "acceptance",
+      "query": "支付账单里有两笔相同交易，核实订单。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-13",
+      "split": "calibration",
+      "query": "订单取消后状态怎么显示？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-13",
+      "split": "acceptance",
+      "query": "查询这笔订单当前是已取消还是待付款。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-14",
+      "split": "calibration",
+      "query": "我要更改发票邮箱，不处理退货。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-14",
+      "split": "acceptance",
+      "query": "请修改订单的开票信息。",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-订单-15",
+      "split": "calibration",
+      "query": "订单TB202611000016的商品项ID是什么？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "hold-订单-15",
+      "split": "acceptance",
+      "query": "TB202611000017里面有几个商品项？",
+      "expected_intent": "订单"
+    },
+    {
+      "id": "cal-商品咨询-01",
+      "split": "calibration",
+      "query": "无线蓝牙耳机MM-E100支持什么连接方式？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-01",
+      "split": "acceptance",
+      "query": "MM-E100耳机的蓝牙规格是多少？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-02",
+      "split": "calibration",
+      "query": "机械键盘MM-K87R是什么轴体？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-02",
+      "split": "acceptance",
+      "query": "MM-K87R键盘有几个按键布局？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-03",
+      "split": "calibration",
+      "query": "这款毛毯能机洗吗？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-03",
+      "split": "acceptance",
+      "query": "毛毯的面料与清洗说明是什么？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-04",
+      "split": "calibration",
+      "query": "保温杯容量是多少毫升？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-04",
+      "split": "acceptance",
+      "query": "这个杯子能装多少水？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-05",
+      "split": "calibration",
+      "query": "摄像头支持夜视功能吗？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-05",
+      "split": "acceptance",
+      "query": "这款摄像头有没有夜间拍摄能力？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-06",
+      "split": "calibration",
+      "query": "路由器支持双频Wi-Fi吗？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-06",
+      "split": "acceptance",
+      "query": "这个型号可连接哪些无线频段？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-07",
+      "split": "calibration",
+      "query": "请介绍电源适配器的输入电压。",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-07",
+      "split": "acceptance",
+      "query": "适配器和220V插座兼容吗？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-08",
+      "split": "calibration",
+      "query": "这个型号的尺寸和重量是多少？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-08",
+      "split": "acceptance",
+      "query": "产品规格表里写的长宽高是什么？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-09",
+      "split": "calibration",
+      "query": "两款猫砂盆的容量差别在哪里？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-09",
+      "split": "acceptance",
+      "query": "比较一下两个型号猫砂盆的尺寸。",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-10",
+      "split": "calibration",
+      "query": "新款耳机有主动降噪吗？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-10",
+      "split": "acceptance",
+      "query": "该耳机型号是否支持降噪？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-11",
+      "split": "calibration",
+      "query": "这件外套是什么材质？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-11",
+      "split": "acceptance",
+      "query": "衣服尺码表和面料说明在哪？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-12",
+      "split": "calibration",
+      "query": "加热垫有几个温度档位？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-12",
+      "split": "acceptance",
+      "query": "这款加热垫能调节几档温度？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-13",
+      "split": "calibration",
+      "query": "商品包装里通常包含哪些标准配件？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-13",
+      "split": "acceptance",
+      "query": "说明书列出的随机附件有哪些？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-14",
+      "split": "calibration",
+      "query": "软件兑换码支持哪些系统？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-14",
+      "split": "acceptance",
+      "query": "数字商品兼容Windows还是Mac？",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-商品咨询-15",
+      "split": "calibration",
+      "query": "我还没购买，先了解这个产品的保修期限。",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "hold-商品咨询-15",
+      "split": "acceptance",
+      "query": "购买前想看这款商品标注的保修时长。",
+      "expected_intent": "商品咨询"
+    },
+    {
+      "id": "cal-退款退货-01",
+      "split": "calibration",
+      "query": "这单符合七天无理由退货吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-01",
+      "split": "acceptance",
+      "query": "签收五天了还能申请退货退款吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-02",
+      "split": "calibration",
+      "query": "我要申请退款，先核实资格。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-02",
+      "split": "acceptance",
+      "query": "请协助提交这件商品的退款申请。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-03",
+      "split": "calibration",
+      "query": "退款申请现在审核到哪一步？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-03",
+      "split": "acceptance",
+      "query": "这笔退款是否已经审核通过？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-04",
+      "split": "calibration",
+      "query": "收到破损商品，我的主要诉求是退货退款。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-04",
+      "split": "acceptance",
+      "query": "商品破损了，我现在明确要求退款而不是换货。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-05",
+      "split": "calibration",
+      "query": "未发货订单取消后钱怎么退？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-05",
+      "split": "acceptance",
+      "query": "订单尚未发货，我想了解退款到账流程。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-06",
+      "split": "calibration",
+      "query": "退货运费应由哪一方承担？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-06",
+      "split": "acceptance",
+      "query": "质量问题退货，寄回运费怎么算？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-07",
+      "split": "calibration",
+      "query": "我想知道这单可退金额。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-07",
+      "split": "acceptance",
+      "query": "退款金额为何少于订单实付金额？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-08",
+      "split": "calibration",
+      "query": "退款退回原支付账户吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-08",
+      "split": "acceptance",
+      "query": "退款通常退到哪种支付方式？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-09",
+      "split": "calibration",
+      "query": "已经寄回商品，退款何时处理？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-09",
+      "split": "acceptance",
+      "query": "退货包裹签收后多久会审核退款？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-10",
+      "split": "calibration",
+      "query": "我不投诉，只想办退货。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-10",
+      "split": "acceptance",
+      "query": "现在只处理退款申请，不追究客服态度。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-11",
+      "split": "calibration",
+      "query": "这单部分商品可以单独退款吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-11",
+      "split": "acceptance",
+      "query": "订单中只退其中一个商品项是否可以？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-12",
+      "split": "calibration",
+      "query": "申请退货需要保持包装完好吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-12",
+      "split": "acceptance",
+      "query": "包装拆开了会影响七天无理由退货吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-13",
+      "split": "calibration",
+      "query": "我只问退款条件，还没有决定提交申请。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-13",
+      "split": "acceptance",
+      "query": "先介绍退款资格，不要替我提交。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-14",
+      "split": "calibration",
+      "query": "退货申请已取消，能重新提交吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-14",
+      "split": "acceptance",
+      "query": "我撤销过退货，现在还能再申请吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-退款退货-15",
+      "split": "calibration",
+      "query": "订单TB202611000018退款到账了吗？",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "hold-退款退货-15",
+      "split": "acceptance",
+      "query": "请查TB202611000019的退款处理状态。",
+      "expected_intent": "退款退货"
+    },
+    {
+      "id": "cal-售后-01",
+      "split": "calibration",
+      "query": "耳机左侧没声音，请核实保修处理。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-01",
+      "split": "acceptance",
+      "query": "蓝牙耳机无法充电，想走维修流程。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-02",
+      "split": "calibration",
+      "query": "订单TB202611000001少一个配件，请核实并安排补发，不退款。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-02",
+      "split": "acceptance",
+      "query": "这单配件缺失，我要售后补件，不要退货。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-03",
+      "split": "calibration",
+      "query": "键盘有按键失灵，能换货吗？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-03",
+      "split": "acceptance",
+      "query": "产品按键故障，我想申请维修或换新。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-04",
+      "split": "calibration",
+      "query": "收到的商品型号不对，请处理错发。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-04",
+      "split": "acceptance",
+      "query": "商家寄错规格，请核实换货方案。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-05",
+      "split": "calibration",
+      "query": "水杯漏水，保修范围包含吗？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-05",
+      "split": "acceptance",
+      "query": "保温杯用两天漏水，售后怎么处理？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-06",
+      "split": "calibration",
+      "query": "新机开不了机，我要排查故障。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-06",
+      "split": "acceptance",
+      "query": "设备无法启动，能安排售后检测吗？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-07",
+      "split": "calibration",
+      "query": "我很不满，但主要是请你补发缺的零件。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-07",
+      "split": "acceptance",
+      "query": "客服拖太久了，先把缺件补发方案核实。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-08",
+      "split": "calibration",
+      "query": "暂不退款，只需要安排保修。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-08",
+      "split": "acceptance",
+      "query": "我不想退钱，请走保修维修。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-09",
+      "split": "calibration",
+      "query": "请确认换货进度，不是退款进度。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-09",
+      "split": "acceptance",
+      "query": "换新件何时寄出？我没有申请退款。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-10",
+      "split": "calibration",
+      "query": "摄像头画面异常，售后能远程排查吗？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-10",
+      "split": "acceptance",
+      "query": "设备频繁断连，联系技术售后检查。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-11",
+      "split": "calibration",
+      "query": "外套开线了，能申请换一件吗？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-11",
+      "split": "acceptance",
+      "query": "刚收到商品有瑕疵，优先换货。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-12",
+      "split": "calibration",
+      "query": "配件坏了，是否能单独更换？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-12",
+      "split": "acceptance",
+      "query": "电源线故障，可以补寄替换件吗？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-13",
+      "split": "calibration",
+      "query": "保修期内修理要带什么凭证？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-13",
+      "split": "acceptance",
+      "query": "维修申请需要订单号还是保修卡？",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-14",
+      "split": "calibration",
+      "query": "补发的零件还是不匹配，请继续处理。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-14",
+      "split": "acceptance",
+      "query": "第二次寄来的配件也不对，售后继续核实。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-售后-15",
+      "split": "calibration",
+      "query": "商品使用中异常发热，请安排售后检测。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "hold-售后-15",
+      "split": "acceptance",
+      "query": "充电器过热，先排查故障，不办退货。",
+      "expected_intent": "售后"
+    },
+    {
+      "id": "cal-投诉-01",
+      "split": "calibration",
+      "query": "客户ID C0016，订单TB202611000001少配件；主要是投诉无人跟进，请记录，不要自动退款。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-01",
+      "split": "acceptance",
+      "query": "TB202611000001缺件未处理，我要正式投诉拖延，不是申请退款。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-02",
+      "split": "calibration",
+      "query": "客服承诺回电却没回，我要投诉服务。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-02",
+      "split": "acceptance",
+      "query": "我要登记客服未按约定联系的投诉。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-03",
+      "split": "calibration",
+      "query": "我主要投诉处理太慢，商品问题稍后再说。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-03",
+      "split": "acceptance",
+      "query": "先记录对售后响应拖延的投诉，暂不办换货。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-04",
+      "split": "calibration",
+      "query": "多次催促都没人回应，请帮我升级投诉。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-04",
+      "split": "acceptance",
+      "query": "投诉工单一直无人处理，我要求人工介入。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-05",
+      "split": "calibration",
+      "query": "你们的解释前后矛盾，我要投诉。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-05",
+      "split": "acceptance",
+      "query": "客服答复不一致，请登记服务争议。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-06",
+      "split": "calibration",
+      "query": "我要投诉电话沟通态度，不查订单。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-06",
+      "split": "acceptance",
+      "query": "请记录客服态度问题，不是查询物流。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-07",
+      "split": "calibration",
+      "query": "售后说已经补发却没有凭据，我要投诉虚假承诺。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-07",
+      "split": "acceptance",
+      "query": "声称已退款却拿不出记录，我要投诉错误告知。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-08",
+      "split": "calibration",
+      "query": "服务人员泄露了我的信息，请登记投诉。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-08",
+      "split": "acceptance",
+      "query": "我的隐私被不当使用，我要正式投诉。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-09",
+      "split": "calibration",
+      "query": "我要追责，不是想了解退货政策。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-09",
+      "split": "acceptance",
+      "query": "主要诉求是投诉平台处理失当，不是咨询退款条件。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-10",
+      "split": "calibration",
+      "query": "订单TB202611000020一直没人处理，请登记投诉并告知受理编号。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-10",
+      "split": "acceptance",
+      "query": "这单售后被反复推诿，我要求投诉记录。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-11",
+      "split": "calibration",
+      "query": "我对物流延误不满，但主要是投诉客服不解释。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-11",
+      "split": "acceptance",
+      "query": "快递慢是一回事，我现在投诉客服不回应。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-12",
+      "split": "calibration",
+      "query": "不要替我申请退款，先记录我对缺件处理的投诉。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-12",
+      "split": "acceptance",
+      "query": "我先投诉配件遗漏的处理流程，暂不退钱。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-13",
+      "split": "calibration",
+      "query": "请将我的服务争议升级给人工。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-13",
+      "split": "acceptance",
+      "query": "我要投诉并转接主管处理服务纠纷。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-14",
+      "split": "calibration",
+      "query": "上次投诉记录丢失，我要再次登记。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-14",
+      "split": "acceptance",
+      "query": "投诉工单被误关闭，请重新记录诉求。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-投诉-15",
+      "split": "calibration",
+      "query": "我要求核实缺件并告知后续处理，同时正式投诉无人回应；不要退款。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "hold-投诉-15",
+      "split": "acceptance",
+      "query": "缺配件还没结果，请先登记投诉、核实事实，不要承诺补发。",
+      "expected_intent": "投诉"
+    },
+    {
+      "id": "cal-闲聊-01",
+      "split": "calibration",
+      "query": "你好，今天过得怎么样？",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-01",
+      "split": "acceptance",
+      "query": "嗨，祝你工作顺利。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-02",
+      "split": "calibration",
+      "query": "谢谢你刚才耐心地解释。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-02",
+      "split": "acceptance",
+      "query": "多谢，辛苦了。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-03",
+      "split": "calibration",
+      "query": "早上好。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-03",
+      "split": "acceptance",
+      "query": "晚上好呀。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-04",
+      "split": "calibration",
+      "query": "再见，祝你愉快。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-04",
+      "split": "acceptance",
+      "query": "先这样，拜拜。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-05",
+      "split": "calibration",
+      "query": "你作为客服怎么称呼？",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-05",
+      "split": "acceptance",
+      "query": "可以简单介绍一下你自己吗？",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-06",
+      "split": "calibration",
+      "query": "哈哈，明白了。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-06",
+      "split": "acceptance",
+      "query": "好的，收到啦。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-07",
+      "split": "calibration",
+      "query": "今天星期几？随便聊聊。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-07",
+      "split": "acceptance",
+      "query": "天气真好，随便说两句。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-08",
+      "split": "calibration",
+      "query": "节日快乐！",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-08",
+      "split": "acceptance",
+      "query": "祝你周末开心。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-09",
+      "split": "calibration",
+      "query": "我只是想打个招呼。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-09",
+      "split": "acceptance",
+      "query": "没事，来问个好。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-闲聊-10",
+      "split": "calibration",
+      "query": "谢谢，再联系。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "hold-闲聊-10",
+      "split": "acceptance",
+      "query": "感谢，回头见。",
+      "expected_intent": "闲聊"
+    },
+    {
+      "id": "cal-其他-01",
+      "split": "calibration",
+      "query": "请证明一道高等数学定理。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-01",
+      "split": "acceptance",
+      "query": "帮我写一段游戏剧情。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-02",
+      "split": "calibration",
+      "query": "帮我诊断胸痛并开药。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-02",
+      "split": "acceptance",
+      "query": "法律诉讼要怎么代理？",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-03",
+      "split": "calibration",
+      "query": "订单查询和退货申请是两件独立的事，我没说先做哪件。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-03",
+      "split": "acceptance",
+      "query": "我同时要查物流、申请退款、投诉客服，三件事没有优先级。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-04",
+      "split": "calibration",
+      "query": "乱码%%%abc%%%是什么意思？",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-04",
+      "split": "acceptance",
+      "query": "随机字符xqz912!@#。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-05",
+      "split": "calibration",
+      "query": "帮我预订明天的机票。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-05",
+      "split": "acceptance",
+      "query": "请给我安排一辆网约车。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-06",
+      "split": "calibration",
+      "query": "我只发一个字：嗯。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-06",
+      "split": "acceptance",
+      "query": "现在什么情况？我没有说具体事情。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-07",
+      "split": "calibration",
+      "query": "请帮我炒股选一只明天涨停的股票。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-07",
+      "split": "acceptance",
+      "query": "能预测下周汇率走势吗？",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-08",
+      "split": "calibration",
+      "query": "我想要医疗建议和一首诗，与你的业务无关。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-08",
+      "split": "acceptance",
+      "query": "帮我设计一款电子游戏，不谈订单。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-09",
+      "split": "calibration",
+      "query": "这件事处理一下。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-09",
+      "split": "acceptance",
+      "query": "那个东西怎么样？这里没有上下文。",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "cal-其他-10",
+      "split": "calibration",
+      "query": "你能入侵别人的账户吗？",
+      "expected_intent": "其他"
+    },
+    {
+      "id": "hold-其他-10",
+      "split": "acceptance",
+      "query": "帮我绕过登录验证。",
+      "expected_intent": "其他"
+    }
+  ]
+}
